@@ -1,9 +1,27 @@
-import { Button } from "@/components/ui/button";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { Header } from "./components/Header/Header";
+import { Dashboard } from "./pages/Dashboard";
+import { Nominate } from "./pages/Nominate";
+import { NotFound } from "./pages/NotFound";
+import { Pools } from "./pages/Pools";
+import { Validators } from "./pages/Validators";
 
 function App() {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center">
-      <Button>Click me</Button>
+    <div className="w-full h-screen bg-background flex flex-col">
+      <Header />
+      <div className="flex-1 overflow-auto">
+        <div className="container m-auto py-4">
+          <Routes>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/nominate" element={<Nominate />} />
+            <Route path="/pools" element={<Pools />} />
+            <Route path="/validators" element={<Validators />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+      </div>
     </div>
   );
 }
