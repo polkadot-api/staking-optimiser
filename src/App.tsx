@@ -11,7 +11,7 @@ function App() {
     <div className="w-full h-screen bg-background flex flex-col">
       <Header />
       <div className="flex-1 overflow-auto">
-        <div className="container m-auto py-4">
+        <div className="container m-auto">
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/nominate" element={<Nominate />} />

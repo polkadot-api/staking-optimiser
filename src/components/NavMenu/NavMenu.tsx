@@ -35,7 +35,11 @@ export const NavMenu: FC<PropsWithChildren> = ({ children }) => {
   );
 
   return (
-    <Tabs value={matchedPath?.path} onValueChange={navigate}>
+    <Tabs
+      value={matchedPath?.path}
+      onValueChange={navigate}
+      className="p-2 pt-4"
+    >
       <TabsList>
         {pages.map((page) => (
           <TabsTrigger key={page.path} value={page.path}>
