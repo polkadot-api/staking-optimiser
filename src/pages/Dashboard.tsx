@@ -10,6 +10,9 @@ import { lazy, Suspense } from "react";
 import {
   combineLatest,
   concat,
+  debounceTime,
+  defer,
+  distinctUntilChanged,
   filter,
   from,
   map,
@@ -19,6 +22,7 @@ import {
   switchMap,
   take,
   takeWhile,
+  timer,
   withLatestFrom,
 } from "rxjs";
 
@@ -39,12 +43,47 @@ export const Dashboard = () => {
   );
 };
 
-const ActiveEra = () => <Card title="Active Era">{activeEra$}</Card>;
+const ActiveEra = () => {
+  const activeEra = useStateObservable(activeEra$);
+  return (
+    <Card title="Active Era">
+      <div>{activeEra.era}</div>
+      <div>{(activeEra.pctComplete * 100).toLocaleString()}%</div>
+      <div>Expected end: {activeEra.estimatedEnd.toLocaleString()}</div>
+    </Card>
+  );
+};
 
 const activeEra$ = state(
-  from(typedApi.query.Staking.ActiveEra.getValue()).pipe(
-    map((v) => v?.index ?? 0)
+  combineLatest([
+    defer(typedApi.query.Staking.ActiveEra.getValue),
+    typedApi.constants.Babe.ExpectedBlockTime(),
+    typedApi.constants.Babe.EpochDuration(),
+    typedApi.constants.Staking.SessionsPerEra(),
+    // refresh every 10 minutes
+    timer(0, 10 * 60 * 1000).pipe(map(() => Date.now())),
+  ]).pipe(
+    map(([v, blockTime, epochDuration, sessionsPerEra, now]) => {
+      const era = v?.index ?? 0;
+      const eraStart = Number(v?.start ?? now);
+      const currentEraTime = now - eraStart;
+
+      const eraDurationInBlocks = Number(epochDuration) * sessionsPerEra;
+      const eraDurationInMs = eraDurationInBlocks * Number(blockTime);
+
+      const estimatedEnd = new Date(eraStart + eraDurationInMs);
+
+      return {
+        era,
+        pctComplete: currentEraTime / eraDurationInMs,
+        estimatedEnd,
+      };
+    })
   )
+);
+const activeEraNumber$ = activeEra$.pipeState(
+  map((v) => v.era),
+  distinctUntilChanged()
 );
 
 const NominateStatus = () => {
@@ -87,7 +126,7 @@ const currentNominatorBond$ = state(
 const NominateRewards = () => {
   const lastReward = useStateObservable(lastReward$);
   const rewardHistory = useStateObservable(rewardHistory$);
-  const activeEra = useStateObservable(activeEra$);
+  const activeEra = useStateObservable(activeEraNumber$);
 
   return (
     <Card title="Nominate Rewards">
@@ -110,7 +149,7 @@ const sdk = createStakingSdk(typedApi, {
 });
 
 const lastReward$ = state(
-  combineLatest([selectedAccountAddr$, activeEra$]).pipe(
+  combineLatest([selectedAccountAddr$, activeEraNumber$]).pipe(
     switchMap(([addr, era]) => sdk.getNominatorRewards(addr, era - 1)),
     withLatestFrom(
       combineLatest([
@@ -143,7 +182,7 @@ const rewardHistory$ = state(
     typedApi.constants.Staking.HistoryDepth(),
   ]).pipe(
     switchMap(([addr, historyDepth]) =>
-      activeEra$.pipe(
+      activeEraNumber$.pipe(
         take(1),
         map((era) => ({ era, addr, historyDepth: Math.min(21, historyDepth) }))
       )
@@ -153,7 +192,7 @@ const rewardHistory$ = state(
         from(
           new Array(historyDepth - 1).fill(0).map((_, i) => startEra - i - 1)
         ),
-        activeEra$.pipe(
+        activeEraNumber$.pipe(
           filter((newEra) => newEra > startEra),
           map((v) => v - 1)
         )
@@ -171,7 +210,7 @@ const rewardHistory$ = state(
             console.error(ex);
             return null;
           }
-        }, 5),
+        }, 3),
         scan((acc, v) => {
           if (!v) return acc;
 

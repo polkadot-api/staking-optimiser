@@ -20,7 +20,7 @@ export default function EraChart({
   activeEra: number;
 }) {
   return (
-    <ResponsiveContainer height={400}>
+    <ResponsiveContainer height={400} className="overflow-hidden">
       <ComposedChart
         data={data}
         margin={{
