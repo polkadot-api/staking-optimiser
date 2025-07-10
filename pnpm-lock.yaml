@@ -8,6 +8,9 @@ dependencies:
   '@polkadot-api/descriptors':
     specifier: file:.papi/descriptors
     version: file:.papi/descriptors(polkadot-api@1.14.1)
+  '@polkadot-api/react-components':
+    specifier: ^0.1.0
+    version: 0.1.0(react-dom@19.1.0)(react@19.1.0)
   '@radix-ui/react-slot':
     specifier: ^1.2.3
     version: 1.2.3(@types/react@19.1.8)(react@19.1.0)
@@ -814,6 +817,17 @@ packages:
 
   /@polkadot-api/polkadot-signer@0.1.6:
     resolution: {integrity: sha512-X7ghAa4r7doETtjAPTb50IpfGtrBmy3BJM5WCfNKa1saK04VFY9w+vDn+hwEcM4p0PcDHt66Ts74hzvHq54d9A==}
+    dev: false
+
+  /@polkadot-api/react-components@0.1.0(react-dom@19.1.0)(react@19.1.0):
+    resolution: {integrity: sha512-uLPQ4M098g8Lrk5ylmM9/RdtOSA1uO2WWNRUo0BuPCC0FRu8pKYmN4+XDH6X8cyDr/ik8/whgvSDKpNxwRbMeA==}
+    peerDependencies:
+      react: ^19.0.0
+      react-dom: ^19.0.0
+    dependencies:
+      '@noble/hashes': 1.8.0
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
     dev: false
 
   /@polkadot-api/signer@0.2.2:

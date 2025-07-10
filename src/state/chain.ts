@@ -1,4 +1,5 @@
 import { dot } from "@polkadot-api/descriptors";
+import { createStakingSdk } from "@polkadot-api/sdk-staking";
 import { createClient } from "polkadot-api";
 import { withLogsRecorder } from "polkadot-api/logs-provider";
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat";
@@ -12,3 +13,7 @@ export const client = createClient(
 );
 
 export const typedApi = client.getTypedApi(dot);
+
+export const stakingSdk = createStakingSdk(typedApi, {
+  maxActiveNominators: 100,
+});

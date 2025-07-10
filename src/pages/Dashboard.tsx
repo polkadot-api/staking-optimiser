@@ -1,32 +1,16 @@
 import { Card } from "@/components/Card";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
 import { significantDigitsDecimals, TokenValue } from "@/components/TokenValue";
-import { TOKEN_PROPS } from "@/constants";
-import { selectedAccountAddr$ } from "@/state/account";
-import { typedApi } from "@/state/chain";
-import { createStakingSdk } from "@polkadot-api/sdk-staking";
-import { state, Subscribe, useStateObservable } from "@react-rxjs/core";
-import { lazy, Suspense } from "react";
+import { activeEra$, activeEraNumber$ } from "@/state/era";
 import {
-  combineLatest,
-  concat,
-  debounceTime,
-  defer,
-  distinctUntilChanged,
-  filter,
-  from,
-  map,
-  mergeMap,
-  scan,
-  startWith,
-  switchMap,
-  take,
-  takeWhile,
-  timer,
-  withLatestFrom,
-} from "rxjs";
+  currentNominatorBond$,
+  lastReward$,
+  rewardHistory$,
+} from "@/state/nominate";
+import { Subscribe, useStateObservable } from "@react-rxjs/core";
+import { lazy, Suspense } from "react";
 
-const EraChart = lazy(() => import("./EraChart"));
+const EraChart = lazy(() => import("@/components/EraChart"));
 
 export const Dashboard = () => {
   return (
@@ -54,38 +38,6 @@ const ActiveEra = () => {
   );
 };
 
-const activeEra$ = state(
-  combineLatest([
-    defer(typedApi.query.Staking.ActiveEra.getValue),
-    typedApi.constants.Babe.ExpectedBlockTime(),
-    typedApi.constants.Babe.EpochDuration(),
-    typedApi.constants.Staking.SessionsPerEra(),
-    // refresh every 10 minutes
-    timer(0, 10 * 60 * 1000).pipe(map(() => Date.now())),
-  ]).pipe(
-    map(([v, blockTime, epochDuration, sessionsPerEra, now]) => {
-      const era = v?.index ?? 0;
-      const eraStart = Number(v?.start ?? now);
-      const currentEraTime = now - eraStart;
-
-      const eraDurationInBlocks = Number(epochDuration) * sessionsPerEra;
-      const eraDurationInMs = eraDurationInBlocks * Number(blockTime);
-
-      const estimatedEnd = new Date(eraStart + eraDurationInMs);
-
-      return {
-        era,
-        pctComplete: currentEraTime / eraDurationInMs,
-        estimatedEnd,
-      };
-    })
-  )
-);
-const activeEraNumber$ = activeEra$.pipeState(
-  map((v) => v.era),
-  distinctUntilChanged()
-);
-
 const NominateStatus = () => {
   const bond = useStateObservable(currentNominatorBond$);
 
@@ -108,21 +60,6 @@ const NominateStatus = () => {
   );
 };
 
-const currentNominatorBond$ = state(
-  selectedAccountAddr$.pipe(
-    switchMap((v) =>
-      typedApi.query.Staking.Bonded.watchValue(v).pipe(
-        // Avoid watching a value that very rarely will change once set
-        takeWhile((v) => v != null, true),
-        switchMap((addr) =>
-          addr ? typedApi.query.Staking.Ledger.watchValue(addr) : [null]
-        )
-      )
-    ),
-    map((v) => v ?? null)
-  )
-);
-
 const NominateRewards = () => {
   const lastReward = useStateObservable(lastReward$);
   const rewardHistory = useStateObservable(rewardHistory$);
@@ -143,89 +80,3 @@ const NominateRewards = () => {
     </Card>
   );
 };
-
-const sdk = createStakingSdk(typedApi, {
-  maxActiveNominators: 100,
-});
-
-const lastReward$ = state(
-  combineLatest([selectedAccountAddr$, activeEraNumber$]).pipe(
-    switchMap(([addr, era]) => sdk.getNominatorRewards(addr, era - 1)),
-    withLatestFrom(
-      combineLatest([
-        typedApi.constants.Babe.ExpectedBlockTime(),
-        typedApi.constants.Babe.EpochDuration(),
-        typedApi.constants.Staking.SessionsPerEra(),
-      ])
-    ),
-    map(([rewards, [blockTime, epochDuration, sessionsPerEra]]) => {
-      const eraDurationInMs =
-        BigInt(sessionsPerEra) * epochDuration * blockTime;
-      const erasInAYear =
-        (365.25 * 24 * 60 * 60 * 1000) / Number(eraDurationInMs);
-
-      const rewardPct = Number(rewards.total) / Number(rewards.activeBond);
-      const apy =
-        Math.round((Math.pow(1 + rewardPct, erasInAYear) - 1) * 10000) / 100;
-
-      return {
-        total: rewards.total,
-        apy,
-      };
-    })
-  )
-);
-
-const rewardHistory$ = state(
-  combineLatest([
-    selectedAccountAddr$,
-    typedApi.constants.Staking.HistoryDepth(),
-  ]).pipe(
-    switchMap(([addr, historyDepth]) =>
-      activeEraNumber$.pipe(
-        take(1),
-        map((era) => ({ era, addr, historyDepth: Math.min(21, historyDepth) }))
-      )
-    ),
-    switchMap(({ addr, era: startEra, historyDepth }) => {
-      const eras$ = concat(
-        from(
-          new Array(historyDepth - 1).fill(0).map((_, i) => startEra - i - 1)
-        ),
-        activeEraNumber$.pipe(
-          filter((newEra) => newEra > startEra),
-          map((v) => v - 1)
-        )
-      );
-
-      return eras$.pipe(
-        mergeMap(async (era) => {
-          try {
-            const rewards = await sdk.getNominatorRewards(addr, era);
-            return {
-              era,
-              rewards: Number(rewards.total) / 10 ** TOKEN_PROPS.decimals,
-            };
-          } catch (ex) {
-            console.error(ex);
-            return null;
-          }
-        }, 3),
-        scan((acc, v) => {
-          if (!v) return acc;
-
-          const idx = startEra - 1 - v.era;
-          const newValue = [...acc];
-          newValue[idx] = v;
-          if (newValue.length > historyDepth) {
-            return newValue.slice(1);
-          }
-          return newValue;
-        }, new Array<{ era: number; rewards: number }>()),
-        startWith([]),
-        map((v) => v.filter((v) => !!v))
-      );
-    })
-  ),
-  []
-);
