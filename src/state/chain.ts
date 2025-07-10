@@ -1,4 +1,5 @@
-import { dot } from "@polkadot-api/descriptors";
+import { dot, polkadot_people } from "@polkadot-api/descriptors";
+import { createIdentitySdk } from "@polkadot-api/sdk-accounts";
 import { createStakingSdk } from "@polkadot-api/sdk-staking";
 import { createClient } from "polkadot-api";
 import { withLogsRecorder } from "polkadot-api/logs-provider";
@@ -17,3 +18,14 @@ export const typedApi = client.getTypedApi(dot);
 export const stakingSdk = createStakingSdk(typedApi, {
   maxActiveNominators: 100,
 });
+
+export const pepopleClient = createClient(
+  withLogsRecorder(
+    (...v) => console.debug("people", ...v),
+    withPolkadotSdkCompat(
+      getWsProvider("wss://sys.ibp.network/people-polkadot")
+    )
+  )
+);
+export const peopleTypedApi = pepopleClient.getTypedApi(polkadot_people);
+export const identitySdk = createIdentitySdk(peopleTypedApi);

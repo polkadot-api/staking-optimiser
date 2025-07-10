@@ -1,3 +1,4 @@
+import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
 import { selectedAccountAddr$ } from "@/state/account";
@@ -9,9 +10,10 @@ import {
   getEraApy,
 } from "@/state/era";
 import { isNominating$ } from "@/state/nominate";
+import { roundToDecimalPlaces } from "@/util/format";
 import { state, Subscribe, useStateObservable } from "@react-rxjs/core";
 import type { SS58String } from "polkadot-api";
-import { act, lazy, type FC } from "react";
+import { lazy, type FC } from "react";
 import { filter, map, mergeMap, scan, switchMap, withLatestFrom } from "rxjs";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
@@ -49,6 +51,14 @@ const selectedValidators$ = state(
 );
 
 const HISTORY_DEPTH = 21;
+const validatorPrefs$ = state((addr: SS58String) =>
+  activeEraNumber$.pipe(
+    switchMap((era) =>
+      typedApi.query.Staking.ErasValidatorPrefs.getValue(era, addr)
+    )
+  )
+);
+
 const validatorPerformance$ = state((addr: SS58String) =>
   allEras$(HISTORY_DEPTH).pipe(
     mergeMap(async (era) => {
@@ -100,9 +110,9 @@ const SelectedValidators = () => {
 
   return (
     <Card title="Selected Validators">
-      <ul>
+      <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 py-2">
         {validators.map((v) => (
-          <li key={v}>
+          <li className="bg-secondary rounded p-2" key={v}>
             <SelectedValidator validator={v} />
           </li>
         ))}
@@ -111,15 +121,48 @@ const SelectedValidators = () => {
   );
 };
 
+const PERBILL = 1000000000;
 const SelectedValidator: FC<{
   validator: SS58String;
 }> = ({ validator }) => {
   const rewardHistory = useStateObservable(validatorPerformance$(validator));
+  const prefs = useStateObservable(validatorPrefs$(validator));
   const activeEra = useStateObservable(activeEraNumber$);
+
+  const averageApy = rewardHistory.length
+    ? roundToDecimalPlaces(
+        rewardHistory.map((v) => v.apy).reduce((a, b) => a + b, 0) /
+          rewardHistory.length,
+        2
+      )
+    : null;
 
   return (
     <div>
-      <div>{validator}</div>
+      <div className="flex items-center justify-between">
+        <AddressIdentity addr={validator} />
+        {averageApy || prefs.commission ? (
+          <div className="text-muted-foreground text-sm">
+            {averageApy ? (
+              <div>
+                Avg APY: <b className="text-foreground">{averageApy}%</b>
+              </div>
+            ) : null}
+            {prefs.commission ? (
+              <div>
+                Commission:{" "}
+                <b className="text-foreground">
+                  {roundToDecimalPlaces(
+                    100 * Number(prefs.commission / PERBILL),
+                    2
+                  )}
+                  %
+                </b>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
       <EraChart height={200} data={rewardHistory} activeEra={activeEra} />
     </div>
   );

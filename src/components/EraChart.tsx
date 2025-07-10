@@ -37,11 +37,8 @@ export default function EraChart({
         margin={{
           top: 20,
           right: 20,
-          bottom: 20,
-          left: 20,
-        }}
-        style={{
-          backgroundColor: "white",
+          bottom: 0,
+          left: 0,
         }}
       >
         <CartesianGrid stroke="#f5f5f5" />
