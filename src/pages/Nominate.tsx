@@ -1,3 +1,4 @@
+import { AccountBalance } from "@/components/AccountBalance";
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
@@ -37,11 +38,18 @@ const NominateContent = () => {
 
 const NominatingContent = () => {
   return (
-    <div>
+    <div className="space-y-4">
+      <BalanceCard />
       <SelectedValidators />
     </div>
   );
 };
+
+const BalanceCard = () => (
+  <Card title="Balance">
+    <AccountBalance />
+  </Card>
+);
 
 const selectedValidators$ = state(
   selectedAccountAddr$.pipe(
