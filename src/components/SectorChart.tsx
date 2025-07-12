@@ -14,8 +14,8 @@ export default function SectorChart({
   }[];
 }) {
   return (
-    <ResponsiveContainer height={400} className="overflow-hidden">
-      <PieChart width={400} height={400}>
+    <ResponsiveContainer height={300} className="overflow-hidden max-w-[400px]">
+      <PieChart>
         <Pie
           activeShape={renderActiveShape}
           data={data.map((v) => ({
@@ -24,8 +24,8 @@ export default function SectorChart({
           }))}
           cx="50%"
           cy="50%"
-          innerRadius={60}
-          outerRadius={80}
+          innerRadius={50}
+          outerRadius={90}
           fill={DEFAULT_COLOR}
           dataKey="value"
           startAngle={90}
@@ -67,9 +67,20 @@ const renderActiveShape = ({
   const ey = my;
   const textAnchor = cos >= 0 ? "start" : "end";
 
+  const fillWithoutTransparency = fill?.replace(
+    /transparent \d+%/,
+    "transparent 0%"
+  );
+
   return (
     <g>
-      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill}>
+      <text
+        x={cx}
+        y={cy}
+        dy={8}
+        textAnchor="middle"
+        fill={fillWithoutTransparency}
+      >
         {payload.label}
       </text>
       <Sector

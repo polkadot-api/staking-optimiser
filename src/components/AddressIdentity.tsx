@@ -25,7 +25,7 @@ export const AddressIdentity: FC<{ addr: string }> = ({ addr }) => {
     <div className="flex items-center gap-2 overflow-hidden flex-1">
       <CopyText
         text={addr}
-        copiedContent={<CheckCircle size={18} className="text-green-600 w-6" />}
+        copiedContent={<CheckCircle size={18} className="text-positive w-6" />}
       >
         <PolkadotIdenticon size={24} publicKey={getPublicKey(addr)} />
       </CopyText>
@@ -36,7 +36,7 @@ export const AddressIdentity: FC<{ addr: string }> = ({ addr }) => {
               <span className="font-medium">{identity.value}</span>
               {subIdLabel}
             </span>
-            <CheckCircle size={18} className="text-green-600" />
+            <CheckCircle size={18} className="text-positive" />
           </div>
         ) : (
           <div className="leading-tight">

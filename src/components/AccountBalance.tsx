@@ -5,18 +5,21 @@ import { currentNominationPoolBond$ } from "@/state/nominationPool";
 import { maxBigInt } from "@/util/bigint";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { lazy } from "react";
-import { combineLatest, defer, map, switchMap, withLatestFrom } from "rxjs";
+import { combineLatest, map, switchMap } from "rxjs";
+import { TextHintTooltip } from "./HintTooltip";
 import { TokenValue } from "./TokenValue";
 
 const SectorChart = lazy(() => import("@/components/SectorChart"));
 
 const accountBalance$ = state(
   selectedAccountAddr$.pipe(
-    switchMap((v) => typedApi.query.System.Account.watchValue(v)),
-    map((v) => v.data),
-    withLatestFrom(
-      defer(() => typedApi.constants.Balances.ExistentialDeposit())
+    switchMap((v) =>
+      combineLatest([
+        typedApi.query.System.Account.watchValue(v),
+        typedApi.constants.Balances.ExistentialDeposit(),
+      ])
     ),
+    map(([v, ed]) => [v.data, ed] as const),
     map(([v, existentialDeposit]) => {
       // https://wiki.polkadot.network/learn/learn-account-balances/
 
@@ -77,31 +80,50 @@ export const AccountBalance = () => {
     {
       label: "Bonded",
       value: bonded - unbonding,
+      color: "var(--muted-foreground)",
+      tooltip: "Amount already bonded into staking.",
     },
     {
       label: "Unbonding",
       value: unbonding,
+      color: "color-mix(in srgb, var(--muted-foreground), transparent 50%)",
+      tooltip: "Amount being unbounded from staking.",
     },
     {
       label: "Locked",
       value: unbondedLockedBalance,
+      color: "color-mix(in srgb, var(--color-positive), transparent 20%)",
+      tooltip:
+        "Amount locked but not used in staking. You can bond this amount and you will still retain the same spendable amount.",
     },
     {
       label: "Spendable",
       value: balance.spendable,
+      color: "color-mix(in srgb, var(--color-neutral), transparent 20%)",
+      tooltip: "Unlocked amount that can be transferred or used to pay fees.",
     },
   ].filter((v) => v.value > 0n);
 
   return (
-    <div>
+    <div className="flex gap-4 items-center justify-center flex-wrap">
       <SectorChart data={data} />
-      <div>
-        {data.map(({ label, value }) => (
-          <div key={label}>
-            {label}: <TokenValue value={value} />
-          </div>
+      <ol className="space-y-2">
+        {data.map(({ label, value, color, tooltip }) => (
+          <li
+            key={label}
+            className="border-l-4 rounded p-2 flex gap-2 justify-between"
+            style={{
+              borderColor: color,
+              backgroundColor: `color-mix(in srgb, ${color}, transparent 80%)`,
+            }}
+          >
+            <div>
+              <TokenValue value={value} /> {label}
+            </div>
+            <TextHintTooltip hint={tooltip} />
+          </li>
         ))}
-      </div>
+      </ol>
     </div>
   );
 };

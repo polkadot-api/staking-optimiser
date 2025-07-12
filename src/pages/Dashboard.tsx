@@ -1,3 +1,4 @@
+import { AccountBalance } from "@/components/AccountBalance";
 import { Card } from "@/components/Card";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
 import { significantDigitsDecimals, TokenValue } from "@/components/TokenValue";
@@ -18,6 +19,9 @@ export const Dashboard = () => {
       <NavMenu />
       <Subscribe fallback="Loading…">
         <div className="space-y-4">
+          <Card title="Balance">
+            <AccountBalance />
+          </Card>
           <ActiveEra />
           <NominateStatus />
           <NominateRewards />

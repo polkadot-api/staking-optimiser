@@ -17,6 +17,7 @@
     "@polkadot-api/sdk-accounts": "^0.3.0",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.12",
+    "@radix-ui/react-tooltip": "^1.2.7",
     "@react-rxjs/core": "^0.10.8",
     "@react-rxjs/utils": "^0.9.7",
     "class-variance-authority": "^0.7.1",
