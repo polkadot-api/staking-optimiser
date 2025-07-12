@@ -15,7 +15,7 @@ import { roundToDecimalPlaces } from "@/util/format";
 import { state, Subscribe, useStateObservable } from "@react-rxjs/core";
 import { type SS58String } from "polkadot-api";
 import { lazy, type FC } from "react";
-import { map, mergeMap, scan, switchMap, withLatestFrom } from "rxjs";
+import { filter, map, mergeMap, scan, switchMap, withLatestFrom } from "rxjs";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
 
@@ -53,7 +53,9 @@ const BalanceCard = () => (
 
 const selectedValidators$ = state(
   selectedAccountAddr$.pipe(
-    switchMap((addr) => typedApi.query.Staking.Nominators.watchValue(addr)),
+    switchMap((addr) =>
+      addr ? typedApi.query.Staking.Nominators.watchValue(addr) : [null]
+    ),
     map((v) => v?.targets ?? [])
   )
 );
@@ -78,7 +80,10 @@ const validatorPerformance$ = state((addr: SS58String) =>
         return { era, rewards: null };
       }
     }, 3),
-    withLatestFrom(eraDurationInMs$, selectedAccountAddr$),
+    withLatestFrom(
+      eraDurationInMs$,
+      selectedAccountAddr$.pipe(filter((v) => v != null))
+    ),
     scan(
       (
         acc: Array<{

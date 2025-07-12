@@ -6,11 +6,13 @@ import { typedApi } from "./chain";
 export const currentNominationPoolBond$ = state(
   selectedAccountAddr$.pipe(
     switchMap((v) =>
-      Promise.all([
-        typedApi.query.NominationPools.PoolMembers.getValue(v),
-        // might want to use NominationPoolsApi.pointsToBalance instead
-        typedApi.query.DelegatedStaking.Delegators.getValue(v),
-      ])
+      v
+        ? Promise.all([
+            typedApi.query.NominationPools.PoolMembers.getValue(v),
+            // might want to use NominationPoolsApi.pointsToBalance instead
+            typedApi.query.DelegatedStaking.Delegators.getValue(v),
+          ])
+        : [[null, null]]
     ),
     map(([poolMembership, delegator]) =>
       poolMembership && delegator

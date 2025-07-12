@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { SelectAccount } from "./SelectAccount";
 
 export const Header = () => (
   <div className="shrink-0 border-b">
@@ -6,7 +7,7 @@ export const Header = () => (
       <div className="flex flex-1 items-center flex-row gap-2 relative">
         <Link to="/">Staking Optimizer</Link>
       </div>
-      <div className="flex items-center gap-2">Account here</div>
+      <SelectAccount />
     </div>
   </div>
 );

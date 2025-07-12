@@ -14,37 +14,42 @@ const SectorChart = lazy(() => import("@/components/SectorChart"));
 const accountBalance$ = state(
   selectedAccountAddr$.pipe(
     switchMap((v) =>
-      combineLatest([
-        typedApi.query.System.Account.watchValue(v),
-        typedApi.constants.Balances.ExistentialDeposit(),
-      ])
-    ),
-    map(([v, ed]) => [v.data, ed] as const),
-    map(([v, existentialDeposit]) => {
-      // https://wiki.polkadot.network/learn/learn-account-balances/
+      v
+        ? combineLatest([
+            typedApi.query.System.Account.watchValue(v),
+            typedApi.constants.Balances.ExistentialDeposit(),
+          ]).pipe(
+            map(([v, ed]) => [v.data, ed] as const),
+            map(([v, existentialDeposit]) => {
+              // https://wiki.polkadot.network/learn/learn-account-balances/
 
-      // Total tokens in the account
-      const total = v.reserved + v.free;
+              // Total tokens in the account
+              const total = v.reserved + v.free;
 
-      // Portion of "free" balance that can't be transferred.
-      const untouchable =
-        total == 0n ? 0n : maxBigInt(v.frozen - v.reserved, existentialDeposit);
+              // Portion of "free" balance that can't be transferred.
+              const untouchable =
+                total == 0n
+                  ? 0n
+                  : maxBigInt(v.frozen - v.reserved, existentialDeposit);
 
-      // Portion of "free" balance that can be transferred
-      const spendable = v.free - untouchable;
+              // Portion of "free" balance that can be transferred
+              const spendable = v.free - untouchable;
 
-      // Portion of "total" balance that is somehow locked
-      const locked = v.reserved + untouchable;
+              // Portion of "total" balance that is somehow locked
+              const locked = v.reserved + untouchable;
 
-      return {
-        ...v,
-        existentialDeposit: total == 0n ? 0n : existentialDeposit,
-        total,
-        locked,
-        spendable,
-        untouchable,
-      };
-    })
+              return {
+                ...v,
+                existentialDeposit: total == 0n ? 0n : existentialDeposit,
+                total,
+                locked,
+                spendable,
+                untouchable,
+              };
+            })
+          )
+        : [null]
+    )
   )
 );
 
@@ -69,6 +74,10 @@ const bondedStatus$ = state(
 export const AccountBalance = () => {
   const balance = useStateObservable(accountBalance$);
   const currentBond = useStateObservable(bondedStatus$);
+
+  if (balance == null) {
+    return <div>No account selected</div>;
+  }
 
   const bonded = currentBond?.bond ?? 0n;
   const unbonding =
