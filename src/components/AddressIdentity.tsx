@@ -5,8 +5,19 @@ import { useStateObservable } from "@react-rxjs/core";
 import { CheckCircle } from "lucide-react";
 import type { FC } from "react";
 
-export const AddressIdentity: FC<{ addr: string }> = ({ addr }) => {
+export const AddressIdentity: FC<{
+  addr: string;
+  name?: string;
+  copyable?: boolean;
+}> = ({ addr, name, copyable }) => {
   let identity = useStateObservable(identity$(addr));
+
+  if (name && !identity) {
+    identity = {
+      value: name,
+      verified: false,
+    };
+  }
 
   // Using the convention from subscan
   if (identity?.subId?.trim()) {
@@ -23,12 +34,21 @@ export const AddressIdentity: FC<{ addr: string }> = ({ addr }) => {
 
   return (
     <div className="flex items-center gap-2 overflow-hidden flex-1">
-      <CopyText
-        text={addr}
-        copiedContent={<CheckCircle size={18} className="text-positive w-6" />}
-      >
-        <PolkadotIdenticon size={24} publicKey={getPublicKey(addr)} />
-      </CopyText>
+      {copyable ? (
+        <CopyText
+          text={addr}
+          copiedContent={
+            <CheckCircle size={18} className="text-positive w-6" />
+          }
+        >
+          <PolkadotIdenticon
+            className="size-6"
+            publicKey={getPublicKey(addr)}
+          />
+        </CopyText>
+      ) : (
+        <PolkadotIdenticon className="size-6" publicKey={getPublicKey(addr)} />
+      )}
       {identity ? (
         identity.verified ? (
           <div className="flex items-center gap-2">

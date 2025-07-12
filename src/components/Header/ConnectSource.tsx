@@ -4,6 +4,7 @@ import { useStateObservable } from "@react-rxjs/core";
 import { CircleQuestionMark, Eye } from "lucide-react";
 import type { FC, MouseEvent, PropsWithChildren, ReactElement } from "react";
 import { Button } from "../ui/button";
+import { ManageAddresses } from "./ManageAddresses";
 
 const knownExtensions: Record<string, { name: string; logo: string }> = {
   "polkadot-js": {
@@ -26,7 +27,7 @@ const knownExtensions: Record<string, { name: string; logo: string }> = {
 
 export const ConnectSource: FC<{
   setContent: (element: ReactElement | null) => void;
-}> = () => {
+}> = ({ setContent }) => {
   const availableExtensions = useStateObservable(availableExtensions$).sort(
     (a, b) => (b in knownExtensions ? 1 : 0) - (a in knownExtensions ? 1 : 0)
   );
@@ -48,26 +49,31 @@ export const ConnectSource: FC<{
       <div>
         <h3>Manage Connections</h3>
         <div className="flex gap-2 flex-wrap items-center justify-center">
-          <SourceButton label="Address">
+          <SourceButton
+            label="Address"
+            onClick={() =>
+              setContent(<ManageAddresses onClose={() => setContent(null)} />)
+            }
+          >
             <div>
               <Eye className="size-10" />
             </div>
           </SourceButton>
-          <SourceButton label="Ledger">
+          <SourceButton label="Ledger" disabled>
             <img
               src={import.meta.env.BASE_URL + "ledger.webp"}
               alt="Ledger"
               className="h-10 rounded"
             />
           </SourceButton>
-          <SourceButton label="Vault">
+          <SourceButton label="Vault" disabled>
             <img
               src={import.meta.env.BASE_URL + "vault.webp"}
               alt="Vault"
               className="h-10 rounded"
             />
           </SourceButton>
-          <SourceButton label="Wallet Connect">
+          <SourceButton label="Wallet Connect" disabled>
             <img
               src={import.meta.env.BASE_URL + "walletConnect.svg"}
               alt="Vault"
@@ -118,12 +124,14 @@ const SourceButton: FC<
     isSelected?: boolean;
     className?: string;
     onClick?: (evt: MouseEvent) => void;
+    disabled?: boolean;
   }>
-> = ({ label, isSelected, onClick, className, children }) => (
+> = ({ label, isSelected, onClick, className, children, disabled }) => (
   <Button
     variant="outline"
     className={cn("h-auto min-w-40", isSelected ? "bg-accent" : "")}
     onClick={onClick}
+    disabled={disabled}
   >
     {children}
     <div className="text-left">

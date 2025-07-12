@@ -17,6 +17,7 @@ import { useState, type ReactElement } from "react";
 import { map, switchMap } from "rxjs";
 import { Button } from "../ui/button";
 import { ConnectSource } from "./ConnectSource";
+import { AccountSelector } from "./AccountSelector";
 
 const [openChange$, setOpen] = createSignal<boolean>();
 export const openSelectAccount = () => setOpen(true);
@@ -75,7 +76,15 @@ export const SelectAccount = withSubscribe(() => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        if (!open) {
+          setTimeout(() => setContent(null), 500);
+        }
+        setOpen(open);
+      }}
+    >
       <DialogTrigger asChild>{renderTrigger()}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -83,11 +92,10 @@ export const SelectAccount = withSubscribe(() => {
         </DialogHeader>
         {content ?? (
           <>
+            <AccountSelector />
             <ConnectSource setContent={setContent} />
           </>
         )}
-        {/* <PickExtension />
-        <PickExtensionAccount onSelected={() => setOpen(false)} /> */}
       </DialogContent>
     </Dialog>
   );

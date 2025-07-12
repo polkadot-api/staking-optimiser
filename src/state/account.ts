@@ -1,21 +1,49 @@
+import { createLocalStorageState } from "@/util/rxjs";
 import { state } from "@react-rxjs/core";
 import type { Enum, SS58String } from "polkadot-api";
 import {
   getInjectedExtensions,
   type InjectedPolkadotAccount,
 } from "polkadot-api/pjs-signer";
-import { concat, filter, interval, map, of, take, timer } from "rxjs";
+import {
+  concat,
+  filter,
+  interval,
+  map,
+  switchMap,
+  take,
+  timer,
+  type ObservableInput,
+} from "rxjs";
+
+export type AccountSource = Enum<{
+  extension: {
+    id: string;
+    address: string;
+  };
+  address: SS58String;
+}>;
+
+export const [accountSource$, setAccountSource] =
+  createLocalStorageState<AccountSource | null>("account-src", null);
 
 export type Account = Enum<{
   extension: InjectedPolkadotAccount;
   address: SS58String;
 }>;
 
-export const selectedAccount$ = state<Account | null>(
-  of<Account | null>({
-    type: "address",
-    value: "13UVJyLnbVp8c4FQeiGRMVBP7xph2wHCuf2RzvyxJomXJ7RL",
-  })
+export const selectedAccount$ = state(
+  accountSource$.pipe(
+    switchMap((v): ObservableInput<Account | null> => {
+      if (v == null) return [null];
+
+      if (v.type === "address") {
+        return [v];
+      }
+
+      return [null];
+    })
+  )
 );
 
 export const selectedAccountAddr$ = selectedAccount$.pipeState(
