@@ -1,5 +1,9 @@
 import { cn } from "@/lib/utils";
-import { availableExtensions$ } from "@/state/account";
+import {
+  availableExtensions$,
+  connectedExtensions$,
+  setConnectedExtensions,
+} from "@/state/account";
 import { useStateObservable } from "@react-rxjs/core";
 import { CircleQuestionMark, Eye } from "lucide-react";
 import type { FC, MouseEvent, PropsWithChildren, ReactElement } from "react";
@@ -90,15 +94,20 @@ const ExtensionButton: FC<{
   id: string;
 }> = ({ id }) => {
   const knownExtension = knownExtensions[id];
-
-  // const selectedExtension = useStateObservable(selectedExtension$);
-  const isSelected = false; // selectedExtension?.name === id;
+  const connectedExtensions = useStateObservable(connectedExtensions$);
+  const isSelected = connectedExtensions.includes(id);
 
   return (
     <SourceButton
       isSelected={isSelected}
       label={knownExtension?.name ?? id}
-      // onClick={() => selectExtension(id)}
+      onClick={() =>
+        setConnectedExtensions(
+          isSelected
+            ? connectedExtensions.filter((v) => v !== id)
+            : [...connectedExtensions, id]
+        )
+      }
     >
       {knownExtension ? (
         <img

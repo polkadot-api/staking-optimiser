@@ -59,7 +59,7 @@ export const AddressIdentity: FC<{
             <CheckCircle size={18} className="text-positive" />
           </div>
         ) : (
-          <div className="leading-tight">
+          <div className="leading-tight text-left">
             <div className="font-medium">
               {identity.value}
               {subIdLabel}

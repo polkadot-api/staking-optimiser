@@ -13,6 +13,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  connectedExtensionsAccounts$,
   selectedAccount$,
   selectedAccountAddr$,
   setAccountSource,
@@ -51,15 +52,34 @@ const availableAccountGroups$ = state(
         )
       )
     ),
+    extensions: connectedExtensionsAccounts$.pipe(
+      map((extensions) =>
+        extensions.map(({ id, accounts }): [string, SelectableAccount[]] => [
+          id,
+          accounts.map((account) => ({
+            address: account.address,
+            name: account.name,
+            onSelect: () =>
+              setAccountSource({
+                type: "extension",
+                value: {
+                  id,
+                  address: account.address,
+                },
+              }),
+          })),
+        ])
+      )
+    ),
   }).pipe(
-    map((v) =>
-      Object.entries(v)
+    map(({ extensions, ...rest }) => {
+      return [...extensions, ...Object.entries(rest)]
         .filter(([, accounts]) => accounts.length > 0)
         .map(([id, accounts]) => ({
-          name: groupLabels[id],
+          name: groupLabels[id] ?? id,
           accounts,
-        }))
-    )
+        }));
+    })
   )
 );
 
@@ -86,7 +106,7 @@ export const AccountSelector: FC<{
               variant="outline"
               role="combobox"
               className={twMerge(
-                "flex w-full shrink justify-between overflow-hidden border border-border bg-background h-10",
+                "flex w-full shrink justify-between overflow-hidden border border-border bg-background h-12",
                 className
               )}
             >
@@ -154,10 +174,6 @@ const AccountOption: FC<{
     onSelect={onSelect}
     className="flex flex-row items-center gap-2 p-1"
   >
-    <AddressIdentity
-      addr={account}
-      // name={name}
-      copyable={false}
-    />
+    <AddressIdentity addr={account} name={name} copyable={false} />
   </CommandItem>
 );
