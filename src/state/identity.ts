@@ -6,7 +6,7 @@ import { identitySdk } from "./chain";
 const CACHE_KEY = "identity-cache";
 const cache: Record<
   SS58String,
-  { value: string; verified: boolean } | undefined
+  { value: string; verified: boolean; subId?: string } | undefined
 > = JSON.parse(localStorage.getItem(CACHE_KEY) ?? "{}");
 
 export const identity$ = state((address: SS58String) => {
@@ -17,6 +17,7 @@ export const identity$ = state((address: SS58String) => {
         ? {
             value: v.info.display,
             verified: v.verified,
+            subId: v.subIdentity,
           }
         : null
     ),

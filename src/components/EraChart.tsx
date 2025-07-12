@@ -19,7 +19,7 @@ export default function EraChart({
   data: {
     era: number;
     rewards?: number;
-    apy?: number;
+    apy?: number | null;
     isActive?: boolean;
   }[];
   activeEra: number;
@@ -48,11 +48,12 @@ export default function EraChart({
           type="number"
           domain={[activeEra - HISTORY_DEPTH + 1, activeEra - 1]}
           ticks={[]}
+          height={20}
         />
-        <YAxis />
+        <YAxis width={40} />
         <Tooltip
           labelFormatter={(label, payload) => {
-            if (payload[0].value == null) {
+            if (payload[0]?.value == null) {
               return label;
             }
 

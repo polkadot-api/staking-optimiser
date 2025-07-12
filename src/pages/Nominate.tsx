@@ -12,9 +12,9 @@ import {
 import { isNominating$ } from "@/state/nominate";
 import { roundToDecimalPlaces } from "@/util/format";
 import { state, Subscribe, useStateObservable } from "@react-rxjs/core";
-import type { SS58String } from "polkadot-api";
+import { type SS58String } from "polkadot-api";
 import { lazy, type FC } from "react";
-import { filter, map, mergeMap, scan, switchMap, withLatestFrom } from "rxjs";
+import { map, mergeMap, scan, switchMap, withLatestFrom } from "rxjs";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
 
@@ -64,34 +64,36 @@ const validatorPerformance$ = state((addr: SS58String) =>
     mergeMap(async (era) => {
       try {
         const rewards = await stakingSdk.getValidatorRewards(addr, era);
-        return {
-          era,
-          rewards: rewards.nominatorsShare,
-          bond: rewards.activeBond,
-          byNominator: rewards.byNominator,
-        };
+        return { era, rewards };
       } catch (ex) {
         console.error(ex);
-        return null;
+        return { era, rewards: null };
       }
     }, 3),
-    filter((v) => v != null),
     withLatestFrom(eraDurationInMs$, selectedAccountAddr$),
     scan(
       (
         acc: Array<{
           era: number;
           isActive: boolean;
-          apy: number;
+          apy: number | null;
         }>,
-        [v, eraDuration, addr]
+        [v, eraDuration, nominatorAddr]
       ) => {
         let result = [
           ...acc,
           {
             era: v.era,
-            apy: getEraApy(v.rewards, v.bond, eraDuration) * 100,
-            isActive: addr in v.byNominator,
+            apy: v.rewards
+              ? getEraApy(
+                  v.rewards.nominatorsShare,
+                  v.rewards.activeBond,
+                  eraDuration
+                ) * 100
+              : null,
+            isActive: v.rewards
+              ? nominatorAddr in v.rewards.byNominator
+              : false,
           },
         ];
         if (result.length > HISTORY_DEPTH) {
@@ -131,8 +133,10 @@ const SelectedValidator: FC<{
 
   const averageApy = rewardHistory.length
     ? roundToDecimalPlaces(
-        rewardHistory.map((v) => v.apy).reduce((a, b) => a + b, 0) /
-          rewardHistory.length,
+        rewardHistory
+          .map((v) => v.apy)
+          .filter((v) => v != null)
+          .reduce((a, b) => a + b, 0) / rewardHistory.length,
         2
       )
     : null;
