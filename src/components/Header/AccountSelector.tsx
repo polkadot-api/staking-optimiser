@@ -153,6 +153,7 @@ export const AccountSelector: FC<{
                       key={i}
                       account={account.address}
                       name={account.name}
+                      group={group.name}
                       onSelect={() => {
                         account.onSelect();
                         setOpen(false);
@@ -171,11 +172,12 @@ export const AccountSelector: FC<{
 
 const AccountOption: FC<{
   account: string;
+  group: string;
   name?: string;
   onSelect: () => void;
-}> = ({ account, name, onSelect }) => (
+}> = ({ account, group, name, onSelect }) => (
   <CommandItem
-    keywords={name ? [name] : undefined}
+    keywords={[group, name].filter((v) => v != null)}
     value={account}
     onSelect={onSelect}
     className="flex flex-row items-center gap-2 p-1"

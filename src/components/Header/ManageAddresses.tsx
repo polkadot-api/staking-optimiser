@@ -80,7 +80,6 @@ export const ManageAddresses: FC<{
                       type: "address",
                       value: addr,
                     });
-                    onClose();
                   }}
                 >
                   Select
