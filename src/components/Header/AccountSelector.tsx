@@ -131,7 +131,13 @@ export const AccountSelector: FC<{
             </button>
           ) : null}
         </div>
-        <PopoverContent className="w-96 max-w-full p-0">
+        <PopoverContent
+          className="p-0"
+          style={{
+            width:
+              "calc(min(var(--spacing) * 96, var(--radix-popper-available-width)))",
+          }}
+        >
           <Command>
             <CommandInput placeholder="Search and select…" />
             <CommandList>

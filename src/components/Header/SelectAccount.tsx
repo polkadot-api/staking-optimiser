@@ -1,5 +1,6 @@
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -90,12 +91,14 @@ export const SelectAccount = withSubscribe(() => {
         <DialogHeader>
           <DialogTitle>Connect</DialogTitle>
         </DialogHeader>
-        {content ?? (
-          <>
-            <AccountSelector />
-            <ConnectSource setContent={setContent} />
-          </>
-        )}
+        <DialogBody>
+          {content ?? (
+            <>
+              <AccountSelector />
+              <ConnectSource setContent={setContent} />
+            </>
+          )}
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

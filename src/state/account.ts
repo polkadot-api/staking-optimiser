@@ -1,3 +1,4 @@
+import { readOnlyAddresses$ } from "@/components/Header/ManageAddresses";
 import { createLocalStorageState } from "@/util/rxjs";
 import { state } from "@react-rxjs/core";
 import { combineKeys } from "@react-rxjs/utils";
@@ -10,8 +11,10 @@ import {
 } from "polkadot-api/pjs-signer";
 import {
   catchError,
+  combineLatest,
   concat,
   defer,
+  endWith,
   filter,
   fromEventPattern,
   ignoreElements,
@@ -23,6 +26,7 @@ import {
   startWith,
   switchMap,
   take,
+  takeUntil,
   tap,
   timer,
   type ObservableInput,
@@ -141,13 +145,81 @@ export const connectedExtensionsAccounts$ = injectedExtensions$.pipeState(
   )
 );
 
+export const availableSources$ = state(
+  combineLatest({
+    readOnly: readOnlyAddresses$.pipe(
+      map((v) =>
+        v.map(
+          (address): AccountSource => ({
+            type: "address",
+            value: address,
+          })
+        )
+      )
+    ),
+    extensions: connectedExtensionsAccounts$.pipe(
+      map((extensions) =>
+        Object.fromEntries(
+          extensions.map(({ id, accounts }): [string, AccountSource[]] => [
+            id,
+            accounts.map(
+              (account): AccountSource => ({
+                type: "extension",
+                value: {
+                  id,
+                  address: account.address,
+                },
+              })
+            ),
+          ])
+        )
+      )
+    ),
+  }).pipe(
+    map(
+      ({ extensions, ...rest }): Record<string, AccountSource[]> => ({
+        ...extensions,
+        ...rest,
+      })
+    )
+  )
+);
+
+const deselectWhenRemoved$ = (
+  value$: ObservableInput<Account | null>,
+  source: AccountSource
+) =>
+  concat(value$, NEVER).pipe(
+    takeUntil(
+      availableSources$.pipe(
+        map((v) => Object.values(v).flat()),
+        filter((sources) => {
+          switch (source.type) {
+            case "address":
+              return !sources.find(
+                (src) => src.type === "address" && src.value === source.value
+              );
+            case "extension":
+              return !sources.find(
+                (src) =>
+                  src.type === "extension" &&
+                  src.value.id === source.value.id &&
+                  src.value.address === source.value.address
+              );
+          }
+        })
+      )
+    ),
+    endWith(null)
+  );
+
 export const selectedAccount$ = state(
   accountSource$.pipe(
     switchMap((v): ObservableInput<Account | null> => {
       if (v == null) return [null];
 
       if (v.type === "address") {
-        return [v];
+        return deselectWhenRemoved$([v], v);
       }
 
       const res = extension$(v.value.id).pipe(
@@ -165,7 +237,7 @@ export const selectedAccount$ = state(
         // In case the extension doesn't exist, don't halt
         startWith(null)
       );
-      return res;
+      return deselectWhenRemoved$(res, v);
     })
   )
 );

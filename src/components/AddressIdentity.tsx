@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { identity$ } from "@/state/identity";
 import { getPublicKey, sliceMiddleAddr } from "@/util/ss58";
 import { CopyText, PolkadotIdenticon } from "@polkadot-api/react-components";
@@ -9,7 +10,8 @@ export const AddressIdentity: FC<{
   addr: string;
   name?: string;
   copyable?: boolean;
-}> = ({ addr, name, copyable }) => {
+  className?: string;
+}> = ({ addr, name, className, copyable = true }) => {
   let identity = useStateObservable(identity$(addr));
 
   if (name && !identity) {
@@ -33,7 +35,12 @@ export const AddressIdentity: FC<{
   ) : null;
 
   return (
-    <div className="flex items-center gap-2 overflow-hidden flex-1">
+    <div
+      className={cn(
+        "flex items-center gap-2 overflow-hidden flex-1",
+        className
+      )}
+    >
       {copyable ? (
         <CopyText
           text={addr}

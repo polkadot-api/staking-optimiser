@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import { useState, type FC } from "react";
 import { Input } from "@/components/ui/input";
 import { getSs58AddressInfo } from "polkadot-api";
+import { setAccountSource } from "@/state/account";
 
 export const [readOnlyAddresses$, setAddresses] = createLocalStorageState(
   "read-only-addr",
@@ -32,8 +33,15 @@ export const ManageAddresses: FC<{
         onSubmit={(evt) => {
           evt.preventDefault();
           if (!isAddrValid) return;
-          setAddresses([...readOnlyAddresses, addressInput]);
+          setAddresses([
+            ...readOnlyAddresses.filter((v) => v !== addressInput),
+            addressInput,
+          ]);
           setAddressInput("");
+          setAccountSource({
+            type: "address",
+            value: addressInput,
+          });
         }}
       >
         <h3 className="font-medium text-muted-foreground">
@@ -53,7 +61,7 @@ export const ManageAddresses: FC<{
           <h3 className="font-medium text-muted-foreground">Added addresses</h3>
           <ul className="space-y-2">
             {readOnlyAddresses.map((addr) => (
-              <li key={addr} className="flex gap-2">
+              <li key={addr} className="flex gap-2 items-center">
                 <Button
                   variant="outline"
                   className="text-destructive"
@@ -65,6 +73,18 @@ export const ManageAddresses: FC<{
                   <Trash2 />
                 </Button>
                 <AddressIdentity addr={addr} />
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setAccountSource({
+                      type: "address",
+                      value: addr,
+                    });
+                    onClose();
+                  }}
+                >
+                  Select
+                </Button>
               </li>
             ))}
           </ul>
