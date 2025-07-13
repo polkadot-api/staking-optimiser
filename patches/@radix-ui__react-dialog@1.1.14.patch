@@ -1,0 +1,13 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 13581033b5a5635796d4cf492f0828e853d011c4..1824cac21b9d033c2ea9655d3ed5ef5dce475412 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -105,7 +105,7 @@ var DialogOverlayImpl = React.forwardRef(
+     return (
+       // Make sure `Content` is scrollable even when it doesn't live inside `RemoveScroll`
+       // ie. when `Overlay` and `Content` are siblings
+-      /* @__PURE__ */ jsx(RemoveScroll, { as: Slot, allowPinchZoom: true, shards: [context.contentRef], children: /* @__PURE__ */ jsx(
++      /* @__PURE__ */ jsx(RemoveScroll, { as: Slot, allowPinchZoom: true, shards: [context.contentRef], noIsolation: true, children: /* @__PURE__ */ jsx(
+         Primitive.div,
+         {
+           "data-state": getState(context.open),
