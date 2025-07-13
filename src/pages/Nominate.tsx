@@ -3,7 +3,7 @@ import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
 import { selectedAccountAddr$ } from "@/state/account";
-import { stakingSdk, typedApi } from "@/state/chain";
+import { stakingApi$, stakingSdk$ } from "@/state/chain";
 import {
   activeEraNumber$,
   allEras$,
@@ -15,7 +15,15 @@ import { roundToDecimalPlaces } from "@/util/format";
 import { state, Subscribe, useStateObservable } from "@react-rxjs/core";
 import { type SS58String } from "polkadot-api";
 import { lazy, type FC } from "react";
-import { filter, map, mergeMap, scan, switchMap, withLatestFrom } from "rxjs";
+import {
+  combineLatest,
+  filter,
+  map,
+  mergeMap,
+  scan,
+  switchMap,
+  withLatestFrom,
+} from "rxjs";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
 
@@ -52,9 +60,9 @@ const BalanceCard = () => (
 );
 
 const selectedValidators$ = state(
-  selectedAccountAddr$.pipe(
-    switchMap((addr) =>
-      addr ? typedApi.query.Staking.Nominators.watchValue(addr) : [null]
+  combineLatest([selectedAccountAddr$, stakingApi$]).pipe(
+    switchMap(([addr, stakingApi]) =>
+      addr ? stakingApi.query.Staking.Nominators.watchValue(addr) : [null]
     ),
     map((v) => v?.targets ?? [])
   )
@@ -62,60 +70,64 @@ const selectedValidators$ = state(
 
 const HISTORY_DEPTH = 21;
 const validatorPrefs$ = state((addr: SS58String) =>
-  activeEraNumber$.pipe(
-    switchMap((era) =>
-      typedApi.query.Staking.ErasValidatorPrefs.getValue(era, addr)
+  combineLatest([activeEraNumber$, stakingApi$]).pipe(
+    switchMap(([era, stakingApi]) =>
+      stakingApi.query.Staking.ErasValidatorPrefs.getValue(era, addr)
     )
   )
 );
 
 const validatorPerformance$ = state((addr: SS58String) =>
-  allEras$(HISTORY_DEPTH).pipe(
-    mergeMap(async (era) => {
-      try {
-        const rewards = await stakingSdk.getValidatorRewards(addr, era);
-        return { era, rewards };
-      } catch (ex) {
-        console.error(ex);
-        return { era, rewards: null };
-      }
-    }, 3),
-    withLatestFrom(
-      eraDurationInMs$,
-      selectedAccountAddr$.pipe(filter((v) => v != null))
-    ),
-    scan(
-      (
-        acc: Array<{
-          era: number;
-          isActive: boolean;
-          apy: number | null;
-        }>,
-        [v, eraDuration, nominatorAddr]
-      ) => {
-        let result = [
-          ...acc,
-          {
-            era: v.era,
-            apy: v.rewards
-              ? getEraApy(
-                  v.rewards.nominatorsShare,
-                  v.rewards.activeBond,
-                  eraDuration
-                ) * 100
-              : null,
-            isActive: v.rewards
-              ? nominatorAddr in v.rewards.byNominator
-              : false,
+  stakingSdk$.pipe(
+    switchMap((stakingSdk) =>
+      allEras$(HISTORY_DEPTH).pipe(
+        mergeMap(async (era) => {
+          try {
+            const rewards = await stakingSdk.getValidatorRewards(addr, era);
+            return { era, rewards };
+          } catch (ex) {
+            console.error(ex);
+            return { era, rewards: null };
+          }
+        }, 3),
+        withLatestFrom(
+          eraDurationInMs$,
+          selectedAccountAddr$.pipe(filter((v) => v != null))
+        ),
+        scan(
+          (
+            acc: Array<{
+              era: number;
+              isActive: boolean;
+              apy: number | null;
+            }>,
+            [v, eraDuration, nominatorAddr]
+          ) => {
+            let result = [
+              ...acc,
+              {
+                era: v.era,
+                apy: v.rewards
+                  ? getEraApy(
+                      v.rewards.nominatorsShare,
+                      v.rewards.activeBond,
+                      eraDuration
+                    ) * 100
+                  : null,
+                isActive: v.rewards
+                  ? nominatorAddr in v.rewards.byNominator
+                  : false,
+              },
+            ];
+            if (result.length > HISTORY_DEPTH) {
+              result = result.slice(1);
+            }
+            result.sort((a, b) => a.era - b.era);
+            return result;
           },
-        ];
-        if (result.length > HISTORY_DEPTH) {
-          result = result.slice(1);
-        }
-        result.sort((a, b) => a.era - b.era);
-        return result;
-      },
-      []
+          []
+        )
+      )
     )
   )
 );

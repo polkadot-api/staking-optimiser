@@ -1,5 +1,5 @@
 import { selectedAccountAddr$ } from "@/state/account";
-import { typedApi } from "@/state/chain";
+import { balancesApi$ } from "@/state/chain";
 import { currentNominatorBond$ } from "@/state/nominate";
 import { currentNominationPoolBond$ } from "@/state/nominationPool";
 import { maxBigInt } from "@/util/bigint";
@@ -12,12 +12,12 @@ import { TokenValue } from "./TokenValue";
 const SectorChart = lazy(() => import("@/components/SectorChart"));
 
 const accountBalance$ = state(
-  selectedAccountAddr$.pipe(
-    switchMap((v) =>
+  combineLatest([selectedAccountAddr$, balancesApi$]).pipe(
+    switchMap(([v, balancesApi]) =>
       v
         ? combineLatest([
-            typedApi.query.System.Account.watchValue(v),
-            typedApi.constants.Balances.ExistentialDeposit(),
+            balancesApi.query.System.Account.watchValue(v),
+            balancesApi.constants.Balances.ExistentialDeposit(),
           ]).pipe(
             map(([v, ed]) => [v.data, ed] as const),
             map(([v, existentialDeposit]) => {

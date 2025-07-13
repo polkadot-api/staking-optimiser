@@ -1,16 +1,16 @@
 import { state } from "@react-rxjs/core";
-import { map, switchMap } from "rxjs";
+import { combineLatest, map, switchMap } from "rxjs";
 import { selectedAccountAddr$ } from "./account";
-import { typedApi } from "./chain";
+import { stakingApi$ } from "./chain";
 
 export const currentNominationPoolBond$ = state(
-  selectedAccountAddr$.pipe(
-    switchMap((v) =>
+  combineLatest([selectedAccountAddr$, stakingApi$]).pipe(
+    switchMap(([v, stakingApi]) =>
       v
         ? Promise.all([
-            typedApi.query.NominationPools.PoolMembers.getValue(v),
+            stakingApi.query.NominationPools.PoolMembers.getValue(v),
             // might want to use NominationPoolsApi.pointsToBalance instead
-            typedApi.query.DelegatedStaking.Delegators.getValue(v),
+            stakingApi.query.DelegatedStaking.Delegators.getValue(v),
           ])
         : [[null, null]]
     ),

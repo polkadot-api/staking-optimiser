@@ -1,26 +1,31 @@
 import type { FC, PropsWithChildren } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GitFork, Home, ShieldCheck, Star } from "lucide-react";
-import { matchPath, useLocation, useNavigate } from "react-router-dom";
+import {
+  matchPath,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
 const pages = [
   {
-    path: "/dashboard",
+    path: "/:chain/dashboard",
     label: "Dashboard",
     icon: <Home />,
   },
   {
-    path: "/nominate",
+    path: "/:chain/nominate",
     label: "Nominate",
     icon: <Star />,
   },
   {
-    path: "/pools",
+    path: "/:chain/pools",
     label: "Pools",
     icon: <GitFork />,
   },
   {
-    path: "/validators",
+    path: "/:chain/validators",
     label: "Validators",
     icon: <ShieldCheck />,
   },
@@ -28,9 +33,14 @@ const pages = [
 
 export const NavMenu: FC<PropsWithChildren> = ({ children }) => {
   const location = useLocation();
+  const params = useParams<{ chain: string }>();
   const navigate = useNavigate();
 
-  const matchedPath = pages.find((page) =>
+  const chainPages = pages.map((v) => ({
+    ...v,
+    path: v.path.replace(":chain", params.chain!),
+  }));
+  const matchedPath = chainPages.find((page) =>
     matchPath(page.path, location.pathname)
   );
 
@@ -41,7 +51,7 @@ export const NavMenu: FC<PropsWithChildren> = ({ children }) => {
       className="p-2 pt-4"
     >
       <TabsList>
-        {pages.map((page) => (
+        {chainPages.map((page) => (
           <TabsTrigger key={page.path} value={page.path}>
             {page.icon} {page.label}
           </TabsTrigger>

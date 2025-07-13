@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "postinstall": "papi",
+    "postinstall": "papi --whitelist ./.papi/whitelist.ts",
     "build": "tsc -b && vite build",
     "analyze": "ANALYZE=true vite build",
     "lint": "eslint .",

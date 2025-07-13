@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ChainSelector } from "./ChainSelector";
 import { SelectAccount } from "./SelectAccount";
 
 export const Header = () => (
@@ -8,6 +9,7 @@ export const Header = () => (
         <Link to="/">Staking Optimizer</Link>
       </div>
       <SelectAccount />
+      <ChainSelector />
     </div>
   </div>
 );

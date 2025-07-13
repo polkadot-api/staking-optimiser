@@ -1,6 +1,5 @@
 import { HISTORY_DEPTH, TOKEN_PROPS } from "@/constants";
 import { selectedAccountAddr$ } from "@/state/account";
-import { stakingSdk, typedApi } from "@/state/chain";
 import { roundToDecimalPlaces } from "@/util/format";
 import { state } from "@react-rxjs/core";
 import {
@@ -15,17 +14,18 @@ import {
   takeWhile,
   withLatestFrom,
 } from "rxjs";
+import { stakingApi$, stakingSdk$ } from "./chain";
 import { activeEraNumber$, allEras$, eraDurationInMs$, getEraApy } from "./era";
 
 export const currentNominatorBond$ = state(
-  selectedAccountAddr$.pipe(
-    switchMap((v) =>
+  combineLatest([selectedAccountAddr$, stakingApi$]).pipe(
+    switchMap(([v, stakingApi]) =>
       v
-        ? typedApi.query.Staking.Bonded.watchValue(v).pipe(
+        ? stakingApi.query.Staking.Bonded.watchValue(v).pipe(
             // Avoid watching a value that very rarely will change once set
             takeWhile((v) => v != null, true),
             switchMap((addr) =>
-              addr ? typedApi.query.Staking.Ledger.watchValue(addr) : [null]
+              addr ? stakingApi.query.Staking.Ledger.watchValue(addr) : [null]
             )
           )
         : [null]
@@ -42,8 +42,11 @@ export const lastReward$ = state(
   combineLatest([
     selectedAccountAddr$.pipe(filter((v) => v != null)),
     activeEraNumber$,
+    stakingSdk$,
   ]).pipe(
-    switchMap(([addr, era]) => stakingSdk.getNominatorRewards(addr, era - 1)),
+    switchMap(([addr, era, stakingSdk]) =>
+      stakingSdk.getNominatorRewards(addr, era - 1)
+    ),
     withLatestFrom(eraDurationInMs$),
     map(([rewards, eraDurationInMs]) => {
       const apy = roundToDecimalPlaces(
@@ -62,7 +65,7 @@ export const lastReward$ = state(
 export const rewardHistory$ = state(
   combineLatest([
     selectedAccountAddr$,
-    typedApi.constants.Staking.HistoryDepth(),
+    stakingApi$.pipe(map((v) => v.constants.Staking.HistoryDepth())),
   ]).pipe(
     switchMap(([addr]) =>
       activeEraNumber$.pipe(
@@ -73,7 +76,8 @@ export const rewardHistory$ = state(
         }))
       )
     ),
-    switchMap(({ addr, era: startEra }) =>
+    withLatestFrom(stakingSdk$),
+    switchMap(([{ addr, era: startEra }, stakingSdk]) =>
       addr
         ? allEras$(HISTORY_DEPTH).pipe(
             mergeMap(async (era) => {

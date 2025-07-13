@@ -1,9 +1,8 @@
-import { typedApi } from "@/state/chain";
+import { balancesApi$, stakingApi$ } from "@/state/chain";
 import { state } from "@react-rxjs/core";
 import {
   combineLatest,
   concat,
-  defer,
   distinctUntilChanged,
   filter,
   from,
@@ -14,9 +13,15 @@ import {
 } from "rxjs";
 
 export const eraDurationInMs$ = combineLatest([
-  defer(() => typedApi.constants.Babe.ExpectedBlockTime()),
-  defer(() => typedApi.constants.Babe.EpochDuration()),
-  defer(() => typedApi.constants.Staking.SessionsPerEra()),
+  balancesApi$.pipe(
+    switchMap((balancesApi) => balancesApi.constants.Babe.ExpectedBlockTime())
+  ),
+  balancesApi$.pipe(
+    switchMap((balancesApi) => balancesApi.constants.Babe.EpochDuration())
+  ),
+  stakingApi$.pipe(
+    switchMap((stakingApi) => stakingApi.constants.Staking.SessionsPerEra())
+  ),
 ]).pipe(
   map(
     ([blockTime, epochDuration, sessionsPerEra]) =>
@@ -39,7 +44,9 @@ export function getEraApy(
 
 export const activeEra$ = state(
   combineLatest([
-    defer(typedApi.query.Staking.ActiveEra.getValue),
+    stakingApi$.pipe(
+      switchMap((stakingApi) => stakingApi.query.Staking.ActiveEra.getValue())
+    ),
     eraDurationInMs$,
   ]).pipe(
     map(([v, eraDurationInMs]) => {
@@ -74,25 +81,29 @@ export const activeEraNumber$ = activeEra$.pipeState(
  * but then emitting new eras as they happen.
  */
 export const allEras$ = (pastAmount = Number.POSITIVE_INFINITY) =>
-  defer(typedApi.constants.Staking.HistoryDepth).pipe(
-    switchMap((historyDepth) =>
-      activeEraNumber$.pipe(
-        take(1),
-        map((era) => ({
-          era,
-          historyDepth: Math.min(pastAmount, historyDepth),
-        }))
-      )
-    ),
-    switchMap(({ era: startEra, historyDepth }) =>
-      concat(
-        from(
-          new Array(historyDepth - 1).fill(0).map((_, i) => startEra - i - 1)
-        ),
+  stakingApi$
+    .pipe(
+      switchMap((stakingApi) => stakingApi.constants.Staking.HistoryDepth())
+    )
+    .pipe(
+      switchMap((historyDepth) =>
         activeEraNumber$.pipe(
-          filter((newEra) => newEra > startEra),
-          map((v) => v - 1)
+          take(1),
+          map((era) => ({
+            era,
+            historyDepth: Math.min(pastAmount, historyDepth),
+          }))
+        )
+      ),
+      switchMap(({ era: startEra, historyDepth }) =>
+        concat(
+          from(
+            new Array(historyDepth - 1).fill(0).map((_, i) => startEra - i - 1)
+          ),
+          activeEraNumber$.pipe(
+            filter((newEra) => newEra > startEra),
+            map((v) => v - 1)
+          )
         )
       )
-    )
-  );
+    );

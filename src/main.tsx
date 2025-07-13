@@ -1,13 +1,23 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import App from "./App.tsx";
-import { BrowserRouter } from "react-router-dom";
+import "./index.css";
+import { useLocationSubscription } from "./state/location.ts";
+
+const LocationListener = () => {
+  useLocationSubscription();
+  return null;
+};
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <Routes>
+        <Route path="/:chain/*" element={<App />} />
+        <Route path="/" element={<Navigate to="/polkadot" replace />} />
+      </Routes>
+      <LocationListener />
     </BrowserRouter>
-  </StrictMode>,
+  </StrictMode>
 );
