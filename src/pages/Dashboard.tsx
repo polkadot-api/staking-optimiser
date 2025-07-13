@@ -14,8 +14,6 @@ import { lazy, Suspense } from "react";
 const EraChart = lazy(() => import("@/components/EraChart"));
 
 export const Dashboard = () => {
-  const bond = useStateObservable(currentNominatorBond$);
-
   return (
     <div>
       <NavMenu />
@@ -25,11 +23,23 @@ export const Dashboard = () => {
             <AccountBalance />
           </Card>
           <ActiveEra />
-          <NominateStatus />
-          {bond && <NominateRewards />}
+          <NominatingContent />
         </div>
       </Subscribe>
     </div>
+  );
+};
+
+const NominatingContent = () => {
+  const bond = useStateObservable(currentNominatorBond$);
+
+  if (!bond) return null;
+
+  return (
+    <>
+      <NominateStatus />
+      <NominateRewards />
+    </>
   );
 };
 
