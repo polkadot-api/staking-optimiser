@@ -1,4 +1,6 @@
-import { TOKEN_PROPS } from "@/constants";
+import { tokenProps$ } from "@/state/chain";
+import { amountToNumber } from "@/util/format";
+import { useStateObservable } from "@react-rxjs/core";
 import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
 import type { PieSectorDataItem } from "recharts/types/polar/Pie";
 
@@ -13,14 +15,17 @@ export default function SectorChart({
     color?: string;
   }[];
 }) {
+  const tokenProps = useStateObservable(tokenProps$);
+  if (!tokenProps) return null;
+
   return (
-    <ResponsiveContainer height={300} className="overflow-hidden max-w-[400px]">
+    <ResponsiveContainer height={300} className="overflow-hidden max-w-[500px]">
       <PieChart>
         <Pie
-          activeShape={renderActiveShape}
+          activeShape={ActiveShape}
           data={data.map((v) => ({
             ...v,
-            value: tokenToAmount(v.value),
+            value: amountToNumber(v.value, tokenProps.decimals),
           }))}
           cx="50%"
           cy="50%"
@@ -43,7 +48,7 @@ export default function SectorChart({
   );
 }
 
-const renderActiveShape = ({
+const ActiveShape = ({
   cx,
   cy,
   midAngle,
@@ -56,6 +61,9 @@ const renderActiveShape = ({
   percent,
   value,
 }: PieSectorDataItem) => {
+  const tokenProps = useStateObservable(tokenProps$);
+  if (!tokenProps) return <></>;
+
   const RADIAN = Math.PI / 180;
   const sin = Math.sin(-RADIAN * (midAngle ?? 1));
   const cos = Math.cos(-RADIAN * (midAngle ?? 1));
@@ -114,7 +122,7 @@ const renderActiveShape = ({
         fill="#333"
       >{`${value?.toLocaleString(undefined, {
         maximumFractionDigits: 2,
-      })} ${TOKEN_PROPS.symbol}`}</text>
+      })} ${tokenProps.symbol}`}</text>
       <text
         x={ex + (cos >= 0 ? 1 : -1) * 12}
         y={ey}
@@ -127,6 +135,3 @@ const renderActiveShape = ({
     </g>
   );
 };
-
-const tokenToAmount = (value: bigint) =>
-  Number(value) / 10 ** TOKEN_PROPS.decimals;

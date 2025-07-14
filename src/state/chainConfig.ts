@@ -5,16 +5,19 @@ import {
   ksm,
   ksmAH,
   ksmPpl,
+  pas,
+  pasPpl,
   wnd,
   wndAH,
   wndPpl,
 } from "@polkadot-api/descriptors";
 import { type ChainDefinition, type TypedApi } from "polkadot-api";
 
-export type KnownChains = "polkadot" | "kusama" | "westend";
+export type KnownChains = "polkadot" | "kusama" | "westend" | "paseo";
 export const knownChains: Array<KnownChains> = [
   "polkadot",
   "kusama",
+  "paseo",
   "westend",
 ];
 
@@ -22,12 +25,14 @@ export const tokenSymbolByChain: Record<KnownChains, string> = {
   polkadot: "DOT",
   kusama: "KSM",
   westend: "WND",
+  paseo: "PAS",
 };
 
 export const tokenDecimalsByChain: Record<KnownChains, number> = {
   polkadot: 10,
   kusama: 12,
   westend: 12,
+  paseo: 12,
 };
 
 export type ChainType = "relay" | "people" | "assetHub";
@@ -45,8 +50,6 @@ export const rpcsByChain: Record<
       IBP1: "wss://rpc.ibp.network/polkadot",
       IBP2: "wss://polkadot.dotters.network",
       LuckyFriday: "wss://rpc-polkadot.luckyfriday.io",
-      OnFinality: "wss://polkadot.api.onfinality.io/public-ws",
-      RadiumBlock: "wss://polkadot.public.curie.radiumblock.co/ws",
       RockX: "wss://rockx-dot.w3node.com/polka-public-dot/ws",
       Stakeworld: "wss://dot-rpc.stakeworld.io",
     },
@@ -63,7 +66,6 @@ export const rpcsByChain: Record<
       IBP1: "wss://sys.ibp.network/asset-hub-polkadot",
       IBP2: "wss://asset-hub-polkadot.dotters.network",
       LuckyFriday: "wss://rpc-asset-hub-polkadot.luckyfriday.io",
-      OnFinality: "wss://statemint.api.onfinality.io/public-ws",
       Parity: "wss://polkadot-asset-hub-rpc.polkadot.io",
       RadiumBlock: "wss://statemint.public.curie.radiumblock.co/ws",
       Stakeworld: "wss://dot-rpc.stakeworld.io/assethub",
@@ -77,7 +79,6 @@ export const rpcsByChain: Record<
       IBP1: "wss://rpc.ibp.network/kusama",
       IBP2: "wss://kusama.dotters.network",
       LuckyFriday: "wss://rpc-kusama.luckyfriday.io",
-      OnFinality: "wss://kusama.api.onfinality.io/public-ws",
       RockX: "wss://rockx-ksm.w3node.com/polka-public-ksm/ws",
       Stakeworld: "wss://ksm-rpc.stakeworld.io",
     },
@@ -106,7 +107,6 @@ export const rpcsByChain: Record<
       "Dwellir Tunisia": "wss://westend-rpc-tn.dwellir.com",
       IBP1: "wss://rpc.ibp.network/westend",
       IBP2: "wss://westend.dotters.network",
-      OnFinality: "wss://westend.api.onfinality.io/public-ws",
       Parity: "wss://westend-rpc.polkadot.io",
       RadiumBlock: "wss://westend.public.curie.radiumblock.co/ws",
     },
@@ -122,6 +122,26 @@ export const rpcsByChain: Record<
       IBP1: "wss://sys.ibp.network/westmint",
       IBP2: "wss://asset-hub-westend.dotters.network",
       Parity: "wss://westend-asset-hub-rpc.polkadot.io",
+    },
+  },
+  paseo: {
+    relay: {
+      Amforc: "wss://paseo.rpc.amforc.com",
+      Dwellir: "wss://paseo-rpc.dwellir.com",
+      IBP1: "wss://rpc.ibp.network/paseo",
+      IBP2: "wss://paseo.dotters.network",
+      StakeWorld: "wss://pas-rpc.stakeworld.io",
+    },
+    people: {
+      Amforc: "wss://people-paseo.rpc.amforc.com",
+      IBP2: "wss://people-paseo.dotters.network",
+    },
+    assetHub: {
+      Dwellir: "wss://asset-hub-paseo-rpc.dwellir.com",
+      IBP1: "wss://sys.ibp.network/asset-hub-paseo",
+      IBP2: "wss://asset-hub-paseo.dotters.network",
+      StakeWorld: "wss://pas-rpc.stakeworld.io/assethub",
+      TurboFlakes: "wss://sys.turboflakes.io/asset-hub-paseo",
     },
   },
 };
@@ -144,22 +164,29 @@ export const clientTypesByChain: Record<
     balances: "relay",
     staking: "assetHub",
   },
+  paseo: {
+    balances: "relay",
+    staking: "relay",
+  },
 };
 
 export type BalancesTypedApi =
   | TypedApi<typeof dot>
   | TypedApi<typeof ksm>
-  | TypedApi<typeof wnd>;
+  | TypedApi<typeof wnd>
+  | TypedApi<typeof pas>;
 
 export type PeopleTypedApi =
   | TypedApi<typeof dotPpl>
   | TypedApi<typeof ksmPpl>
-  | TypedApi<typeof wndPpl>;
+  | TypedApi<typeof wndPpl>
+  | TypedApi<typeof pasPpl>;
 
 export type StakingTypedApi =
   | TypedApi<typeof dot>
   | TypedApi<typeof ksm>
-  | TypedApi<typeof wndAH>;
+  | TypedApi<typeof wndAH>
+  | TypedApi<typeof pas>;
 
 export const descriptorsByChain = {
   polkadot: {
@@ -176,5 +203,10 @@ export const descriptorsByChain = {
     relay: wnd,
     people: wndPpl,
     assetHub: wndAH,
+  },
+  paseo: {
+    relay: pas,
+    people: pasPpl,
+    assetHub: pas,
   },
 } satisfies Record<KnownChains, Record<ChainType, ChainDefinition>>;

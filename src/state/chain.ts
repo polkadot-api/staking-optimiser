@@ -1,6 +1,6 @@
 import { createIdentitySdk } from "@polkadot-api/sdk-accounts";
 import { createStakingSdk } from "@polkadot-api/sdk-staking";
-import { state } from "@react-rxjs/core";
+import { state, withDefault } from "@react-rxjs/core";
 import { createClient, type PolkadotClient } from "polkadot-api";
 import { withLogsRecorder } from "polkadot-api/logs-provider";
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat";
@@ -43,11 +43,17 @@ export const selectedChain$ = state(
   )
 );
 
-export const tokenSymbol$ = selectedChain$.pipeState(
-  map((chain) => tokenSymbolByChain[chain])
+export const tokenProps$ = selectedChain$.pipeState(
+  map((chain) => ({
+    decimals: tokenDecimalsByChain[chain],
+    symbol: tokenSymbolByChain[chain],
+  })),
+  withDefault(null)
 );
-export const tokenDecimals$ = selectedChain$.pipeState(
-  map((chain) => tokenDecimalsByChain[chain])
+
+export const tokenDecimals$ = tokenProps$.pipeState(
+  filter((v) => v != null),
+  map((props) => props.decimals)
 );
 
 const shuffleArray = <T>(array: T[]): T[] =>

@@ -88,6 +88,9 @@ const NominateRewards = () => {
         {lastReward.apy.toLocaleString()}%)
       </div>
       <div>
+        Commission: <TokenValue value={lastReward.totalCommission} />
+      </div>
+      <div>
         <div>History</div>
         <Suspense>
           <EraChart data={rewardHistory} activeEra={activeEra} />

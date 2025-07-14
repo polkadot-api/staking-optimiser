@@ -6,10 +6,16 @@ import { PolkadotIdenticon } from "@polkadot-api/react-components";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
 import { AccountId } from "polkadot-api";
-import { forwardRef, useState, type ReactElement } from "react";
+import {
+  forwardRef,
+  useState,
+  type ComponentProps,
+  type ReactElement,
+} from "react";
 import { map, switchMap } from "rxjs";
 import { Button } from "../ui/button";
 import { codeSplit } from "@/util/codeSplit";
+import { cn } from "@/lib/utils";
 
 const [openChange$, setOpen] = createSignal<boolean>();
 export const openSelectAccount = () => setOpen(true);
@@ -37,7 +43,12 @@ const selectedAccountName$ = selectedAccount$.pipeState(
   })
 );
 
-const Trigger = forwardRef<HTMLButtonElement, object>((props, ref) => {
+const Trigger = forwardRef<
+  HTMLButtonElement,
+  ComponentProps<typeof Button> & {
+    loading?: boolean;
+  }
+>(({ loading, ...props }, ref) => {
   const selectedAccount = useStateObservable(selectedAccount$);
   const accountName = useStateObservable(selectedAccountName$);
 
@@ -49,7 +60,12 @@ const Trigger = forwardRef<HTMLButtonElement, object>((props, ref) => {
       : selectedAccount.value.polkadotSigner.publicKey;
 
   return (
-    <Button ref={ref} variant="outline" {...props}>
+    <Button
+      ref={ref}
+      variant="outline"
+      {...props}
+      className={cn(loading ? "cursor-wait" : null, props.className)}
+    >
       <PolkadotIdenticon publicKey={publicKey} className="size-6" />
       {accountName.name ? (
         <div>{accountName.name}</div>
@@ -70,7 +86,7 @@ const payload = Promise.all([
 export const SelectAccount = withSubscribe(
   codeSplit(
     payload,
-    () => <Trigger />,
+    () => <Trigger loading />,
     ({ payload }) => {
       const open = useStateObservable(open$);
 

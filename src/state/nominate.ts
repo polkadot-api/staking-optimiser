@@ -1,6 +1,6 @@
-import { HISTORY_DEPTH, TOKEN_PROPS } from "@/constants";
+import { HISTORY_DEPTH } from "@/constants";
 import { selectedAccountAddr$ } from "@/state/account";
-import { roundToDecimalPlaces } from "@/util/format";
+import { amountToNumber, roundToDecimalPlaces } from "@/util/format";
 import { state } from "@react-rxjs/core";
 import {
   combineLatest,
@@ -14,7 +14,7 @@ import {
   takeWhile,
   withLatestFrom,
 } from "rxjs";
-import { stakingApi$, stakingSdk$ } from "./chain";
+import { stakingApi$, stakingSdk$, tokenDecimals$ } from "./chain";
 import { activeEraNumber$, allEras$, eraDurationInMs$, getEraApy } from "./era";
 
 export const currentNominatorBond$ = state(
@@ -48,14 +48,15 @@ export const lastReward$ = state(
       stakingSdk.getNominatorRewards(addr, era - 1)
     ),
     withLatestFrom(eraDurationInMs$),
-    map(([rewards, eraDurationInMs]) => {
+    map(([{ total, totalCommission, activeBond }, eraDurationInMs]) => {
       const apy = roundToDecimalPlaces(
-        getEraApy(rewards.total, rewards.activeBond, eraDurationInMs) * 100,
+        getEraApy(total, activeBond, eraDurationInMs) * 100,
         2
       );
 
       return {
-        total: rewards.total,
+        total,
+        totalCommission,
         apy,
       };
     })
@@ -76,8 +77,8 @@ export const rewardHistory$ = state(
         }))
       )
     ),
-    withLatestFrom(stakingSdk$),
-    switchMap(([{ addr, era: startEra }, stakingSdk]) =>
+    withLatestFrom(stakingSdk$, tokenDecimals$),
+    switchMap(([{ addr, era: startEra }, stakingSdk, decimals]) =>
       addr
         ? allEras$(HISTORY_DEPTH).pipe(
             mergeMap(async (era) => {
@@ -85,7 +86,7 @@ export const rewardHistory$ = state(
                 const rewards = await stakingSdk.getNominatorRewards(addr, era);
                 return {
                   era,
-                  rewards: Number(rewards.total) / 10 ** TOKEN_PROPS.decimals,
+                  rewards: amountToNumber(rewards.total, decimals),
                 };
               } catch (ex) {
                 console.error(ex);

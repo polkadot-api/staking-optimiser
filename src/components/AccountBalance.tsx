@@ -83,7 +83,11 @@ export const AccountBalance = () => {
   const unbonding =
     currentBond?.unlocks.map((v) => v.value).reduce((a, b) => a + b, 0n) ?? 0n;
   const unbondedLockedBalance =
-    balance.total === 0n ? 0n : balance.locked - (currentBond?.bond ?? 0n);
+    balance.total === 0n
+      ? 0n
+      : // ExistentialDeposit is part of "locked" because it's "untouchable", i.e. can't be spend without killing the account
+        // so we have to remove it from here. We could add it as a separate category but... not worth it for just the ED
+        balance.locked - balance.existentialDeposit - (currentBond?.bond ?? 0n);
 
   const data = [
     {

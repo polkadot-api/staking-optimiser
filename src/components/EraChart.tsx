@@ -1,4 +1,6 @@
-import { HISTORY_DEPTH, TOKEN_PROPS } from "@/constants";
+import { HISTORY_DEPTH } from "@/constants";
+import { tokenProps$ } from "@/state/chain";
+import { useStateObservable } from "@react-rxjs/core";
 import {
   Area,
   CartesianGrid,
@@ -25,6 +27,7 @@ export default function EraChart({
   activeEra: number;
   height?: number;
 }) {
+  const tokenProps = useStateObservable(tokenProps$);
   const mappedData = data.map((v) => ({
     ...v,
     active: v.isActive ? (v.apy ?? v.rewards) : undefined,
@@ -61,7 +64,7 @@ export default function EraChart({
 
             const content =
               payload[0].name === "reward"
-                ? `${formattedValue} ${TOKEN_PROPS.symbol}`
+                ? `${formattedValue} ${tokenProps?.symbol}`
                 : `${formattedValue}% APY`;
 
             return `Era ${label}: ${content}${payload[0].payload?.active ? " (Active)" : ""}`;
