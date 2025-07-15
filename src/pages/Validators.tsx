@@ -21,6 +21,7 @@ import {
   mergeMap,
   scan,
   switchMap,
+  take,
 } from "rxjs";
 
 const [maPeriod$, setMaPeriod] = createState(1);
@@ -31,7 +32,13 @@ const selectedEra$ = state(
   // When changing network, re-fetch the current era
   stakingApi$.pipe(
     switchMap(() =>
-      concat(activeEraNumber$.pipe(map((v) => v - 1)), eraChange$)
+      concat(
+        activeEraNumber$.pipe(
+          map((v) => v - 1),
+          take(1)
+        ),
+        eraChange$
+      )
     )
   )
 );
@@ -52,7 +59,6 @@ interface HistoricValidator {
   nominatorsShare: bigint;
   activeBond: bigint;
   nominatorQuantity: number;
-  nominators: Set<SS58String>;
   nominatorApy: number;
   totalApy: number;
 }
@@ -64,7 +70,6 @@ const dummy: HistoricValidator = {
   commissionShare: 0n,
   nominatorApy: 0,
   nominatorQuantity: 0,
-  nominators: new Set(),
   nominatorsShare: 0n,
   points: 0,
   reward: 0n,
@@ -76,11 +81,6 @@ const aggregateHistoricValidatorProp = <T extends keyof HistoricValidator>(
   key: T,
   maType: "exponential" | "simple"
 ): HistoricValidator[T] => {
-  if (key === "nominators") {
-    return new Set(
-      validators.flatMap((v) => [...v.nominators])
-    ) as HistoricValidator[T];
-  }
   if (["address", "commission", "blocked"].includes(key)) {
     return validators[0][key];
   }
@@ -117,11 +117,9 @@ const aggregateHistoricValidators = (
 const validatorRewardsToHistoric = (
   validator: ValidatorRewards
 ): HistoricValidator => {
-  const nominators = new Set(Object.keys(validator.byNominator));
   return {
     ...validator,
-    nominators,
-    nominatorQuantity: nominators.size,
+    nominatorQuantity: validator.nominatorCount,
   };
 };
 
@@ -133,7 +131,10 @@ const validatorHistory$ = stakingSdk$.pipe(
       distinct(),
       mergeMap(
         (era) =>
-          validatorsEra$(era).pipe(map((validators) => ({ era, validators }))),
+          validatorsEra$(era).pipe(
+            map((validators) => ({ era, validators })),
+            take(1)
+          ),
         3
       ),
       scan(
@@ -168,7 +169,9 @@ const aggregatedValidators$ = combineLatest([
 
     return Object.keys(relevantHistory[0]).map((address) =>
       aggregateHistoricValidators(
-        relevantHistory.map((eraValidators) => eraValidators[address]),
+        relevantHistory
+          .map((eraValidators) => eraValidators[address])
+          .filter((v) => v != null),
         maType
       )
     );
@@ -215,7 +218,7 @@ const [sortBy$, setSortBy] = createState<{
   prop: keyof HistoricValidator;
   dir: "asc" | "desc";
 }>({
-  prop: "nominatorApy",
+  prop: "totalApy",
   dir: "desc",
 });
 
@@ -251,9 +254,9 @@ export const Validators = () => {
   return (
     <div>
       <NavMenu />
-      <SortBy />
-      <MaParams />
       <Subscribe fallback="Loading…">
+        <SortBy />
+        <MaParams />
         <ValidatorList />
       </Subscribe>
     </div>
@@ -262,19 +265,36 @@ export const Validators = () => {
 
 const MaParams = () => {
   const period = useStateObservable(maPeriod$);
+  const activeEraNumber = useStateObservable(activeEraNumber$);
+  const selectedEra = useStateObservable(selectedEra$);
 
   return (
-    <label>
-      Period
-      <input
-        type="range"
-        min={1}
-        max={21}
-        step={1}
-        value={period}
-        onChange={(evt) => setMaPeriod(evt.target.valueAsNumber)}
-      />{" "}
-    </label>
+    <div>
+      <label>
+        Era
+        <input
+          type="range"
+          min={activeEraNumber - 21}
+          max={activeEraNumber - 1}
+          step={1}
+          value={selectedEra}
+          onChange={(evt) => setEra(evt.target.valueAsNumber)}
+        />
+        {selectedEra}
+      </label>
+      <label>
+        Period
+        <input
+          type="range"
+          min={1}
+          max={21}
+          step={1}
+          value={period}
+          onChange={(evt) => setMaPeriod(evt.target.valueAsNumber)}
+        />
+        {period}
+      </label>
+    </div>
   );
 };
 
@@ -355,7 +375,6 @@ const ValidatorList = () => {
             <div>
               Active nominator amount: {v.nominatorQuantity.toLocaleString()}
             </div>
-            <div>Total nominators: {v.nominators.size}</div>
             <div>Points: {v.points.toLocaleString()}</div>
           </li>
         );
