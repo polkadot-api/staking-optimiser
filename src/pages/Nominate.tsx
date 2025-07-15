@@ -2,6 +2,7 @@ import { AccountBalance } from "@/components/AccountBalance";
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
+import { cn } from "@/lib/utils";
 import { selectedAccountAddr$ } from "@/state/account";
 import { stakingApi$, stakingSdk$ } from "@/state/chain";
 import {
@@ -18,6 +19,7 @@ import { lazy, type FC } from "react";
 import {
   combineLatest,
   filter,
+  from,
   map,
   mergeMap,
   scan,
@@ -139,7 +141,7 @@ const SelectedValidators = () => {
     <Card title="Selected Validators">
       <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 py-2">
         {validators.map((v) => (
-          <li className="bg-secondary rounded p-2" key={v}>
+          <li key={v}>
             <SelectedValidator validator={v} />
           </li>
         ))}
@@ -148,11 +150,26 @@ const SelectedValidators = () => {
   );
 };
 
+const validatorIsCurrentlyActive$ = state(
+  (addr: SS58String) =>
+    combineLatest([selectedAccountAddr$, stakingSdk$, activeEraNumber$]).pipe(
+      switchMap(([nominator, stakingSdk, activeEra]) => {
+        if (!nominator) return [false];
+
+        return from(stakingSdk.getValidatorRewards(addr, activeEra)).pipe(
+          map((rewards) => nominator in (rewards?.byNominator ?? {}))
+        );
+      })
+    ),
+  false
+);
+
 const PERBILL = 1000000000;
 const SelectedValidator: FC<{
   validator: SS58String;
 }> = ({ validator }) => {
   const rewardHistory = useStateObservable(validatorPerformance$(validator));
+  const isActive = useStateObservable(validatorIsCurrentlyActive$(validator));
   const prefs = useStateObservable(validatorPrefs$(validator));
   const activeEra = useStateObservable(activeEraNumber$);
 
@@ -167,7 +184,11 @@ const SelectedValidator: FC<{
     : null;
 
   return (
-    <div>
+    <div
+      className={cn("bg-secondary rounded p-2", {
+        "bg-positive/10 shadow-lg": isActive,
+      })}
+    >
       <div className="flex items-center justify-between">
         <AddressIdentity addr={validator} />
         {averageApy || prefs.commission ? (

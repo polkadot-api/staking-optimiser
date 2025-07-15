@@ -26,7 +26,8 @@ export const eraDurationInMs$ = combineLatest([
   map(
     ([blockTime, epochDuration, sessionsPerEra]) =>
       sessionsPerEra * Number(epochDuration) * Number(blockTime)
-  )
+  ),
+  distinctUntilChanged()
 );
 
 export function getEraApy(
@@ -36,7 +37,7 @@ export function getEraApy(
 ) {
   if (invested === 0n) return 0;
 
-  const erasInAYear = (365.25 * 24 * 60 * 60 * 1000) / Number(eraDurationInMs);
+  const erasInAYear = (365.24219 * 24 * 60 * 60 * 1000) / eraDurationInMs;
 
   const rewardPct = Number(eraReward) / Number(invested);
   return Math.pow(1 + rewardPct, erasInAYear) - 1;
@@ -77,7 +78,7 @@ export const activeEraNumber$ = activeEra$.pipeState(
 );
 
 /**
- * Observable that emits all eras, starting from the current one backwards
+ * Observable that emits all eras, starting from the last completed one backwards
  * but then emitting new eras as they happen.
  */
 export const allEras$ = (pastAmount = Number.POSITIVE_INFINITY) =>

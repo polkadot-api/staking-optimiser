@@ -52,7 +52,12 @@ const Trigger = forwardRef<
   const selectedAccount = useStateObservable(selectedAccount$);
   const accountName = useStateObservable(selectedAccountName$);
 
-  if (!selectedAccount || !accountName) return <Button>Connect</Button>;
+  if (!selectedAccount || !accountName)
+    return (
+      <Button ref={ref} {...props}>
+        Connect
+      </Button>
+    );
 
   const publicKey =
     selectedAccount.type === "address"

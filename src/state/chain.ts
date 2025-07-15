@@ -12,6 +12,7 @@ import {
   filter,
   finalize,
   map,
+  merge,
   NEVER,
   switchMap,
   tap,
@@ -128,7 +129,6 @@ export const clients$ = state(
     })
   )
 );
-clients$.subscribe();
 
 export const balancesApi$ = clients$.pipe(map((v) => v.balancesApi));
 export const stakingApi$ = clients$.pipe(map((v) => v.stakingApi));
@@ -145,3 +145,5 @@ export const stakingSdk$ = stakingApi$.pipe(
 export const identitySdk$ = peopleApi$.pipe(
   map((peopleApi) => createIdentitySdk(peopleApi as any))
 );
+
+merge(stakingSdk$, identitySdk$).subscribe();

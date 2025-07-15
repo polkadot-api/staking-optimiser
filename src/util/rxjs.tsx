@@ -17,6 +17,13 @@ export const withSubscribe =
     </Subscribe>
   );
 
+export const createState = <T,>(defaultValue: T) => {
+  const [valueChange$, setValue] = createSignal<T>();
+
+  const state$ = state(valueChange$, defaultValue);
+  return [state$, setValue] as const;
+};
+
 export const createLocalStorageState = <T,>(
   key: string,
   defaultValue: T,

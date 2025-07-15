@@ -53,7 +53,7 @@ export default function EraChart({
           ticks={[]}
           height={20}
         />
-        <YAxis width={40} />
+        <YAxis width={data[0]?.rewards ? 55 : 40} />
         <Tooltip
           labelFormatter={(label, payload) => {
             if (payload[0]?.value == null) {
@@ -63,15 +63,11 @@ export default function EraChart({
             const formattedValue = payload[0].value.toLocaleString();
 
             const content =
-              payload[0].name === "reward"
+              payload[0].name === "rewards"
                 ? `${formattedValue} ${tokenProps?.symbol}`
                 : `${formattedValue}% APY`;
 
             return `Era ${label}: ${content}${payload[0].payload?.active ? " (Active)" : ""}`;
-          }}
-          formatter={(...args) => {
-            console.log("formatter", ...args);
-            return "wtf2";
           }}
         />
         <Area
@@ -105,7 +101,6 @@ export default function EraChart({
           dataKey="active"
           fill="var(--chart-2)"
           tooltipType="none"
-          // shape={<circle r={2} />}
         />
       </ComposedChart>
     </ResponsiveContainer>

@@ -1,4 +1,10 @@
-import { useEffect, useState, type ComponentType, type JSX } from "react";
+import {
+  useEffect,
+  useState,
+  type ComponentType,
+  type FC,
+  type JSX,
+} from "react";
 
 export const codeSplit = <Payload, Props>(
   promise: Promise<Payload>,
@@ -8,7 +14,7 @@ export const codeSplit = <Payload, Props>(
       payload: Payload;
     }
   >
-) => {
+): FC<Props> => {
   let loadedPayload: Payload | null = null;
   const loadedPromise = promise.then((payload) => {
     loadedPayload = payload;
@@ -27,11 +33,11 @@ export const codeSplit = <Payload, Props>(
     return module;
   };
 
-  return (props: Props & JSX.IntrinsicAttributes) => {
+  return (props) => {
     const payload = usePayload();
 
     if (payload === null) {
-      return <NotReady {...props} />;
+      return <NotReady {...(props as Props & JSX.IntrinsicAttributes)} />;
     }
     return <Ready {...props} payload={payload} />;
   };
