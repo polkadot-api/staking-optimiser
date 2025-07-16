@@ -1,6 +1,3 @@
-import { AddressIdentity } from "@/components/AddressIdentity";
-import { NavMenu } from "@/components/NavMenu/NavMenu";
-import { TokenValue } from "@/components/TokenValue";
 import { stakingApi$, stakingSdk$ } from "@/state/chain";
 import { activeEraNumber$ } from "@/state/era";
 import {
@@ -9,7 +6,7 @@ import {
   type ValidatorRewards,
 } from "@/state/validators";
 import { createState } from "@/util/rxjs";
-import { state, Subscribe, useStateObservable } from "@react-rxjs/core";
+import { state } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
 import type { SS58String } from "polkadot-api";
 import {
@@ -24,11 +21,13 @@ import {
   take,
 } from "rxjs";
 
-const [maPeriod$, setMaPeriod] = createState(1);
-const [maType$, setMaType] = createState<"simple" | "exponential">("simple");
+export const [maPeriod$, setMaPeriod] = createState(1);
+export const [maType$, setMaType] = createState<"simple" | "exponential">(
+  "simple"
+);
 
-const [eraChange$, setEra] = createSignal<number>();
-const selectedEra$ = state(
+export const [eraChange$, setEra] = createSignal<number>();
+export const selectedEra$ = state(
   // When changing network, re-fetch the current era
   stakingApi$.pipe(
     switchMap(() =>
@@ -49,7 +48,7 @@ const selectedEras$ = combineLatest([maPeriod$, selectedEra$]).pipe(
   )
 );
 
-interface HistoricValidator {
+export interface HistoricValidator {
   address: SS58String;
   commission: number;
   blocked: boolean;
@@ -62,19 +61,6 @@ interface HistoricValidator {
   nominatorApy: number;
   totalApy: number;
 }
-const dummy: HistoricValidator = {
-  activeBond: 0n,
-  address: "",
-  blocked: true,
-  commission: 0,
-  commissionShare: 0n,
-  nominatorApy: 0,
-  nominatorQuantity: 0,
-  nominatorsShare: 0n,
-  points: 0,
-  reward: 0n,
-  totalApy: 0,
-};
 
 const aggregateHistoricValidatorProp = <T extends keyof HistoricValidator>(
   validators: HistoricValidator[],
@@ -85,15 +71,26 @@ const aggregateHistoricValidatorProp = <T extends keyof HistoricValidator>(
     return validators[0][key];
   }
 
-  let sum: any = validators[0][key];
-  for (let i = 1; i < validators.length; i++) {
-    sum += validators[i][key];
+  if (maType === "simple") {
+    let sum: any = validators[0][key];
+    for (let i = 1; i < validators.length; i++) {
+      sum += validators[i][key];
+    }
+
+    const amount =
+      typeof sum === "bigint" ? BigInt(validators.length) : validators.length;
+
+    return (sum / (amount as any)) as HistoricValidator[T];
   }
 
-  const amount =
-    typeof sum === "bigint" ? BigInt(validators.length) : validators.length;
-
-  return (sum / (amount as any)) as HistoricValidator[T];
+  let result = Number(validators[validators.length - 1][key]);
+  const smoothing = 2 / (1 + validators.length);
+  for (let i = validators.length - 2; i >= 0; i--) {
+    result = Number(validators[i][key]) * smoothing + result * (1 - smoothing);
+  }
+  return (
+    typeof validators[0][key] === "bigint" ? BigInt(Math.round(result)) : result
+  ) as HistoricValidator[T];
 };
 
 const aggregateHistoricValidators = (
@@ -178,12 +175,10 @@ const aggregatedValidators$ = combineLatest([
   })
 );
 
-const [filterBlocked$, setFilterBlocked] = createState(false);
-const [filterCommision$, setFilterCommission] = createState<number | null>(
-  null
-);
+export const [filterBlocked$, setFilterBlocked] = createState(true);
+export const [filterCommision$, setFilterCommission] = createState<number>(100);
 
-const validatorPrefs$ = state(
+export const validatorPrefs$ = state(
   registeredValidators$.pipe(
     map((val) => Object.fromEntries(val.map((v) => [v.address, v.preferences])))
   ),
@@ -205,8 +200,7 @@ const filteredValidators$ = combineLatest([
           if (!prefs) return false;
 
           if (filterBlocked && prefs.blocked) return false;
-          if (filterCommission != null && prefs.commission >= filterCommission)
-            return false;
+          if (prefs.commission > filterCommission / 100) return false;
 
           return true;
         }) ?? [])
@@ -214,15 +208,15 @@ const filteredValidators$ = combineLatest([
   )
 );
 
-const [sortBy$, setSortBy] = createState<{
+export const [sortBy$, setSortBy] = createState<{
   prop: keyof HistoricValidator;
   dir: "asc" | "desc";
 }>({
-  prop: "totalApy",
+  prop: "nominatorApy",
   dir: "desc",
 });
 
-const sortedValidators$ = state(
+export const sortedValidators$ = state(
   combineLatest([filteredValidators$, sortBy$]).pipe(
     map(([validators, sortBy]) =>
       sortBy === null
@@ -241,144 +235,11 @@ const sortedValidators$ = state(
                 case "boolean":
                   return (aValue ? 1 : 0) - (bValue ? 1 : 0);
               }
-              return 0;
             })();
 
             return sortBy.dir === "asc" ? value : -value;
           })
     )
-  )
+  ),
+  []
 );
-
-export const Validators = () => {
-  return (
-    <div>
-      <NavMenu />
-      <Subscribe fallback="Loading…">
-        <SortBy />
-        <MaParams />
-        <ValidatorList />
-      </Subscribe>
-    </div>
-  );
-};
-
-const MaParams = () => {
-  const period = useStateObservable(maPeriod$);
-  const activeEraNumber = useStateObservable(activeEraNumber$);
-  const selectedEra = useStateObservable(selectedEra$);
-
-  return (
-    <div>
-      <label>
-        Era
-        <input
-          type="range"
-          min={activeEraNumber - 21}
-          max={activeEraNumber - 1}
-          step={1}
-          value={selectedEra}
-          onChange={(evt) => setEra(evt.target.valueAsNumber)}
-        />
-        {selectedEra}
-      </label>
-      <label>
-        Period
-        <input
-          type="range"
-          min={1}
-          max={21}
-          step={1}
-          value={period}
-          onChange={(evt) => setMaPeriod(evt.target.valueAsNumber)}
-        />
-        {period}
-      </label>
-    </div>
-  );
-};
-
-const SortBy = () => {
-  const sortBy = useStateObservable(sortBy$);
-
-  return (
-    <div>
-      <label>
-        Asc
-        <input
-          type="checkbox"
-          checked={sortBy.dir === "asc"}
-          onChange={() =>
-            setSortBy({
-              ...sortBy,
-              dir: sortBy.dir === "asc" ? "desc" : "asc",
-            })
-          }
-        />
-      </label>
-      <select
-        value={sortBy.prop}
-        onChange={(evt) =>
-          setSortBy({
-            ...sortBy,
-            prop: evt.target.value as any,
-          })
-        }
-      >
-        {Object.keys(dummy).map((key) => (
-          <option key={key} value={key}>
-            {key}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-};
-
-const ValidatorList = () => {
-  const prefs = useStateObservable(validatorPrefs$);
-  const validators = useStateObservable(sortedValidators$);
-
-  return (
-    <ol>
-      {validators.slice(0, 10).map((v) => {
-        const vPrefs = prefs[v.address];
-
-        return (
-          <li key={v.address}>
-            <AddressIdentity addr={v.address} />
-            <div>APY: {(v.nominatorApy * 100).toLocaleString()}%</div>
-            <div>Total APY: {(v.totalApy * 100).toLocaleString()}%</div>
-            {vPrefs ? (
-              <>
-                {vPrefs.blocked ? <div>Currently blocked</div> : null}
-                <div>
-                  Current commission:{" "}
-                  {(vPrefs.commission * 100).toLocaleString()}%
-                </div>
-              </>
-            ) : (
-              <div>Not a currently-registered nominator</div>
-            )}
-            <div>
-              Reward: <TokenValue value={v.reward} />
-            </div>
-            <div>
-              Commission share: <TokenValue value={v.commissionShare} />
-            </div>
-            <div>
-              Nominators share: <TokenValue value={v.nominatorsShare} />
-            </div>
-            <div>
-              Active bond: <TokenValue value={v.activeBond} />
-            </div>
-            <div>
-              Active nominator amount: {v.nominatorQuantity.toLocaleString()}
-            </div>
-            <div>Points: {v.points.toLocaleString()}</div>
-          </li>
-        );
-      })}
-    </ol>
-  );
-};

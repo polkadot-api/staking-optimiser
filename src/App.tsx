@@ -10,7 +10,7 @@ function App() {
   return (
     <div className="w-full h-screen bg-background flex flex-col">
       <Header />
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto" id="app-content">
         <div className="container m-auto">
           <Routes>
             <Route path="dashboard" element={<Dashboard />} />

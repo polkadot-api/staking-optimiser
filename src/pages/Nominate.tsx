@@ -116,9 +116,9 @@ const validatorPerformance$ = state((addr: SS58String) =>
                       eraDuration
                     ) * 100
                   : null,
-                isActive: v.rewards
+                isActive: false /* v.rewards
                   ? nominatorAddr in v.rewards.byNominator
-                  : false,
+                  : false,*/,
               },
             ];
             if (result.length > HISTORY_DEPTH) {
@@ -157,7 +157,7 @@ const validatorIsCurrentlyActive$ = state(
         if (!nominator) return [false];
 
         return from(stakingSdk.getValidatorRewards(addr, activeEra)).pipe(
-          map((rewards) => nominator in (rewards?.byNominator ?? {}))
+          map((rewards) => false /*nominator in (rewards?.byNominator ?? {})*/)
         );
       })
     ),

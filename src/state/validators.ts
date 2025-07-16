@@ -4,13 +4,14 @@ import { map, switchMap } from "rxjs";
 import { stakingApi$, stakingSdk$ } from "./chain";
 import { eraDurationInMs$, getEraApy } from "./era";
 
+const PERBILL = 1000000000;
 export const registeredValidators$ = state(
   stakingApi$.pipe(
     switchMap((api) => api.query.Staking.Validators.getEntries()),
     map((result) =>
       result.map(({ keyArgs: [address], value }) => ({
         address,
-        preferences: value,
+        preferences: { ...value, commission: value.commission / PERBILL },
       }))
     )
   )
