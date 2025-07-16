@@ -19,7 +19,6 @@ import { lazy, type FC } from "react";
 import {
   combineLatest,
   filter,
-  from,
   map,
   mergeMap,
   scan,
@@ -83,19 +82,24 @@ const validatorPerformance$ = state((addr: SS58String) =>
   stakingSdk$.pipe(
     switchMap((stakingSdk) =>
       allEras$(HISTORY_DEPTH).pipe(
-        mergeMap(async (era) => {
+        withLatestFrom(selectedAccountAddr$.pipe(filter((v) => v != null))),
+        mergeMap(async ([era, nominator]) => {
           try {
-            const rewards = await stakingSdk.getValidatorRewards(addr, era);
-            return { era, rewards };
+            const [rewards, nominatorStatus] = await Promise.all([
+              stakingSdk.getValidatorRewards(addr, era),
+              stakingSdk.getNominatorStatus(nominator, era),
+            ]);
+            return {
+              era,
+              rewards,
+              isActive: !!nominatorStatus.find((v) => v.validator === addr),
+            };
           } catch (ex) {
             console.error(ex);
-            return { era, rewards: null };
+            return { era, rewards: null, isActive: false };
           }
         }, 3),
-        withLatestFrom(
-          eraDurationInMs$,
-          selectedAccountAddr$.pipe(filter((v) => v != null))
-        ),
+        withLatestFrom(eraDurationInMs$),
         scan(
           (
             acc: Array<{
@@ -103,7 +107,7 @@ const validatorPerformance$ = state((addr: SS58String) =>
               isActive: boolean;
               apy: number | null;
             }>,
-            [v, eraDuration, nominatorAddr]
+            [v, eraDuration]
           ) => {
             let result = [
               ...acc,
@@ -116,9 +120,7 @@ const validatorPerformance$ = state((addr: SS58String) =>
                       eraDuration
                     ) * 100
                   : null,
-                isActive: false /* v.rewards
-                  ? nominatorAddr in v.rewards.byNominator
-                  : false,*/,
+                isActive: v.isActive,
               },
             ];
             if (result.length > HISTORY_DEPTH) {
@@ -150,16 +152,22 @@ const SelectedValidators = () => {
   );
 };
 
+const currentNominatorStatus$ = state(
+  combineLatest([
+    selectedAccountAddr$.pipe(filter((v) => v != null)),
+    stakingSdk$,
+    activeEraNumber$,
+  ]).pipe(
+    switchMap(([nominator, stakingSdk, activeEra]) =>
+      stakingSdk.getNominatorStatus(nominator, activeEra)
+    )
+  )
+);
+
 const validatorIsCurrentlyActive$ = state(
   (addr: SS58String) =>
-    combineLatest([selectedAccountAddr$, stakingSdk$, activeEraNumber$]).pipe(
-      switchMap(([nominator, stakingSdk, activeEra]) => {
-        if (!nominator) return [false];
-
-        return from(stakingSdk.getValidatorRewards(addr, activeEra)).pipe(
-          map((rewards) => false /*nominator in (rewards?.byNominator ?? {})*/)
-        );
-      })
+    currentNominatorStatus$.pipe(
+      map((status) => !!status.find((v) => v.validator === addr))
     ),
   false
 );
