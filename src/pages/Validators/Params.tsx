@@ -21,10 +21,11 @@ import {
   sortBy$,
   type HistoricValidator,
 } from "./validatorList.state";
+import { Card } from "@/components/Card";
 
 export const Params = () => {
   return (
-    <div className="space-y-4 pb-2 border-b">
+    <div className="space-y-4 pb-2 min-md:space-y-0 min-md:flex gap-2 justify-stretch">
       <MaParams />
       <Filters />
     </div>
@@ -54,43 +55,12 @@ const MaParams = () => {
   }, [sliderFocused, period, selectedEra]);
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between items-end">
-        <label>
-          Period
-          <Input
-            className="w-14 ml-2 inline-block"
-            type="number"
-            value={period}
-            onChange={(evt) =>
-              evt.target.valueAsNumber &&
-              setMaPeriod(
-                Math.round(Math.max(Math.min(evt.target.valueAsNumber, 21), 1))
-              )
-            }
-          />
-        </label>
-        <label>
-          Avg type:{" "}
-          <button
-            onClick={() =>
-              setMaType(maType === "simple" ? "exponential" : "simple")
-            }
-          >
-            <span className={maType === "simple" ? "font-bold" : ""}>
-              Simple
-            </span>
-            <span>/</span>
-            <span className={maType === "exponential" ? "font-bold" : ""}>
-              Exponential
-            </span>
-          </button>
-        </label>
-        <label>
-          Era
+    <Card title="Data Options" className="grow">
+      <div className="flex gap-2 items-center justify-center mb-4">
+        <label className="flex flex-col overflow-hidden">
+          <div className="text-muted-foreground">Era</div>
           <Input
             type="number"
-            className="w-24 ml-2 inline-block"
             value={selectedEra}
             onChange={(evt) =>
               evt.target.valueAsNumber &&
@@ -105,8 +75,33 @@ const MaParams = () => {
             }
           />
         </label>
+        <label className="flex flex-col overflow-hidden">
+          <div className="text-muted-foreground">Period</div>
+          <Input
+            type="number"
+            value={period}
+            onChange={(evt) =>
+              evt.target.valueAsNumber &&
+              setMaPeriod(
+                Math.round(Math.max(Math.min(evt.target.valueAsNumber, 21), 1))
+              )
+            }
+          />
+        </label>
+        <label className="flex flex-col overflow-hidden shrink-0">
+          <div className="text-muted-foreground">Avg type</div>
+          <ToggleGroup
+            value={maType}
+            type="single"
+            onValueChange={(value) => setMaType(value as any)}
+          >
+            <ToggleGroupItem value="simple">SMA</ToggleGroupItem>
+            <ToggleGroupItem value="exponential">EMA</ToggleGroupItem>
+          </ToggleGroup>
+        </label>
       </div>
       <Slider
+        className="max-md:hidden"
         value={sliderValue}
         min={activeEraNumber - 21}
         max={activeEraNumber - 1}
@@ -128,7 +123,7 @@ const MaParams = () => {
         }}
         onValueCommit={resetSliderState}
       />
-    </div>
+    </Card>
   );
 };
 
@@ -192,7 +187,14 @@ const Filters = () => {
   const filterCommission = useStateObservable(filterCommision$);
 
   return (
-    <div>
+    <Card title="Filters" className="grow">
+      <label className="block py-4">
+        <Switch
+          checked={filterBlocked}
+          onCheckedChange={() => setFilterBlocked(!filterBlocked)}
+        />{" "}
+        Filter Blocked
+      </label>
       <div>
         <label className="flex items-center gap-2">
           Commission
@@ -204,24 +206,9 @@ const Filters = () => {
             value={[filterCommission]}
             onValueChange={([value]) => setFilterCommission(value)}
           />
-          <Input
-            type="number"
-            className="inline-block w-20"
-            min={0}
-            max={100}
-            step={1}
-            value={filterCommission}
-            onChange={(evt) => setFilterCommission(evt.target.valueAsNumber)}
-          />
+          <div>{filterCommission.toLocaleString()}%</div>
         </label>
       </div>
-      <label>
-        <Switch
-          checked={filterBlocked}
-          onCheckedChange={() => setFilterBlocked(!filterBlocked)}
-        />{" "}
-        Filter Blocked
-      </label>
-    </div>
+    </Card>
   );
 };

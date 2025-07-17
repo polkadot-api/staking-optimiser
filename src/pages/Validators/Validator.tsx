@@ -1,11 +1,10 @@
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { TokenValue } from "@/components/TokenValue";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { useStateObservable } from "@react-rxjs/core";
+import { Pin } from "lucide-react";
 import { type FC } from "react";
 import { validatorPrefs$, type HistoricValidator } from "./validatorList.state";
-import { Pin } from "lucide-react";
 
 const formatPercentage = (value: number) =>
   (value * 100).toLocaleString(undefined, {
@@ -29,7 +28,13 @@ export const ValidatorRow: FC<{
       <td>
         <AddressIdentity addr={validator.address} />
       </td>
-      <td className="text-right">{formatPercentage(validator.nominatorApy)}</td>
+      <td
+        className={cn("text-right font-bold", {
+          "text-positive": validator.nominatorApy > 0,
+        })}
+      >
+        {formatPercentage(validator.nominatorApy)}
+      </td>
       <td className="text-right">{formatPercentage(validator.totalApy)}</td>
       <td className="text-right">{formatPercentage(validator.commission)}</td>
       <td className="text-right">
@@ -68,7 +73,7 @@ export const ValidatorCard: FC<{
 
   return (
     <div
-      className={cn("shadow p-2 rounded", {
+      className={cn("shadow p-2 rounded space-y-4", {
         "bg-destructive/5":
           !vPrefs || vPrefs.blocked || vPrefs.commission === 1,
         "bg-neutral/5": selected,
@@ -86,35 +91,46 @@ export const ValidatorCard: FC<{
           <Pin />
         </button>
       </div>
-      <div>
-        <span className="font-medium text-muted-foreground">Nominator APY</span>
-        : {formatPercentage(validator.nominatorApy)}
-      </div>
-      <div>
-        <span className="font-medium text-muted-foreground">
-          Validator APY:
-        </span>{" "}
-        {formatPercentage(validator.totalApy)}
-      </div>
-      <div>
-        <span className="font-medium text-muted-foreground">Commission:</span>{" "}
-        {formatPercentage(validator.commission)}
-      </div>
-      <div>
-        <span className="font-medium text-muted-foreground">Reward</span>:{" "}
-        <TokenValue value={validator.reward} />
-      </div>
-      <div>
-        <span className="font-medium text-muted-foreground">Points</span>:{" "}
-        {validator.points.toLocaleString()}
-      </div>
-      <div>
-        <span className="font-medium text-muted-foreground">Bond</span>
-        : <TokenValue value={validator.activeBond} />
-      </div>
-      <div>
-        <span className="font-medium text-muted-foreground">Nominators</span>:{" "}
-        {validator.nominatorQuantity.toLocaleString()}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+        <div>
+          <span className="font-medium text-muted-foreground">
+            Nominator APY
+          </span>
+          :{" "}
+          <span
+            className={cn("font-bold", {
+              "text-positive": validator.nominatorApy > 0,
+            })}
+          >
+            {formatPercentage(validator.nominatorApy)}
+          </span>
+        </div>
+        <div>
+          <span className="font-medium text-muted-foreground">
+            Validator APY:
+          </span>{" "}
+          {formatPercentage(validator.totalApy)}
+        </div>
+        <div>
+          <span className="font-medium text-muted-foreground">Commission:</span>{" "}
+          {formatPercentage(validator.commission)}
+        </div>
+        <div>
+          <span className="font-medium text-muted-foreground">Reward</span>:{" "}
+          <TokenValue value={validator.reward} />
+        </div>
+        <div>
+          <span className="font-medium text-muted-foreground">Points</span>:{" "}
+          {validator.points.toLocaleString()}
+        </div>
+        <div>
+          <span className="font-medium text-muted-foreground">Bond</span>
+          : <TokenValue value={validator.activeBond} />
+        </div>
+        <div>
+          <span className="font-medium text-muted-foreground">Nominators</span>:{" "}
+          {validator.nominatorQuantity.toLocaleString()}
+        </div>
       </div>
     </div>
   );
