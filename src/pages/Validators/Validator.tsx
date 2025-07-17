@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useStateObservable } from "@react-rxjs/core";
 import { type FC } from "react";
 import { validatorPrefs$, type HistoricValidator } from "./validatorList.state";
+import { Pin } from "lucide-react";
 
 const formatPercentage = (value: number) =>
   (value * 100).toLocaleString(undefined, {
@@ -12,7 +13,51 @@ const formatPercentage = (value: number) =>
     maximumFractionDigits: 1,
   }) + "%";
 
-export const Validator: FC<{
+export const ValidatorRow: FC<{
+  validator: HistoricValidator & {
+    position?: number;
+  };
+  index: number;
+  selected: boolean;
+  onSelectChange: (value: boolean) => void;
+}> = ({ validator, index, selected, onSelectChange }) => {
+  return (
+    <>
+      <td className="text-muted-foreground">
+        #{(validator.position ?? index) + 1}
+      </td>
+      <td>
+        <AddressIdentity addr={validator.address} />
+      </td>
+      <td className="text-right">{formatPercentage(validator.nominatorApy)}</td>
+      <td className="text-right">{formatPercentage(validator.totalApy)}</td>
+      <td className="text-right">{formatPercentage(validator.commission)}</td>
+      <td className="text-right">
+        <TokenValue value={validator.reward} />
+      </td>
+      <td className="text-right">
+        {validator.nominatorQuantity.toLocaleString()}
+      </td>
+      <td className="text-right">{validator.points.toLocaleString()}</td>
+      <td className="text-right hidden min-xl:table-cell">
+        <TokenValue value={validator.activeBond} />
+      </td>
+      <td>
+        <button
+          className={cn({
+            "text-neutral": selected,
+            "text-muted-foreground": !selected,
+          })}
+          onClick={() => onSelectChange(!selected)}
+        >
+          <Pin />
+        </button>
+      </td>
+    </>
+  );
+};
+
+export const ValidatorCard: FC<{
   validator: HistoricValidator;
   selected: boolean;
   onSelectChange: (value: boolean) => void;
@@ -23,7 +68,7 @@ export const Validator: FC<{
 
   return (
     <div
-      className={cn("shadow p-2 rounded w-xs", {
+      className={cn("shadow p-2 rounded", {
         "bg-destructive/5":
           !vPrefs || vPrefs.blocked || vPrefs.commission === 1,
         "bg-neutral/5": selected,
@@ -31,7 +76,15 @@ export const Validator: FC<{
     >
       <div className="flex items-center justify-between">
         <AddressIdentity addr={validator.address} />
-        <Checkbox checked={selected} onCheckedChange={onSelectChange} />
+        <button
+          className={cn({
+            "text-neutral": selected,
+            "text-muted-foreground": !selected,
+          })}
+          onClick={() => onSelectChange(!selected)}
+        >
+          <Pin />
+        </button>
       </div>
       <div>
         <span className="font-medium text-muted-foreground">Nominator APY</span>

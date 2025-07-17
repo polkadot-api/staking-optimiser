@@ -26,7 +26,6 @@ export const Params = () => {
   return (
     <div className="space-y-4 pb-2 border-b">
       <MaParams />
-      <SortBy />
       <Filters />
     </div>
   );
@@ -141,7 +140,7 @@ const sortOpitons: Partial<Record<keyof HistoricValidator, string>> = {
   nominatorQuantity: "Nominators",
 };
 
-const SortBy = () => {
+export const SortBy = () => {
   const sortBy = useStateObservable(sortBy$);
 
   return (
