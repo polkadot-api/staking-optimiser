@@ -18,6 +18,7 @@ import {
   sortedValidators$,
   validatorPrefs$,
   type HistoricValidator,
+  type PositionValidator,
 } from "./validatorList.state";
 import { useMediaQuery } from "react-responsive";
 import "./validators.css";
@@ -44,32 +45,35 @@ const ValidatorsDisplay = () => {
   const validators = useStateObservable(sortedValidators$);
 
   const sortedValidators = useMemo(() => {
-    if (!selection) return validators;
-    return validators
-      .map((v, i) => ({
+    return validators.map(
+      (v, i): PositionValidator => ({
         ...v,
-        position: i,
+        position: v.position ?? i,
         selected: selection.includes(v.address),
-      }))
-      .sort((a, b) => {
-        const diff = (b.selected ? 1 : 0) - (a.selected ? 1 : 0);
-        if (diff != 0) return diff;
-        return a.position - b.position;
-      });
+      })
+    );
   }, [selection, validators]);
 
+  const selectedList = selection.length
+    ? sortedValidators.filter((v) => selection.includes(v.address))
+    : [];
+
   return supportsTable ? (
-    <ValidatorTable
-      validators={sortedValidators}
-      selection={selection}
-      setSelection={setSelection}
-    />
+    <>
+      {selectedList.length ? (
+        <ValidatorTable
+          validators={selectedList}
+          setSelection={setSelection}
+          className="mb-4"
+        />
+      ) : null}
+      <ValidatorTable
+        validators={sortedValidators}
+        setSelection={setSelection}
+      />
+    </>
   ) : (
-    <ValidatorCards
-      validators={sortedValidators}
-      selection={selection}
-      setSelection={setSelection}
-    />
+    <ValidatorCards validators={sortedValidators} />
   );
 };
 
@@ -85,8 +89,8 @@ const TableRow: FC<ItemProps<any>> = ({ item: validator, ...props }) => {
         {...props}
         className={cn({
           "bg-muted": idx % 2 === 0,
-          "bg-destructive/5":
-            !vPrefs || vPrefs.blocked || vPrefs.commission === 1,
+          "bg-destructive/5": !vPrefs || vPrefs.blocked,
+          "bg-destructive/10": (!vPrefs || vPrefs.blocked) && idx % 2 === 0,
           "bg-neutral/5": validator.selected,
           "bg-neutral/10": validator.selected && idx % 2 === 0,
         })}
@@ -142,13 +146,13 @@ const SortByButton: FC<
 };
 
 const ValidatorTable: FC<{
-  validators: HistoricValidator[];
-  selection: SS58String[];
+  validators: PositionValidator[];
   setSelection: (value: SetStateAction<SS58String[]>) => void;
-}> = ({ validators, selection, setSelection }) => {
+  className?: string;
+}> = ({ validators, setSelection, className }) => {
   return (
     <TableVirtuoso
-      className="validator-table"
+      className={cn("validator-table", className)}
       customScrollParent={document.getElementById("app-content")!}
       data={validators}
       components={{ TableRow }}
@@ -199,8 +203,6 @@ const ValidatorTable: FC<{
         return (
           <ValidatorRow
             validator={v}
-            index={idx}
-            selected={selection.includes(v.address)}
             onSelectChange={(c) =>
               setSelection((p) =>
                 c ? [...p, v.address] : p.filter((addr) => addr != v.address)
@@ -216,10 +218,8 @@ const ValidatorTable: FC<{
 const Item = (props: ItemProps<any>) => <div {...props} className="p-4" />;
 
 const ValidatorCards: FC<{
-  validators: HistoricValidator[];
-  selection: SS58String[];
-  setSelection: (value: SetStateAction<SS58String[]>) => void;
-}> = ({ validators, selection, setSelection }) => {
+  validators: PositionValidator[];
+}> = ({ validators }) => {
   return (
     <div>
       <SortBy />
@@ -235,17 +235,7 @@ const ValidatorCards: FC<{
             return null;
           }
 
-          return (
-            <ValidatorCard
-              validator={v}
-              selected={selection.includes(v.address)}
-              onSelectChange={(c) =>
-                setSelection((p) =>
-                  c ? [...p, v.address] : p.filter((addr) => addr != v.address)
-                )
-              }
-            />
-          );
+          return <ValidatorCard validator={v} />;
         }}
       />
     </div>

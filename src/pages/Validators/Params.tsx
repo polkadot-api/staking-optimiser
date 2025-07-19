@@ -4,19 +4,21 @@ import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { activeEraNumber$ } from "@/state/era";
 import { useStateObservable } from "@react-rxjs/core";
-import { SortAsc, SortDesc } from "lucide-react";
+import { Search, SortAsc, SortDesc } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   filterBlocked$,
   filterCommision$,
   maPeriod$,
   maType$,
+  search$,
   selectedEra$,
   setEra,
   setFilterBlocked,
   setFilterCommission,
   setMaPeriod,
   setMaType,
+  setSearch,
   setSortBy,
   sortBy$,
   type HistoricValidator,
@@ -185,6 +187,7 @@ export const SortBy = () => {
 const Filters = () => {
   const filterBlocked = useStateObservable(filterBlocked$);
   const filterCommission = useStateObservable(filterCommision$);
+  const search = useStateObservable(search$);
 
   return (
     <Card title="Filters" className="grow">
@@ -207,6 +210,15 @@ const Filters = () => {
             onValueChange={([value]) => setFilterCommission(value)}
           />
           <div>{filterCommission.toLocaleString()}%</div>
+        </label>
+      </div>
+      <div>
+        <label className="flex items-center gap-2">
+          <Search />
+          <Input
+            value={search}
+            onChange={(evt) => setSearch(evt.target.value)}
+          />
         </label>
       </div>
     </Card>

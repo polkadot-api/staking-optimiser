@@ -4,7 +4,11 @@ import { cn } from "@/lib/utils";
 import { useStateObservable } from "@react-rxjs/core";
 import { Pin } from "lucide-react";
 import { type FC } from "react";
-import { validatorPrefs$, type HistoricValidator } from "./validatorList.state";
+import {
+  validatorPrefs$,
+  type HistoricValidator,
+  type PositionValidator,
+} from "./validatorList.state";
 
 const formatPercentage = (value: number) =>
   (value * 100).toLocaleString(undefined, {
@@ -13,18 +17,12 @@ const formatPercentage = (value: number) =>
   }) + "%";
 
 export const ValidatorRow: FC<{
-  validator: HistoricValidator & {
-    position?: number;
-  };
-  index: number;
-  selected: boolean;
+  validator: PositionValidator;
   onSelectChange: (value: boolean) => void;
-}> = ({ validator, index, selected, onSelectChange }) => {
+}> = ({ validator, onSelectChange }) => {
   return (
     <>
-      <td className="text-muted-foreground">
-        #{(validator.position ?? index) + 1}
-      </td>
+      <td className="text-muted-foreground">#{validator.position + 1}</td>
       <td>
         <AddressIdentity addr={validator.address} />
       </td>
@@ -50,10 +48,10 @@ export const ValidatorRow: FC<{
       <td>
         <button
           className={cn({
-            "text-neutral": selected,
-            "text-muted-foreground": !selected,
+            "text-neutral": validator.selected,
+            "text-muted-foreground": !validator.selected,
           })}
-          onClick={() => onSelectChange(!selected)}
+          onClick={() => onSelectChange(!validator.selected)}
         >
           <Pin />
         </button>
@@ -64,9 +62,7 @@ export const ValidatorRow: FC<{
 
 export const ValidatorCard: FC<{
   validator: HistoricValidator;
-  selected: boolean;
-  onSelectChange: (value: boolean) => void;
-}> = ({ validator, selected, onSelectChange }) => {
+}> = ({ validator }) => {
   const prefs = useStateObservable(validatorPrefs$);
 
   const vPrefs = prefs[validator.address];
@@ -74,22 +70,11 @@ export const ValidatorCard: FC<{
   return (
     <div
       className={cn("shadow p-2 rounded space-y-4", {
-        "bg-destructive/5":
-          !vPrefs || vPrefs.blocked || vPrefs.commission === 1,
-        "bg-neutral/5": selected,
+        "bg-destructive/5": !vPrefs || vPrefs.blocked,
       })}
     >
       <div className="flex items-center justify-between">
         <AddressIdentity addr={validator.address} />
-        <button
-          className={cn({
-            "text-neutral": selected,
-            "text-muted-foreground": !selected,
-          })}
-          onClick={() => onSelectChange(!selected)}
-        >
-          <Pin />
-        </button>
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
         <div>

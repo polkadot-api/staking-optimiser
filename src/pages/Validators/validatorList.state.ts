@@ -18,6 +18,7 @@ import {
   mergeMap,
   scan,
   switchMap,
+  combineLatestWith,
   take,
 } from "rxjs";
 
@@ -60,6 +61,11 @@ export interface HistoricValidator {
   nominatorQuantity: number;
   nominatorApy: number;
   totalApy: number;
+}
+
+export interface PositionValidator extends HistoricValidator {
+  position: number;
+  selected: boolean;
 }
 
 const aggregateHistoricValidatorProp = <T extends keyof HistoricValidator>(
@@ -147,7 +153,7 @@ const validatorHistory$ = stakingSdk$.pipe(
   )
 );
 
-const aggregatedValidators$ = combineLatest([
+export const aggregatedValidators$ = combineLatest([
   validatorHistory$,
   selectedEra$,
   maPeriod$,
@@ -177,6 +183,7 @@ const aggregatedValidators$ = combineLatest([
 
 export const [filterBlocked$, setFilterBlocked] = createState(true);
 export const [filterCommision$, setFilterCommission] = createState<number>(100);
+export const [search$, setSearch] = createState("");
 
 export const validatorPrefs$ = state(
   registeredValidators$.pipe(
@@ -239,6 +246,15 @@ export const sortedValidators$ = state(
 
             return sortBy.dir === "asc" ? value : -value;
           })
+    ),
+    combineLatestWith(search$),
+    map(
+      ([sorted, search]): Array<HistoricValidator & { position?: number }> =>
+        search
+          ? sorted
+              .map((v, i) => ({ ...v, position: i }))
+              .filter((v) => v.address.includes(search))
+          : sorted
     )
   ),
   []
