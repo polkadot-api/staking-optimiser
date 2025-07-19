@@ -22,7 +22,7 @@ export const ValidatorRow: FC<{
 }> = ({ validator, onSelectChange }) => {
   return (
     <>
-      <td className="text-muted-foreground">#{validator.position + 1}</td>
+      <td className="text-muted-foreground">{validator.position + 1}</td>
       <td>
         <AddressIdentity addr={validator.address} />
       </td>

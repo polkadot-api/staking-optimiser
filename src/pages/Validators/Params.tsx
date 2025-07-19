@@ -34,7 +34,7 @@ export const Params = () => {
   );
 };
 
-const MaParams = () => {
+export const MaParams = () => {
   const period = useStateObservable(maPeriod$);
   const activeEraNumber = useStateObservable(activeEraNumber$);
   const selectedEra = useStateObservable(selectedEra$);

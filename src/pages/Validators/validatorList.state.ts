@@ -1,3 +1,4 @@
+import { genericSort, type SortBy } from "@/components/SortBy";
 import { stakingApi$, stakingSdk$ } from "@/state/chain";
 import { activeEraNumber$ } from "@/state/era";
 import {
@@ -11,6 +12,7 @@ import { createSignal } from "@react-rxjs/utils";
 import type { SS58String } from "polkadot-api";
 import {
   combineLatest,
+  combineLatestWith,
   concat,
   distinct,
   map,
@@ -18,7 +20,6 @@ import {
   mergeMap,
   scan,
   switchMap,
-  combineLatestWith,
   take,
 } from "rxjs";
 
@@ -215,10 +216,7 @@ const filteredValidators$ = combineLatest([
   )
 );
 
-export const [sortBy$, setSortBy] = createState<{
-  prop: keyof HistoricValidator;
-  dir: "asc" | "desc";
-}>({
+export const [sortBy$, setSortBy] = createState<SortBy<HistoricValidator>>({
   prop: "nominatorApy",
   dir: "desc",
 });
@@ -226,26 +224,7 @@ export const [sortBy$, setSortBy] = createState<{
 export const sortedValidators$ = state(
   combineLatest([filteredValidators$, sortBy$]).pipe(
     map(([validators, sortBy]) =>
-      sortBy === null
-        ? validators
-        : [...validators].sort((a, b) => {
-            const aValue = a[sortBy.prop];
-            const bValue: any = b[sortBy.prop];
-            const value = (() => {
-              switch (typeof aValue) {
-                case "bigint":
-                  return Number(aValue - bValue);
-                case "number":
-                  return aValue - bValue;
-                case "string":
-                  return aValue.localeCompare(bValue);
-                case "boolean":
-                  return (aValue ? 1 : 0) - (bValue ? 1 : 0);
-              }
-            })();
-
-            return sortBy.dir === "asc" ? value : -value;
-          })
+      sortBy === null ? validators : [...validators].sort(genericSort(sortBy))
     ),
     combineLatestWith(search$),
     map(
@@ -253,7 +232,11 @@ export const sortedValidators$ = state(
         search
           ? sorted
               .map((v, i) => ({ ...v, position: i }))
-              .filter((v) => v.address.includes(search))
+              .filter((v) =>
+                v.address
+                  .toLocaleLowerCase()
+                  .includes(search.toLocaleLowerCase())
+              )
           : sorted
     )
   ),

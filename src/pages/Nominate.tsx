@@ -2,6 +2,7 @@ import { AccountBalance } from "@/components/AccountBalance";
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
+import { PERBILL } from "@/constants";
 import { cn } from "@/lib/utils";
 import { selectedAccountAddr$ } from "@/state/account";
 import { stakingApi$, stakingSdk$ } from "@/state/chain";
@@ -172,7 +173,6 @@ const validatorIsCurrentlyActive$ = state(
   false
 );
 
-const PERBILL = 1000000000;
 const SelectedValidator: FC<{
   validator: SS58String;
 }> = ({ validator }) => {

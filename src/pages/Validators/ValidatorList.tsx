@@ -1,14 +1,9 @@
+import { ContractableText, createSortByButton } from "@/components/SortBy";
 import { cn } from "@/lib/utils";
 import { Subscribe, useStateObservable } from "@react-rxjs/core";
-import { SortAsc, SortDesc } from "lucide-react";
 import type { SS58String } from "polkadot-api";
-import {
-  useMemo,
-  useState,
-  type FC,
-  type PropsWithChildren,
-  type SetStateAction,
-} from "react";
+import { useMemo, useState, type FC, type SetStateAction } from "react";
+import { useMediaQuery } from "react-responsive";
 import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso";
 import { Params, SortBy } from "./Params";
 import { ValidatorCard, ValidatorRow } from "./Validator";
@@ -20,8 +15,8 @@ import {
   type HistoricValidator,
   type PositionValidator,
 } from "./validatorList.state";
-import { useMediaQuery } from "react-responsive";
-import "./validators.css";
+
+const SortByButton = createSortByButton(sortBy$, setSortBy);
 
 export default function ValidatorList() {
   return (
@@ -77,7 +72,10 @@ const ValidatorsDisplay = () => {
   );
 };
 
-const TableRow: FC<ItemProps<any>> = ({ item: validator, ...props }) => {
+const TableRow: FC<ItemProps<HistoricValidator & { selected: boolean }>> = ({
+  item: validator,
+  ...props
+}) => {
   const prefs = useStateObservable(validatorPrefs$);
   const vPrefs = prefs[validator.address];
 
@@ -101,50 +99,6 @@ const TableRow: FC<ItemProps<any>> = ({ item: validator, ...props }) => {
   );
 };
 
-const ContractableText: FC<PropsWithChildren<{ smol: string }>> = ({
-  smol,
-  children,
-}) => (
-  <>
-    <span className="hidden min-xl:inline">{children}</span>
-    <span className="min-xl:hidden">{smol}</span>
-  </>
-);
-
-const SortByButton: FC<
-  PropsWithChildren<{ prop: keyof HistoricValidator }>
-> = ({ prop, children }) => {
-  const sortBy = useStateObservable(sortBy$);
-
-  return (
-    <button
-      className="flex w-full items-center justify-center gap-2"
-      onClick={() => {
-        if (sortBy.prop === prop) {
-          setSortBy({
-            ...sortBy,
-            dir: sortBy.dir === "asc" ? "desc" : "asc",
-          });
-        } else {
-          setSortBy({
-            ...sortBy,
-            prop,
-          });
-        }
-      }}
-    >
-      {children}
-      {prop === sortBy.prop ? (
-        sortBy.dir === "asc" ? (
-          <SortAsc size={20} />
-        ) : (
-          <SortDesc size={20} />
-        )
-      ) : null}
-    </button>
-  );
-};
-
 const ValidatorTable: FC<{
   validators: PositionValidator[];
   setSelection: (value: SetStateAction<SS58String[]>) => void;
@@ -152,7 +106,7 @@ const ValidatorTable: FC<{
 }> = ({ validators, setSelection, className }) => {
   return (
     <TableVirtuoso
-      className={cn("validator-table", className)}
+      className={cn("data-table", className)}
       customScrollParent={document.getElementById("app-content")!}
       data={validators}
       components={{ TableRow }}

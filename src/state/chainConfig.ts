@@ -50,7 +50,6 @@ export const rpcsByChain: Record<
       IBP1: "wss://rpc.ibp.network/polkadot",
       IBP2: "wss://polkadot.dotters.network",
       LuckyFriday: "wss://rpc-polkadot.luckyfriday.io",
-      RockX: "wss://rockx-dot.w3node.com/polka-public-dot/ws",
       Stakeworld: "wss://dot-rpc.stakeworld.io",
     },
     people: {
@@ -79,7 +78,6 @@ export const rpcsByChain: Record<
       IBP1: "wss://rpc.ibp.network/kusama",
       IBP2: "wss://kusama.dotters.network",
       LuckyFriday: "wss://rpc-kusama.luckyfriday.io",
-      RockX: "wss://rockx-ksm.w3node.com/polka-public-ksm/ws",
       Stakeworld: "wss://ksm-rpc.stakeworld.io",
     },
     people: {

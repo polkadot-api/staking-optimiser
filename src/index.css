@@ -122,3 +122,27 @@
     @apply bg-background text-foreground;
   }
 }
+
+.data-table table {
+    width: 100%;
+}
+
+.data-table tbody td {
+    padding: 0.5rem;
+    height: 5rem;
+}
+
+.data-table thead th {
+    position: relative;
+    padding: 0.5rem;
+    color: var(--color-muted-foreground);
+}
+
+.data-table thead th:not(:first-child)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    border-left: 1px solid lightgray;
+}

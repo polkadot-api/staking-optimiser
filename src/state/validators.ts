@@ -1,10 +1,10 @@
+import { PERBILL } from "@/constants";
 import type { ValidatorRewards as SdkValidatorRewards } from "@polkadot-api/sdk-staking";
 import { state } from "@react-rxjs/core";
 import { map, switchMap } from "rxjs";
 import { stakingApi$, stakingSdk$ } from "./chain";
 import { eraDurationInMs$, getEraApy } from "./era";
 
-const PERBILL = 1000000000;
 export const registeredValidators$ = state(
   stakingApi$.pipe(
     switchMap((api) => api.query.Staking.Validators.getEntries()),
