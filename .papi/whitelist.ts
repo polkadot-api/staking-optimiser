@@ -12,4 +12,5 @@ export const whitelist: (DotWhitelistEntry | DotPplWhitelistEntry)[] = [
   "const.Balances.ExistentialDeposit",
   "const.Babe.*",
   "const.System.SS58Prefix",
+  "api.NominationPoolsApi.*",
 ];

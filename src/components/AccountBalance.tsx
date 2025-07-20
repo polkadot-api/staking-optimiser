@@ -1,17 +1,17 @@
 import { selectedAccountAddr$ } from "@/state/account";
 import { balancesApi$ } from "@/state/chain";
 import { currentNominatorBond$ } from "@/state/nominate";
-import { currentNominationPoolBond$ } from "@/state/nominationPool";
+import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import { maxBigInt } from "@/util/bigint";
 import { state, useStateObservable } from "@react-rxjs/core";
-import { lazy } from "react";
+import { lazy, type FC } from "react";
 import { combineLatest, map, switchMap } from "rxjs";
 import { TextHintTooltip } from "./HintTooltip";
 import { TokenValue } from "./TokenValue";
 
 const SectorChart = lazy(() => import("@/components/SectorChart"));
 
-const accountBalance$ = state(
+export const accountBalance$ = state(
   combineLatest([selectedAccountAddr$, balancesApi$]).pipe(
     switchMap(([v, balancesApi]) =>
       v
@@ -54,7 +54,7 @@ const accountBalance$ = state(
 );
 
 const bondedStatus$ = state(
-  combineLatest([currentNominatorBond$, currentNominationPoolBond$]).pipe(
+  combineLatest([currentNominatorBond$, currentNominationPoolStatus$]).pipe(
     map(([direct, pool]) =>
       direct
         ? {
@@ -71,7 +71,16 @@ const bondedStatus$ = state(
   )
 );
 
-export const AccountBalance = () => {
+export interface AccountBalanceValue {
+  label: string;
+  value: bigint;
+  color: string;
+  tooltip: string;
+}
+
+export const AccountBalance: FC<{
+  extraValues?: AccountBalanceValue[];
+}> = ({ extraValues = [] }) => {
   const balance = useStateObservable(accountBalance$);
   const currentBond = useStateObservable(bondedStatus$);
 
@@ -87,9 +96,12 @@ export const AccountBalance = () => {
       ? 0n
       : // ExistentialDeposit is part of "locked" because it's "untouchable", i.e. can't be spend without killing the account
         // so we have to remove it from here. We could add it as a separate category but... not worth it for just the ED
-        balance.locked - balance.existentialDeposit - (currentBond?.bond ?? 0n);
+        balance.locked -
+        balance.existentialDeposit -
+        (currentBond?.bond ?? 0n) -
+        unbonding;
 
-  const data = [
+  const data: AccountBalanceValue[] = [
     {
       label: "Bonded",
       value: bonded - unbonding,
@@ -105,7 +117,7 @@ export const AccountBalance = () => {
     {
       label: "Locked",
       value: unbondedLockedBalance,
-      color: "color-mix(in srgb, var(--color-positive), transparent 20%)",
+      color: "color-mix(in srgb, var(--chart-4), transparent 20%)",
       tooltip:
         "Amount locked but not used in staking. You can bond this amount and you will still retain the same spendable amount.",
     },
@@ -115,6 +127,7 @@ export const AccountBalance = () => {
       color: "color-mix(in srgb, var(--color-neutral), transparent 20%)",
       tooltip: "Unlocked amount that can be transferred or used to pay fees.",
     },
+    ...extraValues,
   ].filter((v) => v.value > 0n);
 
   return (

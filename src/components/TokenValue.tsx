@@ -23,7 +23,13 @@ export const TokenValue: FC<{
   value: bigint;
   decimalsFn?: (integerPart: bigint, tokenDecimals: number) => number;
   className?: string;
-}> = ({ value, decimalsFn = significantDigitsDecimals(3, 2), className }) => {
+  colored?: boolean;
+}> = ({
+  value,
+  decimalsFn = significantDigitsDecimals(3, 2),
+  className,
+  colored = true,
+}) => {
   const tokenProps = useStateObservable(tokenProps$);
   if (!tokenProps) return null;
   const { decimals: tokenDecimals, symbol } = tokenProps;
@@ -40,9 +46,13 @@ export const TokenValue: FC<{
       : null;
 
   return (
-    <span className={cn("text-foreground", className)}>
+    <span className={cn(colored ? "text-foreground" : "", className)}>
       <span>{Number(integer).toLocaleString()}</span>
-      {decimalPart && <span className="text-foreground/75">{decimalPart}</span>}
+      {decimalPart && (
+        <span className={colored ? "text-foreground/75" : undefined}>
+          {decimalPart}
+        </span>
+      )}
       <span className="ml-1">{symbol}</span>
     </span>
   );

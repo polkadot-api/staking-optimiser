@@ -1,6 +1,10 @@
+import { AddressIdentity } from "@/components/AddressIdentity";
+import { Card } from "@/components/Card";
 import { ContractableText, createSortByButton } from "@/components/SortBy";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Subscribe, useStateObservable } from "@react-rxjs/core";
+import { useStateObservable } from "@react-rxjs/core";
+import { Search } from "lucide-react";
 import type { FC } from "react";
 import { TableVirtuoso, type ItemProps } from "react-virtuoso";
 import { MaParams } from "../Validators/Params";
@@ -12,25 +16,20 @@ import {
   sortedPools$,
   type NominationPool,
 } from "./poolList.state";
-import { AddressIdentity } from "@/components/AddressIdentity";
-import { Card } from "@/components/Card";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 
 const SortByButton = createSortByButton(sortBy$, setSortBy);
 
 export default function PoolList() {
   return (
     <div className="space-y-4">
-      <Subscribe fallback="Loading…">
-        <div className="flex flex-wrap gap-4">
-          <MaParams />
-          <SearchCard />
-        </div>
-      </Subscribe>
-      <Subscribe fallback="Loading…">
-        <PoolsTable />
-      </Subscribe>
+      <h3 className="text-lg font-medium text-muted-foreground">
+        Nomination Pools List
+      </h3>
+      <div className="flex flex-wrap gap-4">
+        <MaParams />
+        <SearchCard />
+      </div>
+      <PoolsTable />
     </div>
   );
 }

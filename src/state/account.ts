@@ -242,6 +242,12 @@ export const selectedAccount$ = state(
   )
 );
 
+export const selectedSignerAccount$ = selectedAccount$.pipeState(
+  map((v) =>
+    v?.type === "address" ? null : v?.type === "extension" ? v.value : null
+  )
+);
+
 export const selectedAccountAddr$ = selectedAccount$.pipeState(
   map((v) =>
     v?.type === "address"
