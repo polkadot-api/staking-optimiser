@@ -11,6 +11,7 @@ import { selectedSignerAccount$ } from "@/state/account";
 import { stakingApi$, tokenDecimals$ } from "@/state/chain";
 import { activeEra$, activeEraNumber$, eraDurationInMs$ } from "@/state/era";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
+import { estimatedFuture } from "@/util/date";
 import { MultiAddress } from "@polkadot-api/descriptors";
 import { state, Subscribe, useStateObservable } from "@react-rxjs/core";
 import { lazy, useState } from "react";
@@ -103,9 +104,9 @@ const ManageLocks = () => {
       <h3 className="font-medium text-muted-foreground">Active Unlocks</h3>
       <ol>
         {locks.map(({ unlocked, estimatedUnlock, value }, i) => (
-          <li>
+          <li key={i}>
             <span className="text-muted-foreground">
-              {estimatedUnlock.toLocaleString()}:
+              {unlocked ? "Unbonded" : estimatedFuture(estimatedUnlock)}:
             </span>{" "}
             <TokenValue value={value} />{" "}
             {unlocked ? <Button>Unlock</Button> : null}
