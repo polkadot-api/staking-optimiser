@@ -9,12 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { selectedSignerAccount$ } from "@/state/account";
 import { stakingApi$, tokenDecimals$ } from "@/state/chain";
-import { activeEra$, activeEraNumber$ } from "@/state/era";
+import { activeEra$, activeEraNumber$, eraDurationInMs$ } from "@/state/era";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import { MultiAddress } from "@polkadot-api/descriptors";
 import { state, Subscribe, useStateObservable } from "@react-rxjs/core";
 import { lazy, useState } from "react";
-import { firstValueFrom, switchMap } from "rxjs";
+import { combineLatest, filter, firstValueFrom, map, switchMap } from "rxjs";
 
 const PoolList = lazy(() => import("./PoolList"));
 
@@ -46,17 +46,22 @@ const CurrentStatus = () => {
         <span className="text-muted-foreground">#{pool.pool_id}</span>{" "}
         <span className="font-medium">{pool.name}</span>
       </div>
-      <AccountBalance
-        extraValues={[
-          {
-            label: "Rewards",
-            color: "color-mix(in srgb, var(--color-positive), transparent 40%)",
-            tooltip:
-              "Rewards generated during the previous eras ready to be withdrawn or compounded.",
-            value: pool.pendingRewards,
-          },
-        ]}
-      />
+      <div className="flex flex-wrap gap-2 items-start">
+        <AccountBalance
+          className="grow-[2]"
+          extraValues={[
+            {
+              label: "Rewards",
+              color:
+                "color-mix(in srgb, var(--color-positive), transparent 40%)",
+              tooltip:
+                "Rewards generated during the previous eras ready to be withdrawn or compounded.",
+              value: pool.pendingRewards,
+            },
+          ]}
+        />
+        {pool.unbonding_eras.length ? <ManageLocks /> : null}
+      </div>
       <div className="space-x-4 mt-4">
         <DialogButton title="Manage bond" content={() => <ManageBond />}>
           Manage bond
@@ -64,6 +69,50 @@ const CurrentStatus = () => {
         <Button>Claim rewards</Button>
       </div>
     </Card>
+  );
+};
+
+const locks$ = state(
+  combineLatest([
+    activeEra$,
+    eraDurationInMs$,
+    currentNominationPoolStatus$.pipe(filter((v) => v != null)),
+  ]).pipe(
+    map(([activeEra, eraDuration, pool]) => {
+      const unlocks = pool.unbonding_eras.map(({ era, value }) => ({
+        value,
+        unlocked: era <= activeEra.era,
+        estimatedUnlock: new Date(
+          Date.now() +
+            Math.max(0, activeEra.estimatedEnd.getTime() - Date.now()) +
+            (era - activeEra.era - 1) * eraDuration
+        ),
+      }));
+      return unlocks.sort(
+        (a, b) => a.estimatedUnlock.getTime() - b.estimatedUnlock.getTime()
+      );
+    })
+  )
+);
+
+const ManageLocks = () => {
+  const locks = useStateObservable(locks$);
+
+  return (
+    <div className="grow">
+      <h3 className="font-medium text-muted-foreground">Active Unlocks</h3>
+      <ol>
+        {locks.map(({ unlocked, estimatedUnlock, value }, i) => (
+          <li>
+            <span className="text-muted-foreground">
+              {estimatedUnlock.toLocaleString()}:
+            </span>{" "}
+            <TokenValue value={value} />{" "}
+            {unlocked ? <Button>Unlock</Button> : null}
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 };
 
@@ -88,6 +137,8 @@ const ManageBond = () => {
   if (!balance) return null;
   if (!pool) return <div>TODO not in a pool</div>;
 
+  const bigBond = isNaN(bond) ? 0n : BigInt(Math.round(bond));
+
   const currentUnbonding = pool.unbonding_eras
     .map((v) => v.value)
     .reduce((a, b) => a + b, 0n);
@@ -106,24 +157,12 @@ const ManageBond = () => {
 
       // Accounting for BigInt <-> Number error
       // assuming we're not letting the user unbond with an in-between value.
-      const big_bond =
-        bond < minBond
-          ? bond < minBond / 2n
-            ? 0n
-            : minBond
-          : BigInt(Math.round(bond));
+      const safeBond =
+        bigBond < minBond ? (bigBond < minBond / 2n ? 0n : minBond) : bigBond;
 
-      const unbonding = pool.bond - big_bond;
+      const unbonding = pool.bond - safeBond;
       if (unbonding < 0) throw new Error("Can't unbond negative");
       const unbonding_points = (unbonding * pool.points) / pool.bond;
-      console.log({
-        bond,
-        big_bond,
-        unbonding,
-        points: pool.points,
-        ogBond: pool.bond,
-        unbonding_points,
-      });
 
       api.tx.NominationPools.unbond({
         member_account: MultiAddress.Id(selectedAccount.address),
@@ -182,10 +221,7 @@ const ManageBond = () => {
         {bond < pool.bond ? (
           <div>
             <span className="font-bold">Unbonding:</span>{" "}
-            <TokenValue
-              className="tabular-nums"
-              value={pool.bond - BigInt(Math.round(bond))}
-            />{" "}
+            <TokenValue className="tabular-nums" value={pool.bond - bigBond} />{" "}
             <span className="text-muted-foreground">
               (Will unlock in 28 days)
             </span>
@@ -195,7 +231,7 @@ const ManageBond = () => {
             <span className="font-bold">Bonding:</span>{" "}
             <TokenValue
               className="tabular-nums"
-              value={BigInt(Math.round(bond)) - pool.bond}
+              value={bigBond - pool.bond}
             />{" "}
           </div>
         )}
@@ -206,7 +242,7 @@ const ManageBond = () => {
             value={
               bond < pool.bond
                 ? balance.spendable
-                : balance.spendable - (BigInt(Math.round(bond)) - pool.bond)
+                : balance.spendable - (bigBond - pool.bond)
             }
           />{" "}
         </div>
@@ -235,7 +271,9 @@ const ManageBond = () => {
             Unbond
           </Button>
         ) : (
-          <Button>Bond</Button>
+          <Button disabled={bigBond < minBond || pool.bond - bigBond == 0n}>
+            Bond
+          </Button>
         )}
       </div>
     </div>

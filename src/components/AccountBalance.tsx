@@ -8,6 +8,7 @@ import { lazy, type FC } from "react";
 import { combineLatest, map, switchMap } from "rxjs";
 import { TextHintTooltip } from "./HintTooltip";
 import { TokenValue } from "./TokenValue";
+import { cn } from "@/lib/utils";
 
 const SectorChart = lazy(() => import("@/components/SectorChart"));
 
@@ -80,7 +81,8 @@ export interface AccountBalanceValue {
 
 export const AccountBalance: FC<{
   extraValues?: AccountBalanceValue[];
-}> = ({ extraValues = [] }) => {
+  className?: string;
+}> = ({ extraValues = [], className }) => {
   const balance = useStateObservable(accountBalance$);
   const currentBond = useStateObservable(bondedStatus$);
 
@@ -131,7 +133,12 @@ export const AccountBalance: FC<{
   ].filter((v) => v.value > 0n);
 
   return (
-    <div className="flex gap-4 items-center justify-center flex-wrap">
+    <div
+      className={cn(
+        "flex gap-4 items-center justify-center flex-wrap",
+        className
+      )}
+    >
       <SectorChart data={data} />
       <ol className="space-y-2">
         {data.map(({ label, value, color, tooltip }) => (
