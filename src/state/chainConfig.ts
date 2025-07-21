@@ -13,6 +13,8 @@ import {
 } from "@polkadot-api/descriptors";
 import { type ChainDefinition, type TypedApi } from "polkadot-api";
 
+export const USE_CHOPSTICKS = import.meta.env.VITE_WITH_CHOPSTICKS;
+
 export type KnownChains = "polkadot" | "kusama" | "westend" | "paseo";
 export const knownChains: Array<KnownChains> = [
   "polkadot",
@@ -42,16 +44,20 @@ export const rpcsByChain: Record<
   Record<ChainType, Record<string, string>>
 > = {
   polkadot: {
-    relay: {
-      Allnodes: "wss://polkadot-rpc.publicnode.com",
-      Blockops: "wss://polkadot-public-rpc.blockops.network/ws",
-      Dwellir: "wss://polkadot-rpc.dwellir.com",
-      "Dwellir Tunisia": "wss://polkadot-rpc-tn.dwellir.com",
-      IBP1: "wss://rpc.ibp.network/polkadot",
-      IBP2: "wss://polkadot.dotters.network",
-      LuckyFriday: "wss://rpc-polkadot.luckyfriday.io",
-      Stakeworld: "wss://dot-rpc.stakeworld.io",
-    },
+    relay: USE_CHOPSTICKS
+      ? {
+          localhost: "ws://localhost:8132",
+        }
+      : {
+          Allnodes: "wss://polkadot-rpc.publicnode.com",
+          Blockops: "wss://polkadot-public-rpc.blockops.network/ws",
+          Dwellir: "wss://polkadot-rpc.dwellir.com",
+          "Dwellir Tunisia": "wss://polkadot-rpc-tn.dwellir.com",
+          IBP1: "wss://rpc.ibp.network/polkadot",
+          IBP2: "wss://polkadot.dotters.network",
+          LuckyFriday: "wss://rpc-polkadot.luckyfriday.io",
+          Stakeworld: "wss://dot-rpc.stakeworld.io",
+        },
     people: {
       IBP1: "wss://sys.ibp.network/people-polkadot",
       IBP2: "wss://people-polkadot.dotters.network",
