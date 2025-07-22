@@ -28,3 +28,23 @@ await client._request("dev_newBlock", []);
 console.log("Ready");
 
 client.destroy();
+
+/**
+
+chopsticks/node_modules/.pnpm/@polkadot+rpc-provider@15.9.3/node_modules/@polkadot/rpc-provider/cjs/ws/index.js
+
+    send(method, params, isCacheable, subscription) {
+        this.__internal__endpointStats.requests++;
+        this.__internal__stats.total.requests++;
+        const [id, body] = this.__internal__coder.encodeJson(method, params);
+        console.log([">>", new Date().toISOString(), body].join(" "));
+
+
+    __internal__onSocketMessage = (message) => {
+        l.debug(() => ['received', message.data]);
+        const bytesRecv = message.data.length;
+        this.__internal__endpointStats.bytesRecv += bytesRecv;
+        this.__internal__stats.total.bytesRecv += bytesRecv;
+        console.log(["<<", new Date().toISOString(), message.data].join(" "));
+
+ */
