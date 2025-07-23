@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev-local": "VITE_WITH_CHOPSTICKS=true vite",
     "postinstall": "papi --whitelist ./.papi/whitelist.ts",
     "build": "tsc -b && vite build",
     "analyze": "ANALYZE=true vite build",
@@ -39,6 +40,7 @@
     "react-dom": "^19.1.0",
     "react-responsive": "^10.0.1",
     "react-router-dom": "^7.6.3",
+    "react-svg": "^16.3.0",
     "react-virtuoso": "^4.13.0",
     "recharts": "^3.1.0",
     "rxjs": "^7.8.2",

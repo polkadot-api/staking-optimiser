@@ -3,13 +3,17 @@ import { state } from "@react-rxjs/core";
 import {
   combineLatest,
   concat,
+  defer,
   distinctUntilChanged,
   filter,
   from,
   map,
+  merge,
   repeat,
+  Subject,
   switchMap,
   take,
+  timer,
 } from "rxjs";
 
 export const eraDurationInMs$ = combineLatest([
@@ -43,10 +47,20 @@ export function getEraApy(
   return Math.pow(1 + rewardPct, erasInAYear) - 1;
 }
 
+// chopsticks stuff
+export const refreshEra$ = new Subject<void>();
 export const activeEra$ = state(
   combineLatest([
     stakingApi$.pipe(
-      switchMap((stakingApi) => stakingApi.query.Staking.ActiveEra.getValue())
+      switchMap((stakingApi) =>
+        defer(stakingApi.query.Staking.ActiveEra.getValue).pipe(
+          // refresh every 10 minutes
+          repeat({
+            delay: () =>
+              merge(refreshEra$, timer(10 * 60 * 1000)).pipe(take(1)),
+          })
+        )
+      )
     ),
     eraDurationInMs$,
   ]).pipe(
@@ -64,10 +78,6 @@ export const activeEra$ = state(
         pctComplete: currentEraTime / eraDurationInMs,
         estimatedEnd,
       };
-    }),
-    // refresh every 10 minutes
-    repeat({
-      delay: 10 * 60 * 1000,
     })
   )
 );

@@ -4,7 +4,10 @@ import { state, withDefault } from "@react-rxjs/core";
 import { createClient, type PolkadotClient } from "polkadot-api";
 import { withLogsRecorder } from "polkadot-api/logs-provider";
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat";
-import { getWsProvider } from "polkadot-api/ws-provider/web";
+import {
+  getWsProvider,
+  type JsonRpcProvider,
+} from "polkadot-api/ws-provider/web";
 import { matchPath } from "react-router-dom";
 import {
   concat,
@@ -23,6 +26,7 @@ import {
   rpcsByChain,
   tokenDecimalsByChain,
   tokenSymbolByChain,
+  USE_CHOPSTICKS,
   type BalancesTypedApi,
   type ChainType,
   type KnownChains,
@@ -30,6 +34,7 @@ import {
   type StakingTypedApi,
 } from "./chainConfig";
 import { location$ } from "./location";
+import { withChopsticksEnhancer } from "@/lib/chopsticksEnhancer";
 
 export const selectedChain$ = state(
   location$.pipe(
@@ -68,15 +73,20 @@ const shuffleArray = <T>(array: T[]): T[] =>
 
 const createClients = (chain: KnownChains) => {
   const clients: Partial<Record<ChainType, PolkadotClient>> = {};
-  const getRpcClient = (chainType: ChainType) =>
-    (clients[chainType] ??= createClient(
-      withLogsRecorder(
-        (...v) => console.debug(chainType, ...v),
-        withPolkadotSdkCompat(
-          getWsProvider(shuffleArray(Object.values(rpcs[chainType])))
-        )
-      )
+  const getRpcClient = (chainType: ChainType) => {
+    let rpcProvider: JsonRpcProvider = getWsProvider(
+      shuffleArray(Object.values(rpcs[chainType]))
+    );
+    if (USE_CHOPSTICKS && chainType === "relay") {
+      rpcProvider = withChopsticksEnhancer(rpcProvider);
+    } else {
+      rpcProvider = withPolkadotSdkCompat(rpcProvider);
+    }
+
+    return (clients[chainType] ??= createClient(
+      withLogsRecorder((...v) => console.debug(chainType, ...v), rpcProvider)
     ));
+  };
 
   const rpcs = rpcsByChain[chain];
   const chainTypes = clientTypesByChain[chain];

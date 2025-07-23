@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { ChainSelector } from "./ChainSelector";
 import { SelectAccount } from "./SelectAccount";
+import { USE_CHOPSTICKS } from "@/state/chainConfig";
+import { ChopsticksController } from "../ChopsticksController";
 
 export const Header = () => (
   <div className="shrink-0 border-b">
@@ -9,7 +11,7 @@ export const Header = () => (
         <Link to="/">Staking Optimizer</Link>
       </div>
       <SelectAccount />
-      <ChainSelector />
+      {USE_CHOPSTICKS ? <ChopsticksController /> : <ChainSelector />}
     </div>
   </div>
 );

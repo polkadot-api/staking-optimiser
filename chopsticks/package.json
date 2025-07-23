@@ -1,0 +1,20 @@
+{
+  "name": "staking-chopsticks",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "scripts": {
+    "start": "bun run ./main.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "bun": "^1.2.2"
+  },
+  "dependencies": {
+    "@acala-network/chopsticks": "^1.0.2",
+    "@types/bun": "^1.2.13",
+    "polkadot-api": "^1.9.1"
+  }
+}
