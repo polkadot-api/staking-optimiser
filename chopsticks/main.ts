@@ -12,6 +12,7 @@ const chopsticksProcess = spawn("pnpm", [
   "chopsticks",
   `--endpoint=${ENDPOINT}`,
   `--port=${LOCAL_RPC_PORT}`,
+  `--db=chopsticks.db`,
 ]);
 chopsticksProcess.stdout.pipe(logStream);
 chopsticksProcess.stderr.pipe(logStreamErr);
@@ -20,12 +21,23 @@ console.log(
   "Connecting to chopsticks… It might take a few retries until the chain is up"
 );
 const client = createClient(getWsProvider(`ws://localhost:${LOCAL_RPC_PORT}`));
-await client.getUnsafeApi().runtimeToken;
+const api = client.getUnsafeApi();
+await api.runtimeToken;
 
-console.log("Producing initial block");
+const start = Date.now();
+const gt = () => Date.now() - start;
+
+console.log("Preloading Paras.Heads");
+await api.query.Paras.Heads.getEntries();
+console.log("Preloading ParaInclusion.V1", gt());
+await api.query.ParaInclusion.V1.getEntries();
+console.log("Preloading CoretimeAssignmentProvider.CoreDescriptors", gt());
+await api.query.CoretimeAssignmentProvider.CoreDescriptors.getEntries();
+
+console.log("Producing initial block", gt());
 await client._request("dev_newBlock", []);
 
-console.log("Ready");
+console.log("Ready", gt());
 
 client.destroy();
 

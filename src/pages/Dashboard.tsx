@@ -20,10 +20,10 @@ export const Dashboard = () => {
       <NavMenu />
       <Subscribe fallback="Loading…">
         <div className="space-y-4">
+          <ActiveEra />
           <Card title="Balance">
             <AccountBalance />
           </Card>
-          <ActiveEra />
           <NominatingContent />
         </div>
       </Subscribe>

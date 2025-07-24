@@ -1,12 +1,14 @@
 import { cn } from "@/lib/utils";
 import { useId, type FC, type PropsWithChildren, type ReactNode } from "react";
+import { TextHintTooltip } from "./HintTooltip";
 
 export const Card: FC<
   PropsWithChildren<{
     title?: ReactNode;
+    hint?: string;
     className?: string;
   }>
-> = ({ title, className, children }) => {
+> = ({ title, hint, className, children }) => {
   const titleId = useId();
 
   return (
@@ -18,9 +20,12 @@ export const Card: FC<
       role="region"
       aria-labelledby={titleId}
     >
-      <h3 id={titleId} className="font-medium text-muted-foreground">
-        {title}
-      </h3>
+      <div className="flex justify-between">
+        <h3 id={titleId} className="font-medium text-muted-foreground">
+          {title}
+        </h3>
+        {hint ? <TextHintTooltip hint={hint} /> : null}
+      </div>
       {children}
     </article>
   );

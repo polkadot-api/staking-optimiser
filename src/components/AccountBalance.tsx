@@ -90,6 +90,12 @@ export const AccountBalance: FC<{
     return <div>No account selected</div>;
   }
 
+  if (balance.total === 0n) {
+    return (
+      <div>This account has no balance. Deposit some to start staking</div>
+    );
+  }
+
   const bonded = currentBond?.bond ?? 0n;
   const unbonding =
     currentBond?.unlocks.map((v) => v.value).reduce((a, b) => a + b, 0n) ?? 0n;

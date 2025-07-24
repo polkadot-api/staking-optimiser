@@ -1,7 +1,6 @@
 import { AccountBalance } from "@/components/AccountBalance";
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
-import { NavMenu } from "@/components/NavMenu/NavMenu";
 import { PERBILL } from "@/constants";
 import { cn } from "@/lib/utils";
 import { selectedAccountAddr$ } from "@/state/account";
@@ -12,9 +11,8 @@ import {
   eraDurationInMs$,
   getEraApy,
 } from "@/state/era";
-import { isNominating$ } from "@/state/nominate";
 import { roundToDecimalPlaces } from "@/util/format";
-import { state, Subscribe, useStateObservable } from "@react-rxjs/core";
+import { state, useStateObservable } from "@react-rxjs/core";
 import { type SS58String } from "polkadot-api";
 import { lazy, type FC } from "react";
 import {
@@ -29,24 +27,7 @@ import {
 
 const EraChart = lazy(() => import("@/components/EraChart"));
 
-export const Nominate = () => {
-  return (
-    <div>
-      <NavMenu />
-      <Subscribe fallback="Loading…">
-        <NominateContent />
-      </Subscribe>
-    </div>
-  );
-};
-
-const NominateContent = () => {
-  const isNominating = useStateObservable(isNominating$);
-
-  return isNominating ? <NominatingContent /> : <NotNominatingContent />;
-};
-
-const NominatingContent = () => {
+export const NominatingContent = () => {
   return (
     <div className="space-y-4">
       <BalanceCard />
@@ -224,8 +205,4 @@ const SelectedValidator: FC<{
       <EraChart height={200} data={rewardHistory} activeEra={activeEra} />
     </div>
   );
-};
-
-const NotNominatingContent = () => {
-  return "Not Nominating";
 };
