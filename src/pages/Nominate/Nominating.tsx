@@ -1,6 +1,7 @@
 import { AccountBalance } from "@/components/AccountBalance";
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
+import { DialogButton } from "@/components/DialogButton";
 import { PERBILL } from "@/constants";
 import { cn } from "@/lib/utils";
 import { selectedAccountAddr$ } from "@/state/account";
@@ -11,6 +12,7 @@ import {
   eraDurationInMs$,
   getEraApy,
 } from "@/state/era";
+import { currentNominatorBond$ } from "@/state/nominate";
 import { roundToDecimalPlaces } from "@/util/format";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { type SS58String } from "polkadot-api";
@@ -24,23 +26,37 @@ import {
   switchMap,
   withLatestFrom,
 } from "rxjs";
+import { ManageBond } from "./ManageBond";
+import { NominateLocks } from "./NominateLocks";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
 
 export const NominatingContent = () => {
   return (
     <div className="space-y-4">
-      <BalanceCard />
+      <StatusCard />
       <SelectedValidators />
     </div>
   );
 };
 
-const BalanceCard = () => (
-  <Card title="Balance">
-    <AccountBalance />
-  </Card>
-);
+const StatusCard = () => {
+  const currentBond = useStateObservable(currentNominatorBond$);
+
+  return (
+    <Card title="Status">
+      <div className="flex flex-wrap gap-2 items-start">
+        <AccountBalance className="grow-[2]" />
+        {currentBond?.unlocking.length ? <NominateLocks /> : null}
+      </div>
+      <div className="mt-4">
+        <DialogButton title="Manage bond" content={() => <ManageBond />}>
+          Manage bond
+        </DialogButton>
+      </div>
+    </Card>
+  );
+};
 
 const selectedValidators$ = state(
   combineLatest([selectedAccountAddr$, stakingApi$]).pipe(
@@ -123,13 +139,17 @@ const SelectedValidators = () => {
 
   return (
     <Card title="Selected Validators">
-      <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 py-2">
-        {validators.map((v) => (
-          <li key={v}>
-            <SelectedValidator validator={v} />
-          </li>
-        ))}
-      </ul>
+      {validators.length ? (
+        <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 py-2">
+          {validators.map((v) => (
+            <li key={v}>
+              <SelectedValidator validator={v} />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="text-muted-foreground">No selected validators</div>
+      )}
     </Card>
   );
 };

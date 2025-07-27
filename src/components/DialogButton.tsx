@@ -1,19 +1,50 @@
 import { codeSplit } from "@/util/codeSplit";
-import { Subscribe } from "@react-rxjs/core";
-import { useState, type PropsWithChildren, type ReactNode } from "react";
+import { Subscribe, useStateObservable, withDefault } from "@react-rxjs/core";
+import {
+  useState,
+  type FC,
+  type PropsWithChildren,
+  type ReactNode,
+} from "react";
 import { Button } from "./ui/button";
+import { selectedSignerAccount$ } from "@/state/account";
+import { map } from "rxjs";
+import { Eye } from "lucide-react";
 
 const dialogModule = import("@/components/ui/dialog");
 
 export type DialogButtonProps = PropsWithChildren<{
   title?: string;
   content: (args: { isOpen: boolean; close: () => void }) => ReactNode;
+  needsSigner?: boolean;
 }>;
+
+const hasSigner$ = selectedSignerAccount$.pipeState(
+  map((v) => !!v),
+  withDefault(true)
+);
+
+const Trigger: FC<PropsWithChildren<{ needsSigner?: boolean }>> = ({
+  needsSigner,
+  children,
+  ...props
+}) => {
+  const hasSigner = useStateObservable(hasSigner$);
+
+  return (
+    <Button disabled={needsSigner && !hasSigner} {...props}>
+      {children}
+      {needsSigner && !hasSigner ? <Eye /> : null}
+    </Button>
+  );
+};
 
 export const DialogButton = codeSplit(
   dialogModule,
-  ({ children }: DialogButtonProps) => <Button>{children}</Button>,
-  ({ payload, title, children, content }) => {
+  ({ children, needsSigner }: DialogButtonProps) => (
+    <Trigger needsSigner={needsSigner}>{children}</Trigger>
+  ),
+  ({ payload, needsSigner, title, children, content }) => {
     const [open, setOpen] = useState(false);
 
     const {
@@ -28,7 +59,7 @@ export const DialogButton = codeSplit(
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button>{children}</Button>
+          <Trigger needsSigner={needsSigner}>{children}</Trigger>
         </DialogTrigger>
         <DialogContent>
           {title ? (

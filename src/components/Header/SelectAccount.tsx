@@ -36,7 +36,7 @@ const selectedAccountName$ = selectedAccount$.pipeState(
 
     return identity$(v.value).pipe(
       map((id) => ({
-        name: id ? (id.value + id.subId ? `/${id.subId}` : "") : null,
+        name: id ? (id.value + (id.subId ? `/${id.subId}` : "")) : null,
         address: v.value,
       }))
     );

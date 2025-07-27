@@ -27,12 +27,12 @@ await api.runtimeToken;
 const start = Date.now();
 const gt = () => Date.now() - start;
 
-console.log("Preloading Paras.Heads");
-await api.query.Paras.Heads.getEntries();
-console.log("Preloading ParaInclusion.V1", gt());
-await api.query.ParaInclusion.V1.getEntries();
-console.log("Preloading CoretimeAssignmentProvider.CoreDescriptors", gt());
-await api.query.CoretimeAssignmentProvider.CoreDescriptors.getEntries();
+// console.log("Preloading block construction data");
+await Promise.all([
+  api.query.Paras.Heads.getEntries(),
+  api.query.ParaInclusion.V1.getEntries(),
+  api.query.CoretimeAssignmentProvider.CoreDescriptors.getEntries()
+]);
 
 console.log("Producing initial block", gt());
 await client._request("dev_newBlock", []);

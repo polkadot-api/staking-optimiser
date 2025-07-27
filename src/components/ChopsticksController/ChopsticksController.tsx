@@ -48,7 +48,7 @@ export const ChopsticksController = () => {
 };
 
 const stakingCodecs = await getTypedCodecs(dot);
-let hasPreinitialized = false;
+let hasPreinitialized = sessionStorage.getItem("preinit-chopsticks") === "true";
 const SkipEras = () => {
   const ref = useRef<HTMLInputElement | null>(null);
   const { handler, status } = useControllerAction(async () => {
@@ -68,18 +68,8 @@ const SkipEras = () => {
     // We can speed this up if we ask for all entries before changing era.
     if (!hasPreinitialized) {
       hasPreinitialized = true;
+      sessionStorage.setItem("preinit-chopsticks", "true");
       console.log("preloading validators", new Date());
-      // await typedApi.query.Staking.Validators.getEntries();
-      // console.log("preloading bonds", new Date());
-      // await typedApi.query.Staking.Bonded.getEntries();
-      // console.log("preloading nominators", new Date());
-      // await typedApi.query.Staking.Nominators.getEntries();
-      // console.log("preloading ledger", new Date());
-      // await typedApi.query.Staking.Ledger.getEntries();
-      // console.log("preloading list bags", new Date());
-      // await typedApi.query.VoterList.ListBags.getEntries();
-      // console.log("preloading list nodes", new Date());
-      // await typedApi.query.VoterList.ListNodes.getEntries();
       await Promise.all([
         typedApi.query.Staking.Validators.getEntries(),
         typedApi.query.Staking.Bonded.getEntries(),
@@ -90,19 +80,6 @@ const SkipEras = () => {
       ]);
       console.log("preloaded", new Date());
     }
-
-    /**
-                 cold hot
-      validators 0:01 0:00
-      bonds      0:40 0:03
-      nominators 0:35 0:05
-      ledger     1:12 0:03
-      list bags  0:01 0:00
-      list nodes 0:38 0:02
-
-      SUM        2:27 0:13
-      ALL        1:03 0:09
-     */
 
     const api = client.getUnsafeApi();
     const [

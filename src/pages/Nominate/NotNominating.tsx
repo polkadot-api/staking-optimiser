@@ -1,10 +1,5 @@
-import { accountBalance$ } from "@/components/AccountBalance";
 import { Card } from "@/components/Card";
-import { TokenValue } from "@/components/TokenValue";
-import { stakingApi$ } from "@/state/chain";
-import { activeEra$ } from "@/state/era";
-import { state, useStateObservable } from "@react-rxjs/core";
-import { defer, map, repeat, skip, switchMap } from "rxjs";
+import { useStateObservable } from "@react-rxjs/core";
 import {
   bondableAmount$,
   minBond$,
