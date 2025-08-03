@@ -27,6 +27,7 @@ import {
   withLatestFrom,
 } from "rxjs";
 import { ManageBond } from "./ManageBond";
+import { MinBondingAmounts } from "./MinBondingAmounts";
 import { NominateLocks } from "./NominateLocks";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
@@ -34,6 +35,7 @@ const EraChart = lazy(() => import("@/components/EraChart"));
 export const NominatingContent = () => {
   return (
     <div className="space-y-4">
+      <MinBondingAmounts />
       <StatusCard />
       <SelectedValidators />
     </div>
@@ -50,7 +52,11 @@ const StatusCard = () => {
         {currentBond?.unlocking.length ? <NominateLocks /> : null}
       </div>
       <div className="mt-4">
-        <DialogButton title="Manage bond" content={() => <ManageBond />}>
+        <DialogButton
+          title="Manage bond"
+          content={() => <ManageBond />}
+          needsSigner
+        >
           Manage bond
         </DialogButton>
       </div>

@@ -28,8 +28,12 @@ import { Card } from "@/components/Card";
 export const Params = () => {
   return (
     <div className="space-y-4 pb-2 min-md:space-y-0 min-md:flex gap-2 justify-stretch">
-      <MaParams />
-      <Filters />
+      <Card title="Data Options" className="grow">
+        <MaParams />
+      </Card>
+      <Card title="Filters" className="grow">
+        <Filters />
+      </Card>
     </div>
   );
 };
@@ -57,7 +61,7 @@ export const MaParams = () => {
   }, [sliderFocused, period, selectedEra]);
 
   return (
-    <Card title="Data Options" className="grow">
+    <div>
       <div className="flex gap-2 items-center justify-center mb-4">
         <label className="flex flex-col overflow-hidden">
           <div className="text-muted-foreground">Era</div>
@@ -125,7 +129,7 @@ export const MaParams = () => {
         }}
         onValueCommit={resetSliderState}
       />
-    </Card>
+    </div>
   );
 };
 
@@ -190,7 +194,7 @@ const Filters = () => {
   const search = useStateObservable(search$);
 
   return (
-    <Card title="Filters" className="grow">
+    <div>
       <label className="block py-4">
         <Switch
           checked={filterBlocked}
@@ -221,6 +225,6 @@ const Filters = () => {
           />
         </label>
       </div>
-    </Card>
+    </div>
   );
 };

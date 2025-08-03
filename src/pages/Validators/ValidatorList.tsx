@@ -15,6 +15,7 @@ import {
   type HistoricValidator,
   type PositionValidator,
 } from "./validatorList.state";
+import { Pin } from "lucide-react";
 
 const SortByButton = createSortByButton(sortBy$, setSortBy);
 
@@ -162,6 +163,14 @@ const ValidatorTable: FC<{
                 c ? [...p, v.address] : p.filter((addr) => addr != v.address)
               )
             }
+            selectIcon={(selected) => (
+              <Pin
+                className={cn({
+                  "text-neutral": selected,
+                  "text-muted-foreground": !selected,
+                })}
+              />
+            )}
           />
         );
       }}

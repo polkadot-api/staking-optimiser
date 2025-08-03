@@ -9,6 +9,7 @@ import {
   rewardHistory$,
 } from "@/state/nominate";
 import { estimatedFuture } from "@/util/date";
+import { formatPercentage } from "@/util/format";
 import { Subscribe, useStateObservable } from "@react-rxjs/core";
 import { lazy, Suspense } from "react";
 
@@ -49,7 +50,7 @@ const ActiveEra = () => {
   return (
     <Card title="Active Era">
       <div>{activeEra.era}</div>
-      <div>{(activeEra.pctComplete * 100).toLocaleString()}%</div>
+      <div>{formatPercentage(activeEra.pctComplete)}</div>
       <div>Expected end: {estimatedFuture(activeEra.estimatedEnd)}</div>
     </Card>
   );

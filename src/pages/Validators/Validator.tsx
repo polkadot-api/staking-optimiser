@@ -1,25 +1,20 @@
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { TokenValue } from "@/components/TokenValue";
 import { cn } from "@/lib/utils";
+import { formatPercentage } from "@/util/format";
 import { useStateObservable } from "@react-rxjs/core";
-import { Pin } from "lucide-react";
-import { type FC } from "react";
+import { type FC, type ReactElement } from "react";
 import {
   validatorPrefs$,
   type HistoricValidator,
   type PositionValidator,
 } from "./validatorList.state";
 
-const formatPercentage = (value: number) =>
-  (value * 100).toLocaleString(undefined, {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  }) + "%";
-
 export const ValidatorRow: FC<{
   validator: PositionValidator;
   onSelectChange: (value: boolean) => void;
-}> = ({ validator, onSelectChange }) => {
+  selectIcon: (selected: boolean) => ReactElement;
+}> = ({ validator, onSelectChange, selectIcon }) => {
   return (
     <>
       <td className="text-muted-foreground">{validator.position + 1}</td>
@@ -39,21 +34,17 @@ export const ValidatorRow: FC<{
         <TokenValue value={validator.reward} />
       </td>
       <td className="text-right">
-        {validator.nominatorQuantity.toLocaleString()}
+        {Math.round(validator.nominatorQuantity).toLocaleString()}
       </td>
-      <td className="text-right">{validator.points.toLocaleString()}</td>
+      <td className="text-right">
+        {Math.round(validator.points).toLocaleString()}
+      </td>
       <td className="text-right hidden min-xl:table-cell">
         <TokenValue value={validator.activeBond} />
       </td>
       <td>
-        <button
-          className={cn({
-            "text-neutral": validator.selected,
-            "text-muted-foreground": !validator.selected,
-          })}
-          onClick={() => onSelectChange(!validator.selected)}
-        >
-          <Pin />
+        <button onClick={() => onSelectChange(!validator.selected)}>
+          {selectIcon(validator.selected)}
         </button>
       </td>
     </>
@@ -106,7 +97,7 @@ export const ValidatorCard: FC<{
         </div>
         <div>
           <span className="font-medium text-muted-foreground">Points</span>:{" "}
-          {validator.points.toLocaleString()}
+          {Math.round(validator.points).toLocaleString()}
         </div>
         <div>
           <span className="font-medium text-muted-foreground">Bond</span>
@@ -114,7 +105,7 @@ export const ValidatorCard: FC<{
         </div>
         <div>
           <span className="font-medium text-muted-foreground">Nominators</span>:{" "}
-          {validator.nominatorQuantity.toLocaleString()}
+          {Math.round(validator.nominatorQuantity).toLocaleString()}
         </div>
       </div>
     </div>

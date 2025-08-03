@@ -3,6 +3,7 @@ import { Card } from "@/components/Card";
 import { ContractableText, createSortByButton } from "@/components/SortBy";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { formatPercentage } from "@/util/format";
 import { useStateObservable } from "@react-rxjs/core";
 import { Search } from "lucide-react";
 import type { FC } from "react";
@@ -26,7 +27,9 @@ export default function PoolList() {
         Nomination Pools List
       </h3>
       <div className="flex flex-wrap gap-4">
-        <MaParams />
+        <Card title="Data Options" className="grow">
+          <MaParams />
+        </Card>
         <SearchCard />
       </div>
       <PoolsTable />
@@ -118,12 +121,6 @@ const PoolsTable = () => {
     />
   );
 };
-
-const formatPercentage = (value: number) =>
-  (value * 100).toLocaleString(undefined, {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  }) + "%";
 
 const TableRow: FC<ItemProps<NominationPool>> = ({ item: pool, ...props }) => {
   const idx = props["data-index"];

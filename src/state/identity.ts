@@ -23,7 +23,6 @@ export const identity$ = state((address: SS58String) => {
         : null
     ),
     tap((v) => {
-      console.log(v);
       if (v != null) {
         cache[address] = v;
       } else {

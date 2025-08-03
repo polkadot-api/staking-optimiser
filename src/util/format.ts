@@ -14,3 +14,9 @@ export const amountToParts = (amount: bigint, decimals: number) => {
     fraction: (absBigInt(amount) % mod).toString().padStart(decimals, "0"),
   };
 };
+
+export const formatPercentage = (value: number) =>
+  (value * 100).toLocaleString(undefined, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }) + "%";
