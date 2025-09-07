@@ -6,6 +6,7 @@ import {
   ksmAH,
   ksmPpl,
   pas,
+  pasAH,
   pasPpl,
   wnd,
   wndAH,
@@ -44,20 +45,16 @@ export const rpcsByChain: Record<
   Record<ChainType, Record<string, string>>
 > = {
   polkadot: {
-    relay: USE_CHOPSTICKS
-      ? {
-          localhost: "ws://localhost:8132",
-        }
-      : {
-          Allnodes: "wss://polkadot-rpc.publicnode.com",
-          Blockops: "wss://polkadot-public-rpc.blockops.network/ws",
-          Dwellir: "wss://polkadot-rpc.dwellir.com",
-          "Dwellir Tunisia": "wss://polkadot-rpc-tn.dwellir.com",
-          IBP1: "wss://rpc.ibp.network/polkadot",
-          IBP2: "wss://polkadot.dotters.network",
-          LuckyFriday: "wss://rpc-polkadot.luckyfriday.io",
-          Stakeworld: "wss://dot-rpc.stakeworld.io",
-        },
+    relay: {
+      Allnodes: "wss://polkadot-rpc.publicnode.com",
+      Blockops: "wss://polkadot-public-rpc.blockops.network/ws",
+      Dwellir: "wss://polkadot-rpc.dwellir.com",
+      "Dwellir Tunisia": "wss://polkadot-rpc-tn.dwellir.com",
+      IBP1: "wss://rpc.ibp.network/polkadot",
+      IBP2: "wss://polkadot.dotters.network",
+      LuckyFriday: "wss://rpc-polkadot.luckyfriday.io",
+      Stakeworld: "wss://dot-rpc.stakeworld.io",
+    },
     people: {
       IBP1: "wss://sys.ibp.network/people-polkadot",
       IBP2: "wss://people-polkadot.dotters.network",
@@ -150,31 +147,14 @@ export const rpcsByChain: Record<
   },
 };
 
-export type ClientType = "balances" | "staking";
-
-export const clientTypesByChain: Record<
-  KnownChains,
-  Record<ClientType, ChainType>
-> = {
-  polkadot: {
-    balances: "relay",
-    staking: "relay",
-  },
-  kusama: {
-    balances: "relay",
-    staking: "relay",
-  },
-  westend: {
-    balances: "relay",
-    staking: "assetHub",
-  },
-  paseo: {
-    balances: "relay",
-    staking: "relay",
-  },
+export const stakingTypeByChain: Record<KnownChains, ChainType> = {
+  polkadot: "relay",
+  kusama: "relay",
+  westend: "assetHub",
+  paseo: "assetHub",
 };
 
-export type BalancesTypedApi =
+export type RelayTypedApi =
   | TypedApi<typeof dot>
   | TypedApi<typeof ksm>
   | TypedApi<typeof wnd>
@@ -211,6 +191,6 @@ export const descriptorsByChain = {
   paseo: {
     relay: pas,
     people: pasPpl,
-    assetHub: pas,
+    assetHub: pasAH,
   },
 } satisfies Record<KnownChains, Record<ChainType, ChainDefinition>>;

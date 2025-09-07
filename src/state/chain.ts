@@ -21,13 +21,13 @@ import {
   tap,
 } from "rxjs";
 import {
-  clientTypesByChain,
+  stakingTypeByChain,
   descriptorsByChain,
   rpcsByChain,
   tokenDecimalsByChain,
   tokenSymbolByChain,
   USE_CHOPSTICKS,
-  type BalancesTypedApi,
+  type RelayTypedApi,
   type ChainType,
   type KnownChains,
   type PeopleTypedApi,
@@ -73,11 +73,21 @@ const shuffleArray = <T>(array: T[]): T[] =>
 
 const createClients = (chain: KnownChains) => {
   const clients: Partial<Record<ChainType, PolkadotClient>> = {};
-  const getRpcClient = (chainType: ChainType) => {
-    let rpcProvider: JsonRpcProvider = getWsProvider(
-      shuffleArray(Object.values(rpcs[chainType]))
-    );
-    if (USE_CHOPSTICKS && chainType === "relay") {
+
+  const rpcs = rpcsByChain[chain];
+  const stakingType = stakingTypeByChain[chain];
+  const descriptors = descriptorsByChain[chain];
+
+  const getRpcClient = (type: "relay" | "staking" | "people") => {
+    const useChopsticks = USE_CHOPSTICKS && type === "staking";
+    const chainType = type === "staking" ? stakingType : type;
+
+    const url = useChopsticks
+      ? ["ws://localhost:8132"]
+      : shuffleArray(Object.values(rpcs[chainType]));
+
+    let rpcProvider: JsonRpcProvider = getWsProvider(url);
+    if (useChopsticks) {
       rpcProvider = withChopsticksEnhancer(rpcProvider);
     } else {
       rpcProvider = withPolkadotSdkCompat(rpcProvider);
@@ -88,18 +98,14 @@ const createClients = (chain: KnownChains) => {
     ));
   };
 
-  const rpcs = rpcsByChain[chain];
-  const chainTypes = clientTypesByChain[chain];
-  const descriptors = descriptorsByChain[chain];
+  const relayClient = getRpcClient("relay");
+  const relayApi = relayClient.getTypedApi(
+    descriptors["relay"]
+  ) as RelayTypedApi;
 
-  const balancesClient = getRpcClient(chainTypes["balances"]);
-  const balancesApi = balancesClient.getTypedApi(
-    descriptors[chainTypes["balances"]]
-  ) as BalancesTypedApi;
-
-  const stakingClient = getRpcClient(chainTypes["staking"]);
+  const stakingClient = getRpcClient("staking");
   const stakingApi = stakingClient.getTypedApi(
-    descriptors[chainTypes["staking"]]
+    descriptors[stakingType]
   ) as StakingTypedApi;
 
   const peopleClient = getRpcClient("people");
@@ -109,8 +115,8 @@ const createClients = (chain: KnownChains) => {
 
   return [
     {
-      balancesClient,
-      balancesApi,
+      relayClient,
+      relayApi,
       stakingClient,
       stakingApi,
       peopleClient,
@@ -140,7 +146,7 @@ export const clients$ = state(
   )
 );
 
-export const balancesApi$ = clients$.pipe(map((v) => v.balancesApi));
+export const relayApi$ = clients$.pipe(map((v) => v.relayApi));
 export const stakingApi$ = clients$.pipe(map((v) => v.stakingApi));
 export const peopleApi$ = clients$.pipe(map((v) => v.peopleApi));
 

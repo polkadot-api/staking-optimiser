@@ -2,7 +2,7 @@ import { DialogButton } from "@/components/DialogButton";
 import { TokenValue } from "@/components/TokenValue";
 import { Button } from "@/components/ui/button";
 import { selectedSignerAccount$ } from "@/state/account";
-import { balancesApi$, stakingApi$ } from "@/state/chain";
+import { relayApi$, stakingApi$ } from "@/state/chain";
 import { activeEra$, eraDurationInMs$ } from "@/state/era";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import { estimatedFuture } from "@/util/date";
@@ -62,7 +62,7 @@ export const ManageLocks = () => {
 const slashingSpans$ = state(
   // TODO verify it's actually on relay chain
   combineLatest([
-    balancesApi$,
+    relayApi$,
     selectedSignerAccount$.pipe(filter((v) => v != null)),
   ]).pipe(
     switchMap(([api, account]) =>

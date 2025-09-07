@@ -3,7 +3,10 @@ import { createWriteStream } from "fs";
 import { createClient } from "polkadot-api";
 import { getWsProvider } from "polkadot-api/ws-provider/web";
 
-const ENDPOINT = "wss://rpc.ibp.network/polkadot";
+const ENDPOINT = process.argv.includes("paseo")
+  ? "wss://asset-hub-paseo-rpc.dwellir.com"
+  : "wss://rpc.ibp.network/polkadot";
+const IS_RELAY = !process.argv.includes("paseo");
 const LOCAL_RPC_PORT = 8132;
 
 const logStream = createWriteStream("./chopsticks.log");
@@ -28,11 +31,13 @@ const start = Date.now();
 const gt = () => Date.now() - start;
 
 // console.log("Preloading block construction data");
-await Promise.all([
-  api.query.Paras.Heads.getEntries(),
-  api.query.ParaInclusion.V1.getEntries(),
-  api.query.CoretimeAssignmentProvider.CoreDescriptors.getEntries()
-]);
+if (IS_RELAY) {
+  await Promise.all([
+    api.query.Paras.Heads.getEntries(),
+    api.query.ParaInclusion.V1.getEntries(),
+    api.query.CoretimeAssignmentProvider.CoreDescriptors.getEntries(),
+  ]);
+}
 
 console.log("Producing initial block", gt());
 await client._request("dev_newBlock", []);

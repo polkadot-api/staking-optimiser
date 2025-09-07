@@ -1,4 +1,4 @@
-import { balancesApi$, stakingApi$ } from "@/state/chain";
+import { relayApi$, stakingApi$ } from "@/state/chain";
 import { state } from "@react-rxjs/core";
 import {
   combineLatest,
@@ -17,10 +17,10 @@ import {
 } from "rxjs";
 
 export const eraDurationInMs$ = combineLatest([
-  balancesApi$.pipe(
+  relayApi$.pipe(
     switchMap((balancesApi) => balancesApi.constants.Babe.ExpectedBlockTime())
   ),
-  balancesApi$.pipe(
+  relayApi$.pipe(
     switchMap((balancesApi) => balancesApi.constants.Babe.EpochDuration())
   ),
   stakingApi$.pipe(
