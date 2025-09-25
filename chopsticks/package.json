@@ -10,11 +10,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "bun": "^1.2.2"
+    "bun": "^1.2.23"
   },
   "dependencies": {
-    "@acala-network/chopsticks": "^1.0.2",
-    "@types/bun": "^1.2.13",
-    "polkadot-api": "^1.9.1"
-  }
+    "@acala-network/chopsticks": "^1.2.2",
+    "@types/bun": "^1.2.23",
+    "polkadot-api": "^1.19.1"
+  },
+  "packageManager": "pnpm@10.15.0"
 }

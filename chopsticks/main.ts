@@ -48,20 +48,19 @@ client.destroy();
 
 /**
 
-chopsticks/node_modules/.pnpm/@polkadot+rpc-provider@15.9.3/node_modules/@polkadot/rpc-provider/cjs/ws/index.js
+chopsticks/node_modules/.pnpm/@polkadot+rpc-provider@16.4.6/node_modules/@polkadot/rpc-provider/cjs/ws/index.js
 
     send(method, params, isCacheable, subscription) {
-        this.__internal__endpointStats.requests++;
-        this.__internal__stats.total.requests++;
-        const [id, body] = this.__internal__coder.encodeJson(method, params);
+        this.#endpointStats.requests++;
+        this.#stats.total.requests++;
+        const [id, body] = this.#coder.encodeJson(method, params);
         console.log([">>", new Date().toISOString(), body].join(" "));
 
-
-    __internal__onSocketMessage = (message) => {
+    #onSocketMessage = (message) => {
         l.debug(() => ['received', message.data]);
         const bytesRecv = message.data.length;
-        this.__internal__endpointStats.bytesRecv += bytesRecv;
-        this.__internal__stats.total.bytesRecv += bytesRecv;
+        this.#endpointStats.bytesRecv += bytesRecv;
+        this.#stats.total.bytesRecv += bytesRecv;
         console.log(["<<", new Date().toISOString(), message.data].join(" "));
 
  */
