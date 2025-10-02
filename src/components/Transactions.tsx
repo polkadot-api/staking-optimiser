@@ -5,70 +5,79 @@ import {
   type Transaction,
   type TxEvent,
 } from "polkadot-api";
-import { useState, type ComponentType, type FC } from "react";
-import { lastValueFrom, type Observable } from "rxjs";
+import { lazy, useState, type ComponentType, type FC } from "react";
+import { from, lastValueFrom, switchMap, type Observable } from "rxjs";
 import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
+
+const toastModule = import("react-toastify");
+
+const ToastContainer = lazy(() =>
+  toastModule.then((mod) => ({ default: mod.ToastContainer }))
+);
 
 // Error invalid fee keeps the toast open
 export function trackTransaction(tx$: Observable<TxEvent>) {
-  const shared$ = tx$.pipe(shareLatest());
+  return from(toastModule).pipe(
+    switchMap(({ toast }) => {
+      const shared$ = tx$.pipe(shareLatest());
 
-  let id = toast.loading("Signing transaction…", {
-    autoClose: false,
-  });
-  shared$.subscribe({
-    next: (res) => {
-      if (res.type === "signed") {
-        toast.update(id, {
-          render: "Sending transaction…",
-        });
-      } else if (res.type === "txBestBlocksState" && res.found) {
-        toast.update(
-          id,
-          res.ok
-            ? {
-                render: "Waiting for confirmation…",
-              }
-            : {
-                render:
-                  "Transaction included in a block but is failing: " +
-                  JSON.stringify(res.dispatchError),
-              }
-        );
-      } else if (res.type === "finalized") {
-        // Can't toast.update the type of toast :(
-        toast.dismiss(id);
+      let id = toast.loading("Signing transaction…", {
+        autoClose: false,
+      });
+      shared$.subscribe({
+        next: (res) => {
+          if (res.type === "signed") {
+            toast.update(id, {
+              render: "Sending transaction…",
+            });
+          } else if (res.type === "txBestBlocksState" && res.found) {
+            toast.update(
+              id,
+              res.ok
+                ? {
+                    render: "Waiting for confirmation…",
+                  }
+                : {
+                    render:
+                      "Transaction included in a block but is failing: " +
+                      JSON.stringify(res.dispatchError),
+                  }
+            );
+          } else if (res.type === "finalized") {
+            // Can't toast.update the type of toast :(
+            toast.dismiss(id);
 
-        if (!res.ok) {
-          id = toast.error(
-            "Transaction failed: " + JSON.stringify(res.dispatchError),
-            {
-              autoClose: false,
+            if (!res.ok) {
+              id = toast.error(
+                "Transaction failed: " + JSON.stringify(res.dispatchError),
+                {
+                  autoClose: false,
+                }
+              );
+              return;
             }
-          );
-          return;
-        }
 
-        id = toast.success("Transaction succeeded!");
-      }
-    },
-    error: (error) => {
-      toast.dismiss(id);
-      if (error instanceof InvalidTxError) {
-        toast.error("Transaction failed: " + JSON.stringify(error.error), {
-          autoClose: false,
-        });
-      } else {
-        toast.error("Transaction failed: " + error.message, {
-          autoClose: false,
-        });
-      }
-    },
-  });
+            id = toast.success("Transaction succeeded!");
+          }
+        },
+        error: (error) => {
+          toast.dismiss(id);
+          if (error instanceof InvalidTxError) {
+            toast.error("Transaction failed: " + JSON.stringify(error.error), {
+              autoClose: false,
+            });
+          } else {
+            toast.error("Transaction failed: " + error.message, {
+              autoClose: false,
+            });
+          }
+        },
+      });
 
-  return shared$;
+      return shared$;
+    })
+  );
 }
 
 export const Transactions = () => <ToastContainer position="bottom-right" />;
