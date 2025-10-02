@@ -134,6 +134,14 @@ export const ManageBond = () => {
               className="tabular-nums"
               value={bigBond - poolStatus.bond}
             />{" "}
+            {poolStatus.pendingRewards ? (
+              <>
+                + <TokenValue value={poolStatus.pendingRewards} />{" "}
+                <span className="text-muted-foreground">
+                  (from pending rewards)
+                </span>
+              </>
+            ) : null}
           </div>
         )}
         <div>

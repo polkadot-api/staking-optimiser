@@ -143,15 +143,15 @@ export const clients$ = state(
   )
 );
 
-export const relayApi$ = clients$.pipe(map((v) => v.relayApi));
-export const stakingApi$ = clients$.pipe(map((v) => v.stakingApi));
-export const peopleApi$ = clients$.pipe(map((v) => v.peopleApi));
+export const relayApi$ = clients$.pipeState(map((v) => v.relayApi));
+export const stakingApi$ = clients$.pipeState(map((v) => v.stakingApi));
+export const peopleApi$ = clients$.pipeState(map((v) => v.peopleApi));
 
-export const stakingSdk$ = clients$.pipe(
+export const stakingSdk$ = clients$.pipeState(
   map((client) => createStakingSdk(client.stakingClient))
 );
 
-export const identitySdk$ = peopleApi$.pipe(
+export const identitySdk$ = peopleApi$.pipeState(
   map((peopleApi) => createIdentitySdk(peopleApi))
 );
 

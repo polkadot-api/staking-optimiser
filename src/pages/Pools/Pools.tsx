@@ -2,8 +2,11 @@ import { AccountBalance } from "@/components/AccountBalance";
 import { Card } from "@/components/Card";
 import { DialogButton } from "@/components/DialogButton";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
-import { Button } from "@/components/ui/button";
+import { TransactionButton } from "@/components/Transactions";
+import { selectedSignerAccount$ } from "@/state/account";
+import { stakingApi$ } from "@/state/chain";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
+import { NominationPoolsBondExtra } from "@polkadot-api/descriptors";
 import { Subscribe, useStateObservable } from "@react-rxjs/core";
 import { lazy } from "react";
 import { ManageBond } from "./ManageBond";
@@ -55,12 +58,39 @@ const CurrentStatus = () => {
         />
         {currentPool.unlocks.length ? <ManageLocks /> : null}
       </div>
-      <div className="space-x-4 mt-4">
+      <div className="space-x-2 mt-4">
         <DialogButton title="Manage bond" content={() => <ManageBond />}>
           Manage bond
         </DialogButton>
-        <Button>Claim rewards</Button>
+        {currentPool.pendingRewards > 0 ? <Claim /> : null}
       </div>
     </Card>
+  );
+};
+
+const Claim = () => {
+  const signer =
+    useStateObservable(selectedSignerAccount$)?.polkadotSigner ?? null;
+  const stakingApi = useStateObservable(stakingApi$);
+
+  return (
+    <>
+      <TransactionButton
+        createTx={() => stakingApi.tx.NominationPools.claim_payout()}
+        signer={signer}
+      >
+        Claim rewards
+      </TransactionButton>
+      <TransactionButton
+        createTx={() =>
+          stakingApi.tx.NominationPools.bond_extra({
+            extra: NominationPoolsBondExtra.Rewards(),
+          })
+        }
+        signer={signer}
+      >
+        Compound rewards
+      </TransactionButton>
+    </>
   );
 };

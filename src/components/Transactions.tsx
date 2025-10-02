@@ -1,0 +1,112 @@
+import { shareLatest } from "@react-rxjs/core";
+import {
+  InvalidTxError,
+  type PolkadotSigner,
+  type Transaction,
+  type TxEvent,
+} from "polkadot-api";
+import { useState, type ComponentType, type FC } from "react";
+import { lastValueFrom, type Observable } from "rxjs";
+import { Button } from "./ui/button";
+import { Loader2 } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
+
+// Error invalid fee keeps the toast open
+export function trackTransaction(tx$: Observable<TxEvent>) {
+  const shared$ = tx$.pipe(shareLatest());
+
+  let id = toast.loading("Signing transaction…", {
+    autoClose: false,
+  });
+  shared$.subscribe({
+    next: (res) => {
+      if (res.type === "signed") {
+        toast.update(id, {
+          render: "Sending transaction…",
+        });
+      } else if (res.type === "txBestBlocksState" && res.found) {
+        toast.update(
+          id,
+          res.ok
+            ? {
+                render: "Waiting for confirmation…",
+              }
+            : {
+                render:
+                  "Transaction included in a block but is failing: " +
+                  JSON.stringify(res.dispatchError),
+              }
+        );
+      } else if (res.type === "finalized") {
+        // Can't toast.update the type of toast :(
+        toast.dismiss(id);
+
+        if (!res.ok) {
+          id = toast.error(
+            "Transaction failed: " + JSON.stringify(res.dispatchError),
+            {
+              autoClose: false,
+            }
+          );
+          return;
+        }
+
+        id = toast.success("Transaction succeeded!");
+      }
+    },
+    error: (error) => {
+      toast.dismiss(id);
+      if (error instanceof InvalidTxError) {
+        toast.error("Transaction failed: " + JSON.stringify(error.error), {
+          autoClose: false,
+        });
+      } else {
+        toast.error("Transaction failed: " + error.message, {
+          autoClose: false,
+        });
+      }
+    },
+  });
+
+  return shared$;
+}
+
+export const Transactions = () => <ToastContainer position="bottom-right" />;
+
+export const useSingleTransaction = () => {
+  const [isPending, setIsPending] = useState(false);
+
+  const startTx = async (tx$: Observable<TxEvent>) => {
+    setIsPending(true);
+    try {
+      await lastValueFrom(trackTransaction(tx$));
+    } catch (ex) {
+      console.error(ex);
+    }
+    setIsPending(false);
+  };
+
+  return [isPending, startTx] as const;
+};
+
+type ButtonProps = typeof Button extends ComponentType<infer R> ? R : never;
+
+export const TransactionButton: FC<
+  ButtonProps & {
+    createTx: () => Transaction<any, any, any, any>;
+    signer: PolkadotSigner | null;
+  }
+> = ({ createTx, signer, children, ...props }) => {
+  const [isOngoing, trackTx] = useSingleTransaction();
+
+  return (
+    <Button
+      {...props}
+      disabled={!signer || isOngoing || props.disabled}
+      onClick={() => trackTx(createTx().signSubmitAndWatch(signer!))}
+    >
+      {children}
+      {isOngoing && <Loader2 className="animate-spin" />}
+    </Button>
+  );
+};
