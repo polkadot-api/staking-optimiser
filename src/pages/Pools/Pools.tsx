@@ -26,9 +26,9 @@ export const Pools = () => {
 };
 
 const CurrentStatus = () => {
-  const pool = useStateObservable(currentNominationPoolStatus$);
+  const currentPool = useStateObservable(currentNominationPoolStatus$);
 
-  if (!pool) {
+  if (!currentPool?.pool) {
     return <Card title="Status">Not currently in a nomination pool</Card>;
   }
 
@@ -36,8 +36,8 @@ const CurrentStatus = () => {
     <Card title="Status">
       <div>
         Currently member of{" "}
-        <span className="text-muted-foreground">#{pool.pool_id}</span>{" "}
-        <span className="font-medium">{pool.name}</span>
+        <span className="text-muted-foreground">#{currentPool.pool.id}</span>{" "}
+        <span className="font-medium">{currentPool.pool.name}</span>
       </div>
       <div className="flex flex-wrap gap-2 items-start">
         <AccountBalance
@@ -49,11 +49,11 @@ const CurrentStatus = () => {
                 "color-mix(in srgb, var(--color-positive), transparent 40%)",
               tooltip:
                 "Rewards generated during the previous eras ready to be withdrawn or compounded.",
-              value: pool.pendingRewards,
+              value: currentPool.pendingRewards,
             },
           ]}
         />
-        {pool.unbonding_eras.length ? <ManageLocks /> : null}
+        {currentPool.unlocks.length ? <ManageLocks /> : null}
       </div>
       <div className="space-x-4 mt-4">
         <DialogButton title="Manage bond" content={() => <ManageBond />}>

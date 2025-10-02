@@ -1,8 +1,6 @@
 import { cn } from "@/lib/utils";
-import { selectedAccountAddr$ } from "@/state/account";
+import { accountStatus$, selectedAccountAddr$ } from "@/state/account";
 import { stakingApi$ } from "@/state/chain";
-import { currentNominatorBond$ } from "@/state/nominate";
-import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import { maxBigInt } from "@/util/bigint";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { lazy, type FC } from "react";
@@ -55,20 +53,26 @@ export const accountBalance$ = state(
 );
 
 const bondedStatus$ = state(
-  combineLatest([currentNominatorBond$, currentNominationPoolStatus$]).pipe(
-    map(([direct, pool]) =>
-      direct
-        ? {
-            bond: direct.total,
-            unlocks: direct.unlocking,
-          }
-        : pool
-          ? {
-              bond: pool.bond,
-              unlocks: pool.unbonding_eras,
-            }
-          : null
-    )
+  accountStatus$.pipe(
+    map((v) => {
+      if (!v) return null;
+
+      if (v.nomination.currentBond) {
+        return {
+          bond: v.nomination.currentBond,
+          unlocks: v.nomination.unlocks,
+        };
+      }
+
+      if (v.nominationPool.currentBond) {
+        return {
+          bond: v.nominationPool.currentBond,
+          unlocks: v.nominationPool.unlocks,
+        };
+      }
+
+      return null;
+    })
   )
 );
 

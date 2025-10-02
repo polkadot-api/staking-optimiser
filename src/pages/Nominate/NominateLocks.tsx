@@ -17,7 +17,7 @@ const locks$ = state(
     currentNominatorBond$.pipe(filter((v) => v != null)),
   ]).pipe(
     map(([activeEra, eraDuration, bond]) => {
-      const unlocks = bond.unlocking.map(({ era, value }) => ({
+      const unlocks = bond.unlocks.map(({ era, value }) => ({
         value,
         unlocked: era <= activeEra.era,
         estimatedUnlock: new Date(

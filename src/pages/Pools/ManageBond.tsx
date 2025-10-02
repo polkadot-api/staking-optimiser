@@ -20,23 +20,23 @@ const minBond$ = state(
 );
 
 export const ManageBond = () => {
-  const pool = useStateObservable(currentNominationPoolStatus$);
+  const poolStatus = useStateObservable(currentNominationPoolStatus$);
   const balance = useStateObservable(accountBalance$);
   const decimals = useStateObservable(tokenDecimals$);
   const minBond = useStateObservable(minBond$);
   const selectedAccount = useStateObservable(selectedSignerAccount$);
   const currentEra = useStateObservable(activeEraNumber$);
-  const [bond, setBond] = useState(pool ? Number(pool.bond) : 0);
+  const [bond, setBond] = useState(poolStatus ? Number(poolStatus.bond) : 0);
   const [committedBond, setCommitedBond] = useState(bond);
 
   const [submitting, setSubmitting] = useState(false);
 
   if (!balance) return null;
-  if (!pool) return <div>TODO not in a pool</div>;
+  if (!poolStatus) return <div>TODO not in a pool</div>;
 
   const bigBond = isNaN(bond) ? 0n : BigInt(Math.round(bond));
 
-  const currentUnbonding = pool.unbonding_eras
+  const currentUnbonding = poolStatus.unlocks
     .map((v) => v.value)
     .reduce((a, b) => a + b, 0n);
   const maxBond =
@@ -57,9 +57,10 @@ export const ManageBond = () => {
       const safeBond =
         bigBond < minBond ? (bigBond < minBond / 2n ? 0n : minBond) : bigBond;
 
-      const unbonding = pool.bond - safeBond;
+      const unbonding = poolStatus.bond - safeBond;
       if (unbonding < 0) throw new Error("Can't unbond negative");
-      const unbonding_points = (unbonding * pool.points) / pool.bond;
+      const unbonding_points =
+        (unbonding * (poolStatus.pool?.points ?? 0n)) / poolStatus.bond;
 
       api.tx.NominationPools.unbond({
         member_account: MultiAddress.Id(selectedAccount.address),
@@ -104,9 +105,9 @@ export const ManageBond = () => {
         <h3 className="text-muted-foreground font-medium">Result</h3>
         <div>
           <span className="font-bold">Bonded:</span>{" "}
-          <TokenValue value={pool.bond} />
+          <TokenValue value={poolStatus.bond} />
         </div>
-        {pool.unbonding_eras.map(({ era, value }, i) => (
+        {poolStatus.unlocks.map(({ era, value }, i) => (
           <div key={i}>
             <span className="font-bold">Unbonding:</span>{" "}
             <TokenValue className="tabular-nums" value={value} />{" "}
@@ -115,10 +116,13 @@ export const ManageBond = () => {
             </span>
           </div>
         ))}
-        {bond < pool.bond ? (
+        {bond < poolStatus.bond ? (
           <div>
             <span className="font-bold">Unbonding:</span>{" "}
-            <TokenValue className="tabular-nums" value={pool.bond - bigBond} />{" "}
+            <TokenValue
+              className="tabular-nums"
+              value={poolStatus.bond - bigBond}
+            />{" "}
             <span className="text-muted-foreground">
               (Will unlock in 28 days)
             </span>
@@ -128,7 +132,7 @@ export const ManageBond = () => {
             <span className="font-bold">Bonding:</span>{" "}
             <TokenValue
               className="tabular-nums"
-              value={bigBond - pool.bond}
+              value={bigBond - poolStatus.bond}
             />{" "}
           </div>
         )}
@@ -137,9 +141,9 @@ export const ManageBond = () => {
           <TokenValue
             className="tabular-nums"
             value={
-              bond < pool.bond
+              bond < poolStatus.bond
                 ? balance.spendable
-                : balance.spendable - (bigBond - pool.bond)
+                : balance.spendable - (bigBond - poolStatus.bond)
             }
           />{" "}
         </div>
@@ -158,7 +162,7 @@ export const ManageBond = () => {
         </AlertCard>
       ) : null}
       <div>
-        {bond < pool.bond ? (
+        {bond < poolStatus.bond ? (
           <Button
             disabled={
               !selectedAccount || submitting || (bond > 0 && bond < minBond)
@@ -168,7 +172,9 @@ export const ManageBond = () => {
             Unbond
           </Button>
         ) : (
-          <Button disabled={bigBond < minBond || pool.bond - bigBond == 0n}>
+          <Button
+            disabled={bigBond < minBond || poolStatus.bond - bigBond == 0n}
+          >
             Bond
           </Button>
         )}

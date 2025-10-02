@@ -1,7 +1,7 @@
 import { spawn } from "child_process";
 import { createWriteStream } from "fs";
 import { createClient } from "polkadot-api";
-import { getWsProvider } from "polkadot-api/ws-provider/web";
+import { getWsProvider } from "polkadot-api/ws-provider";
 
 const ENDPOINT = process.argv.includes("paseo")
   ? "wss://asset-hub-paseo-rpc.dwellir.com"

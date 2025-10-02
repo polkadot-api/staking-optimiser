@@ -16,6 +16,7 @@ import {
   defer,
   endWith,
   filter,
+  from,
   fromEventPattern,
   ignoreElements,
   interval,
@@ -31,6 +32,7 @@ import {
   timer,
   type ObservableInput,
 } from "rxjs";
+import { stakingSdk$ } from "./chain";
 
 export type AccountSource = Enum<{
   extension: {
@@ -255,5 +257,15 @@ export const selectedAccountAddr$ = selectedAccount$.pipeState(
       : v?.type === "extension"
         ? v.value.address
         : null
+  )
+);
+
+export const accountStatus$ = state(
+  combineLatest([stakingSdk$, selectedAccountAddr$]).pipe(
+    switchMap(([sdk, addr]) => {
+      if (!addr) return [null];
+
+      return from(sdk.getAccountStatus(addr)).pipe(startWith(null));
+    })
   )
 );

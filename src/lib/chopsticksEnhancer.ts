@@ -16,7 +16,7 @@
 */
 
 import { blockHeader } from "@polkadot-api/substrate-bindings";
-import type { JsonRpcProvider } from "polkadot-api/ws-provider/web";
+import type { JsonRpcProvider } from "polkadot-api/ws-provider";
 
 /**
  * Chopsticks can create block number discontinuities on the chain, which breaks an assumption of polkadot-api.

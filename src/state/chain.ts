@@ -1,13 +1,11 @@
+import { withChopsticksEnhancer } from "@/lib/chopsticksEnhancer";
 import { createIdentitySdk } from "@polkadot-api/sdk-accounts";
 import { createStakingSdk } from "@polkadot-api/sdk-staking";
 import { state, withDefault } from "@react-rxjs/core";
 import { createClient, type PolkadotClient } from "polkadot-api";
 import { withLogsRecorder } from "polkadot-api/logs-provider";
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat";
-import {
-  getWsProvider,
-  type JsonRpcProvider,
-} from "polkadot-api/ws-provider/web";
+import { getWsProvider, type JsonRpcProvider } from "polkadot-api/ws-provider";
 import { matchPath } from "react-router-dom";
 import {
   concat,
@@ -21,20 +19,19 @@ import {
   tap,
 } from "rxjs";
 import {
-  stakingTypeByChain,
   descriptorsByChain,
   rpcsByChain,
+  stakingTypeByChain,
   tokenDecimalsByChain,
   tokenSymbolByChain,
   USE_CHOPSTICKS,
-  type RelayTypedApi,
   type ChainType,
   type KnownChains,
   type PeopleTypedApi,
+  type RelayTypedApi,
   type StakingTypedApi,
 } from "./chainConfig";
 import { location$ } from "./location";
-import { withChopsticksEnhancer } from "@/lib/chopsticksEnhancer";
 
 export const selectedChain$ = state(
   location$.pipe(
@@ -150,16 +147,12 @@ export const relayApi$ = clients$.pipe(map((v) => v.relayApi));
 export const stakingApi$ = clients$.pipe(map((v) => v.stakingApi));
 export const peopleApi$ = clients$.pipe(map((v) => v.peopleApi));
 
-export const stakingSdk$ = stakingApi$.pipe(
-  map((stakingApi) =>
-    createStakingSdk(stakingApi as any, {
-      maxActiveNominators: 100,
-    })
-  )
+export const stakingSdk$ = clients$.pipe(
+  map((client) => createStakingSdk(client.stakingClient))
 );
 
 export const identitySdk$ = peopleApi$.pipe(
-  map((peopleApi) => createIdentitySdk(peopleApi as any))
+  map((peopleApi) => createIdentitySdk(peopleApi))
 );
 
 merge(stakingSdk$, identitySdk$).subscribe();

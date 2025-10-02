@@ -117,7 +117,7 @@ export const ManageBond = () => {
           <span className="font-bold">Bonded:</span>{" "}
           <TokenValue value={currentBond.active} />
         </div>
-        {currentBond.unlocking.map(({ era, value }, i) => (
+        {currentBond.unlocks.map(({ era, value }, i) => (
           <div key={i}>
             <span className="font-bold">Unbonding:</span>{" "}
             <TokenValue className="tabular-nums" value={value} />{" "}

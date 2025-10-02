@@ -18,7 +18,7 @@ const locks$ = state(
     currentNominationPoolStatus$.pipe(filter((v) => v != null)),
   ]).pipe(
     map(([activeEra, eraDuration, pool]) => {
-      const unlocks = pool.unbonding_eras.map(({ era, value }) => ({
+      const unlocks = pool.unlocks.map(({ era, value }) => ({
         value,
         unlocked: era <= activeEra.era,
         estimatedUnlock: new Date(

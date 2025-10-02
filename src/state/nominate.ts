@@ -1,5 +1,5 @@
 import { HISTORY_DEPTH } from "@/constants";
-import { selectedAccountAddr$ } from "@/state/account";
+import { accountStatus$, selectedAccountAddr$ } from "@/state/account";
 import { amountToNumber, roundToDecimalPlaces } from "@/util/format";
 import { state } from "@react-rxjs/core";
 import {
@@ -11,26 +11,22 @@ import {
   startWith,
   switchMap,
   take,
-  takeWhile,
   withLatestFrom,
 } from "rxjs";
 import { stakingApi$, stakingSdk$, tokenDecimals$ } from "./chain";
 import { activeEraNumber$, allEras$, eraDurationInMs$, getEraApy } from "./era";
 
 export const currentNominatorBond$ = state(
-  combineLatest([selectedAccountAddr$, stakingApi$]).pipe(
-    switchMap(([v, stakingApi]) =>
-      v
-        ? stakingApi.query.Staking.Bonded.watchValue(v).pipe(
-            // Avoid watching a value that very rarely will change once set
-            takeWhile((v) => v != null, true),
-            switchMap((addr) =>
-              addr ? stakingApi.query.Staking.Ledger.watchValue(addr) : [null]
-            )
-          )
-        : [null]
-    ),
-    map((v) => v ?? null)
+  accountStatus$.pipe(
+    map((v) => {
+      if (!v || !v.nomination.currentBond) return null;
+
+      return {
+        bond: v.nomination.currentBond,
+        active: v.nomination.activeBond,
+        unlocks: v.nomination.unlocks,
+      };
+    })
   )
 );
 
