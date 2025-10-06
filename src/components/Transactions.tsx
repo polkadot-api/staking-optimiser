@@ -100,19 +100,32 @@ export const useSingleTransaction = () => {
 
 type ButtonProps = typeof Button extends ComponentType<infer R> ? R : never;
 
+type Awaitable<T> = T | Promise<T>;
 export const TransactionButton: FC<
   ButtonProps & {
-    createTx: () => Transaction<any, any, any, any>;
-    signer: PolkadotSigner | null;
+    createTx: () => Awaitable<Transaction<any, any, any, any> | null>;
+    signer: PolkadotSigner | null | undefined;
   }
 > = ({ createTx, signer, children, ...props }) => {
   const [isOngoing, trackTx] = useSingleTransaction();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
     <Button
       {...props}
-      disabled={!signer || isOngoing || props.disabled}
-      onClick={() => trackTx(createTx().signSubmitAndWatch(signer!))}
+      disabled={!signer || isOngoing || isSubmitting || props.disabled}
+      onClick={async () => {
+        setIsSubmitting(true);
+        try {
+          const tx = await createTx();
+          if (!tx) return;
+          trackTx(tx.signSubmitAndWatch(signer!));
+        } catch (ex) {
+          console.error(ex);
+        } finally {
+          setIsSubmitting(false);
+        }
+      }}
     >
       {children}
       {isOngoing && <Loader2 className="animate-spin" />}

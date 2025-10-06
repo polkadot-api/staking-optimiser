@@ -1,79 +1,37 @@
 import { cn } from "@/lib/utils";
-import { accountStatus$, selectedAccountAddr$ } from "@/state/account";
-import { stakingApi$ } from "@/state/chain";
-import { maxBigInt } from "@/util/bigint";
-import { state, useStateObservable } from "@react-rxjs/core";
+import { accountStatus$ } from "@/state/account";
+import { useStateObservable } from "@react-rxjs/core";
 import { lazy, type FC } from "react";
-import { combineLatest, map, switchMap } from "rxjs";
+import { map } from "rxjs";
 import { TextHintTooltip } from "./HintTooltip";
 import { TokenValue } from "./TokenValue";
 
 const SectorChart = lazy(() => import("@/components/SectorChart"));
 
-export const accountBalance$ = state(
-  combineLatest([selectedAccountAddr$, stakingApi$]).pipe(
-    switchMap(([v, stakingApi]) =>
-      v
-        ? combineLatest([
-            stakingApi.query.System.Account.watchValue(v),
-            stakingApi.constants.Balances.ExistentialDeposit(),
-          ]).pipe(
-            map(([v, ed]) => [v.data, ed] as const),
-            map(([v, existentialDeposit]) => {
-              // https://wiki.polkadot.network/learn/learn-account-balances/
-
-              // Total tokens in the account
-              const total = v.reserved + v.free;
-
-              // Portion of "free" balance that can't be transferred.
-              const untouchable =
-                total == 0n
-                  ? 0n
-                  : maxBigInt(v.frozen - v.reserved, existentialDeposit);
-
-              // Portion of "free" balance that can be transferred
-              const spendable = v.free - untouchable;
-
-              // Portion of "total" balance that is somehow locked
-              const locked = v.reserved + untouchable;
-
-              return {
-                ...v,
-                existentialDeposit: total == 0n ? 0n : existentialDeposit,
-                total,
-                locked,
-                spendable,
-                untouchable,
-              };
-            })
-          )
-        : [null]
-    )
-  )
+export const accountBalance$ = accountStatus$.pipeState(
+  map((v) => v?.balance ?? null)
 );
 
-const bondedStatus$ = state(
-  accountStatus$.pipe(
-    map((v) => {
-      if (!v) return null;
+const bondedStatus$ = accountStatus$.pipeState(
+  map((v) => {
+    if (!v) return null;
 
-      if (v.nomination.currentBond) {
-        return {
-          bond: v.nomination.currentBond,
-          unlocks: v.nomination.unlocks,
-        };
-      }
+    if (v.nomination.currentBond) {
+      return {
+        bond: v.nomination.currentBond,
+        unlocks: v.nomination.unlocks,
+      };
+    }
 
-      if (v.nominationPool.currentBond) {
-        return {
-          bond: v.nominationPool.currentBond,
-          unlocks: v.nominationPool.unlocks,
-        };
-      }
+    if (v.nominationPool.currentBond) {
+      return {
+        bond: v.nominationPool.currentBond,
+        unlocks: v.nominationPool.unlocks,
+      };
+    }
 
-      return null;
-    })
-  )
+    return null;
+  })
 );
 
 export interface AccountBalanceValue {
@@ -109,7 +67,7 @@ export const AccountBalance: FC<{
       : // ExistentialDeposit is part of "locked" because it's "untouchable", i.e. can't be spend without killing the account
         // so we have to remove it from here. We could add it as a separate category but... not worth it for just the ED
         balance.locked -
-        balance.existentialDeposit -
+        balance.raw.existentialDeposit -
         (currentBond?.bond ?? 0n) -
         unbonding;
 
