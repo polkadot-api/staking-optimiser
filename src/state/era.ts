@@ -16,22 +16,24 @@ import {
   timer,
 } from "rxjs";
 
-export const eraDurationInMs$ = combineLatest([
-  relayApi$.pipe(
-    switchMap((balancesApi) => balancesApi.constants.Babe.ExpectedBlockTime())
-  ),
-  relayApi$.pipe(
-    switchMap((balancesApi) => balancesApi.constants.Babe.EpochDuration())
-  ),
-  stakingApi$.pipe(
-    switchMap((stakingApi) => stakingApi.constants.Staking.SessionsPerEra())
-  ),
-]).pipe(
-  map(
-    ([blockTime, epochDuration, sessionsPerEra]) =>
-      sessionsPerEra * Number(epochDuration) * Number(blockTime)
-  ),
-  distinctUntilChanged()
+export const eraDurationInMs$ = state(
+  combineLatest([
+    relayApi$.pipe(
+      switchMap((balancesApi) => balancesApi.constants.Babe.ExpectedBlockTime())
+    ),
+    relayApi$.pipe(
+      switchMap((balancesApi) => balancesApi.constants.Babe.EpochDuration())
+    ),
+    stakingApi$.pipe(
+      switchMap((stakingApi) => stakingApi.constants.Staking.SessionsPerEra())
+    ),
+  ]).pipe(
+    map(
+      ([blockTime, epochDuration, sessionsPerEra]) =>
+        sessionsPerEra * Number(epochDuration) * Number(blockTime)
+    ),
+    distinctUntilChanged()
+  )
 );
 
 export function getEraApy(
@@ -85,6 +87,14 @@ export const activeEra$ = state(
 export const activeEraNumber$ = activeEra$.pipeState(
   map((v) => v.era),
   distinctUntilChanged()
+);
+
+export const currentEra$ = state(
+  stakingApi$.pipe(
+    switchMap((stakingApi) => stakingApi.query.Staking.CurrentEra.getValue()),
+    map((v) => v ?? null)
+  ),
+  null
 );
 
 /**

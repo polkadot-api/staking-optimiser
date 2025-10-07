@@ -1,5 +1,6 @@
 import { readOnlyAddresses$ } from "@/components/Header/ManageAddresses";
 import { createLocalStorageState } from "@/util/rxjs";
+import { getPublicKey } from "@/util/ss58";
 import { state } from "@react-rxjs/core";
 import { combineKeys } from "@react-rxjs/utils";
 import type { Enum, SS58String } from "polkadot-api";
@@ -9,6 +10,7 @@ import {
   type InjectedExtension,
   type InjectedPolkadotAccount,
 } from "polkadot-api/pjs-signer";
+import { getPolkadotSigner } from "polkadot-api/signer";
 import {
   catchError,
   combineLatest,
@@ -33,6 +35,7 @@ import {
   type ObservableInput,
 } from "rxjs";
 import { stakingSdk$ } from "./chain";
+import { USE_CHOPSTICKS } from "./chainConfig";
 
 export type AccountSource = Enum<{
   extension: {
@@ -244,9 +247,27 @@ export const selectedAccount$ = state(
   )
 );
 
+const fakeSigner = (address: SS58String) =>
+  getPolkadotSigner(getPublicKey(address)!, "Sr25519", () => {
+    // From https://wiki.acala.network/build/sdks/homa
+    const signature = new Uint8Array(64);
+    signature.fill(0xcd);
+    signature.set([0xde, 0xad, 0xbe, 0xef]);
+    return signature;
+  });
+
 export const selectedSignerAccount$ = selectedAccount$.pipeState(
-  map((v) =>
-    v?.type === "address" ? null : v?.type === "extension" ? v.value : null
+  map((v): InjectedPolkadotAccount | null =>
+    v?.type === "address"
+      ? USE_CHOPSTICKS
+        ? {
+            address: v.value,
+            polkadotSigner: fakeSigner(v.value),
+          }
+        : null
+      : v?.type === "extension"
+        ? v.value
+        : null
   )
 );
 

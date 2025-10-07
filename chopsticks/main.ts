@@ -16,6 +16,7 @@ const chopsticksProcess = spawn("pnpm", [
   `--endpoint=${ENDPOINT}`,
   `--port=${LOCAL_RPC_PORT}`,
   `--db=chopsticks.db`,
+  `--mock-signature-host`,
 ]);
 chopsticksProcess.stdout.pipe(logStream);
 chopsticksProcess.stderr.pipe(logStreamErr);
@@ -30,7 +31,7 @@ await api.runtimeToken;
 const start = Date.now();
 const gt = () => Date.now() - start;
 
-// console.log("Preloading block construction data");
+console.log("Preloading block construction data");
 if (IS_RELAY) {
   await Promise.all([
     api.query.Paras.Heads.getEntries(),

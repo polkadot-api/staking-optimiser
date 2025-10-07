@@ -77,7 +77,8 @@ const createClients = (chain: KnownChains) => {
 
   const getRpcClient = (type: "relay" | "staking" | "people") => {
     const useChopsticks = USE_CHOPSTICKS && type === "staking";
-    const chainType = type === "staking" ? stakingType : type;
+    const chainType: ChainType =
+      type === "staking" ? (useChopsticks ? "assetHub" : stakingType) : type;
 
     const url = useChopsticks
       ? ["ws://localhost:8132"]

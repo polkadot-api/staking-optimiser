@@ -16,6 +16,7 @@ export const currentNominationPoolStatus$ = state(
           const {
             currentBond: bond,
             pendingRewards,
+            points,
             pool,
             unlocks,
           } = status.nominationPool;
@@ -25,6 +26,7 @@ export const currentNominationPoolStatus$ = state(
               {
                 bond,
                 pendingRewards,
+                points,
                 unlocks,
                 pool: null,
               },
@@ -40,6 +42,7 @@ export const currentNominationPoolStatus$ = state(
               bond,
               pendingRewards,
               unlocks,
+              points,
               pool: {
                 ...pool,
                 id,

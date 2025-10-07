@@ -9,6 +9,7 @@ import { lazy, useState, type ComponentType, type FC } from "react";
 import { from, lastValueFrom, switchMap, type Observable } from "rxjs";
 import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
+import type { AsyncTransaction } from "@polkadot-api/sdk-staking";
 
 const toastModule = import("react-toastify");
 
@@ -103,7 +104,9 @@ type ButtonProps = typeof Button extends ComponentType<infer R> ? R : never;
 type Awaitable<T> = T | Promise<T>;
 export const TransactionButton: FC<
   ButtonProps & {
-    createTx: () => Awaitable<Transaction<any, any, any, any> | null>;
+    createTx: () => Awaitable<
+      Transaction<any, any, any, any> | AsyncTransaction | null
+    >;
     signer: PolkadotSigner | null | undefined;
   }
 > = ({ createTx, signer, children, ...props }) => {

@@ -7,16 +7,19 @@ import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { accountStatus$, selectedSignerAccount$ } from "@/state/account";
-import { stakingApi$, tokenDecimals$, tokenProps$ } from "@/state/chain";
-import { activeEraNumber$ } from "@/state/era";
-import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import {
-  MultiAddress,
-  NominationPoolsBondExtra,
-} from "@polkadot-api/descriptors";
+  stakingApi$,
+  stakingSdk$,
+  tokenDecimals$,
+  tokenProps$,
+} from "@/state/chain";
+import { currentEra$, eraDurationInMs$ } from "@/state/era";
+import { currentNominationPoolStatus$ } from "@/state/nominationPool";
+import { NominationPoolsBondExtra } from "@polkadot-api/descriptors";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { useState, type FC } from "react";
 import { firstValueFrom, switchMap } from "rxjs";
+import { format } from "timeago.js";
 
 const minBond$ = state(
   stakingApi$.pipe(
@@ -69,12 +72,10 @@ const BondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
 
   if (!accountStatus || !token) return null;
   const { decimals, symbol } = token;
-  const currentBond = accountStatus.nominationPool.currentBond;
   const { balance, nominationPool: poolStatus } = accountStatus;
 
   const bigBond = Number.isNaN(bond) ? 0n : BigInt(Math.round(bond));
 
-  // TODO look if this is true, can you bond tokens that are being unbonded?
   const currentUnbonding = poolStatus.unlocks
     .map((v) => v.value)
     .reduce((a, b) => a + b, 0n);
@@ -92,7 +93,7 @@ const BondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
   const setBondValue = (value: number) => setBond(clampBondValue(value));
 
   const resultingBondExtra = bigBond + poolStatus.pendingRewards;
-  const resultingBond = currentBond + resultingBondExtra;
+  const resultingBond = poolStatus.currentBond + resultingBondExtra;
 
   const showBelowMinWarning = resultingBond > 0n && resultingBond < minBond;
   const showSafeMaxWarning =
@@ -121,7 +122,7 @@ const BondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
       <Slider
         value={[bond]}
         min={0}
-        max={Number(maxBond - currentBond)}
+        max={Number(maxBond - poolStatus.currentBond)}
         step={10 ** (token.decimals - 2)}
         onValueChange={([value]) => setBondValue(value)}
         onValueCommit={([value]) => setBondValue(value)}
@@ -190,23 +191,15 @@ const UnbondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
   if (!accountStatus || !poolStatus || !token) return null;
   const { decimals, symbol } = token;
   const currentBond = accountStatus.nominationPool.currentBond;
-  const balance = accountStatus.balance;
 
   const bigBond = Number.isNaN(bond) ? 0n : BigInt(Math.round(bond));
   const resultingBond = currentBond - bigBond;
 
-  // TODO look if this is true, can you bond tokens that are being unbonded?
-  const currentUnbonding = poolStatus.unlocks
-    .map((v) => v.value)
-    .reduce((a, b) => a + b, 0n);
-
-  const maxBond =
-    balance.total - balance.raw.existentialDeposit - currentUnbonding;
   const tokenUnit = 10n ** BigInt(decimals);
 
   const clampBondValue = (value: number) => {
     if (!Number.isFinite(value)) return 0;
-    return Math.min(Math.max(value, 0), Number(maxBond));
+    return Math.min(Math.max(value, 0), Number(currentBond));
   };
 
   const setBondValue = (value: number) => setBond(clampBondValue(value));
@@ -216,7 +209,7 @@ const UnbondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
   const unbond = async () => {
     if (!selectedAccount) return null;
 
-    const api = await firstValueFrom(stakingApi$);
+    const sdk = await firstValueFrom(stakingSdk$);
 
     // Accounting for BigInt <-> Number error
     // assuming we're not letting the user unbond with an in-between value.
@@ -226,14 +219,7 @@ const UnbondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
         : resultingBond < minBond
           ? currentBond - minBond
           : bigBond;
-    if (unbonding < 0) throw new Error("Can't unbond negative");
-    const unbonding_points =
-      (unbonding * (poolStatus.pool?.points ?? 0n)) / poolStatus.bond;
-
-    return api.tx.NominationPools.unbond({
-      member_account: MultiAddress.Id(selectedAccount.address),
-      unbonding_points,
-    });
+    return sdk.unbondNominationPool(selectedAccount.address, unbonding);
   };
 
   return (
@@ -373,21 +359,20 @@ const StatTile: FC<{
 const Result: FC<{ bond: number }> = ({ bond }) => {
   const account = useStateObservable(accountStatus$);
   const decimals = useStateObservable(tokenDecimals$);
-  const currentEra = useStateObservable(activeEraNumber$);
+  const currentEra = useStateObservable(currentEra$);
+  const eraDuration = useStateObservable(eraDurationInMs$);
 
-  if (!account || decimals == null) return null;
+  if (!account || decimals == null || currentEra == null) return null;
   const { balance, nominationPool: poolStatus } = account;
 
   const bigBond = Number.isNaN(bond) ? 0n : BigInt(Math.round(bond));
 
   const spendableAfter =
-    bigBond < 0n ? balance.spendable : balance.spendable - bigBond;
-  const resultingBond =
-    poolStatus.currentBond +
-    bigBond +
-    (bigBond >= 0n ? poolStatus.pendingRewards : 0n);
+    balance.spendable -
+    (bigBond < 0n ? 0n : bigBond) +
+    poolStatus.pendingRewards;
+  const resultingBond = poolStatus.currentBond + bigBond;
 
-  // TODO then if bonding first uses previous unbonds, how do they get effected?
   const unlocks =
     bigBond < 0n
       ? [
@@ -399,6 +384,10 @@ const Result: FC<{ bond: number }> = ({ bond }) => {
         ]
       : poolStatus.unlocks;
   const totalUnlocks = unlocks.map((v) => v.value).reduce((a, b) => a + b, 0n);
+  const unlocksByEra = unlocks.reduce((acc: Record<number, bigint>, v) => {
+    acc[v.era] = (acc[v.era] ?? 0n) + v.value;
+    return acc;
+  }, {});
 
   return (
     <div className="space-y-4 rounded-lg border border-dashed border-border/60 bg-muted/20 p-4 text-sm">
@@ -410,18 +399,11 @@ const Result: FC<{ bond: number }> = ({ bond }) => {
         />
       </div>
       <div className="text-xs text-muted-foreground">
-        {bigBond >= 0n && poolStatus.pendingRewards ? (
-          <>
-            Includes <TokenValue value={poolStatus.pendingRewards} /> from
-            pending rewards.
-          </>
-        ) : bigBond > 0n ? (
-          "Additional stake will be bonded immediately."
-        ) : bigBond < 0n ? (
-          "The amount will begin the unbonding period."
-        ) : (
-          "Move the slider or enter an amount to preview the change."
-        )}
+        {bigBond > 0n
+          ? "Additional stake will be bonded immediately."
+          : bigBond < 0n
+            ? "The amount will begin the unbonding period."
+            : "Move the slider or enter an amount to preview the change."}
       </div>
 
       <div className="h-px bg-border/60" />
@@ -433,6 +415,12 @@ const Result: FC<{ bond: number }> = ({ bond }) => {
           value={spendableAfter}
         />
       </div>
+      {poolStatus.pendingRewards ? (
+        <div className="text-xs text-muted-foreground">
+          Includes <TokenValue value={poolStatus.pendingRewards} /> from pending
+          rewards.
+        </div>
+      ) : null}
 
       <div className="h-px bg-border/60" />
 
@@ -446,14 +434,11 @@ const Result: FC<{ bond: number }> = ({ bond }) => {
             />
           </div>
           <div className="max-h-40 space-y-2 overflow-auto pr-1">
-            {unlocks.map(({ era, value }, index) => {
-              const remaining =
-                typeof currentEra === "number"
-                  ? Math.max(era - currentEra, 0)
-                  : null;
+            {Object.entries(unlocksByEra).map(([era, value]) => {
+              const unlocking = eraDuration * (Number(era) - currentEra);
               return (
                 <div
-                  key={`${era}-${index}`}
+                  key={era}
                   className="flex items-center justify-between rounded-md border border-border/50 bg-background/80 px-3 py-2 text-xs"
                 >
                   <div className="flex flex-col gap-0.5">
@@ -461,11 +446,9 @@ const Result: FC<{ bond: number }> = ({ bond }) => {
                       Era {era}
                     </span>
                     <span className="text-muted-foreground">
-                      {remaining === null
-                        ? "Waiting for confirmation"
-                        : remaining === 0
-                          ? "Unlocks next era"
-                          : `Unlocks in ~${remaining} ${remaining === 1 ? "era" : "eras"}`}
+                      {unlocking === 0
+                        ? "Unlocks next era"
+                        : `Unlocks ${format(new Date(Date.now() + unlocking))}`}
                     </span>
                   </div>
                   <TokenValue

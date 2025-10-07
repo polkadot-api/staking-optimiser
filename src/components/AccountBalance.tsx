@@ -74,7 +74,7 @@ export const AccountBalance: FC<{
   const data: AccountBalanceValue[] = [
     {
       label: "Bonded",
-      value: bonded - unbonding,
+      value: bonded,
       color: "var(--muted-foreground)",
       tooltip: "Amount already bonded into staking.",
     },
