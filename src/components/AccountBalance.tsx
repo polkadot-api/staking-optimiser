@@ -61,17 +61,21 @@ export const AccountBalance: FC<{
   const bonded = currentBond?.bond ?? 0n;
   const unbonding =
     currentBond?.unlocks.map((v) => v.value).reduce((a, b) => a + b, 0n) ?? 0n;
+  // Locked balance that can't stack with staking
+  const reservedBalance = balance.raw.reserved - (bonded + unbonding);
+  // Locked balance that can be stacked with staking
   const unbondedLockedBalance =
     balance.total === 0n
       ? 0n
-      : // ExistentialDeposit is part of "locked" because it's "untouchable", i.e. can't be spend without killing the account
-        // so we have to remove it from here. We could add it as a separate category but... not worth it for just the ED
-        balance.locked -
-        balance.raw.existentialDeposit -
-        (currentBond?.bond ?? 0n) -
-        unbonding;
+      : balance.untouchable - balance.raw.existentialDeposit;
 
   const data: AccountBalanceValue[] = [
+    {
+      label: "Reserved",
+      value: reservedBalance + balance.raw.existentialDeposit,
+      color: "color-mix(in srgb, var(--muted-foreground), transparent 50%)",
+      tooltip: "Amount reserved that can't stack with staking bonds.",
+    },
     {
       label: "Bonded",
       value: bonded,
@@ -85,11 +89,11 @@ export const AccountBalance: FC<{
       tooltip: "Amount being unbounded from staking.",
     },
     {
-      label: "Locked",
+      label: "Frozen",
       value: unbondedLockedBalance,
       color: "color-mix(in srgb, var(--chart-4), transparent 20%)",
       tooltip:
-        "Amount locked but not used in staking. You can bond this amount and you will still retain the same spendable amount.",
+        "Amount frozen but not used in staking. You can bond this amount and you will still retain the same spendable amount.",
     },
     {
       label: "Spendable",
