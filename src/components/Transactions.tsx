@@ -1,4 +1,6 @@
+import type { AsyncTransaction } from "@polkadot-api/sdk-staking";
 import { shareLatest } from "@react-rxjs/core";
+import { Loader2, Zap } from "lucide-react";
 import {
   InvalidTxError,
   type PolkadotSigner,
@@ -8,8 +10,6 @@ import {
 import { lazy, useState, type ComponentType, type FC } from "react";
 import { from, lastValueFrom, switchMap, type Observable } from "rxjs";
 import { Button } from "./ui/button";
-import { Loader2 } from "lucide-react";
-import type { AsyncTransaction } from "@polkadot-api/sdk-staking";
 
 const toastModule = import("react-toastify");
 
@@ -108,8 +108,10 @@ export const TransactionButton: FC<
       Transaction<any, any, any, any> | AsyncTransaction | null
     >;
     signer: PolkadotSigner | null | undefined;
+    onSuccess?: () => void;
+    onError?: (err: any) => void;
   }
-> = ({ createTx, signer, children, ...props }) => {
+> = ({ createTx, signer, children, onSuccess, onError, ...props }) => {
   const [isOngoing, trackTx] = useSingleTransaction();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -122,16 +124,18 @@ export const TransactionButton: FC<
         try {
           const tx = await createTx();
           if (!tx) return;
-          trackTx(tx.signSubmitAndWatch(signer!));
+          await trackTx(tx.signSubmitAndWatch(signer!));
+          onSuccess?.();
         } catch (ex) {
           console.error(ex);
+          onError?.(ex);
         } finally {
           setIsSubmitting(false);
         }
       }}
     >
       {children}
-      {isOngoing && <Loader2 className="animate-spin" />}
+      {isOngoing ? <Loader2 className="animate-spin" /> : <Zap />}
     </Button>
   );
 };

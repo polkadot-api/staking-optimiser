@@ -23,7 +23,7 @@ const bondedStatus$ = accountStatus$.pipeState(
       };
     }
 
-    if (v.nominationPool.currentBond) {
+    if (v.nominationPool.pool) {
       return {
         bond: v.nominationPool.currentBond,
         unlocks: v.nominationPool.unlocks,
@@ -61,6 +61,7 @@ export const AccountBalance: FC<{
   const bonded = currentBond?.bond ?? 0n;
   const unbonding =
     currentBond?.unlocks.map((v) => v.value).reduce((a, b) => a + b, 0n) ?? 0n;
+
   // Locked balance that can't stack with staking
   const reservedBalance = balance.raw.reserved - (bonded + unbonding);
   // Locked balance that can be stacked with staking
@@ -77,16 +78,16 @@ export const AccountBalance: FC<{
       tooltip: "Amount reserved that can't stack with staking bonds.",
     },
     {
-      label: "Bonded",
-      value: bonded,
-      color: "var(--muted-foreground)",
-      tooltip: "Amount already bonded into staking.",
-    },
-    {
       label: "Unbonding",
       value: unbonding,
       color: "color-mix(in srgb, var(--muted-foreground), transparent 50%)",
       tooltip: "Amount being unbounded from staking.",
+    },
+    {
+      label: "Bonded",
+      value: bonded,
+      color: "var(--muted-foreground)",
+      tooltip: "Amount already bonded into staking.",
     },
     {
       label: "Frozen",

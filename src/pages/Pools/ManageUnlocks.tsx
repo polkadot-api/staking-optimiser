@@ -1,15 +1,14 @@
-import { DialogButton } from "@/components/DialogButton";
 import { TokenValue } from "@/components/TokenValue";
-import { Button } from "@/components/ui/button";
+import { TransactionButton } from "@/components/Transactions";
 import { selectedSignerAccount$ } from "@/state/account";
-import { relayApi$, stakingApi$ } from "@/state/chain";
+import { stakingApi$ } from "@/state/chain";
 import { activeEra$, eraDurationInMs$ } from "@/state/era";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import { estimatedFuture } from "@/util/date";
 import { MultiAddress } from "@polkadot-api/descriptors";
 import { state, useStateObservable } from "@react-rxjs/core";
-import { useState } from "react";
-import { combineLatest, filter, firstValueFrom, map, switchMap } from "rxjs";
+import { combineLatest, filter, firstValueFrom, map } from "rxjs";
+import { slashingSpans$ } from "../Nominate/NominateLocks";
 
 const locks$ = state(
   combineLatest([
@@ -36,6 +35,7 @@ const locks$ = state(
 
 export const ManageLocks = () => {
   const locks = useStateObservable(locks$);
+  const selectedAccount = useStateObservable(selectedSignerAccount$);
 
   return (
     <div className="grow">
@@ -51,75 +51,23 @@ export const ManageLocks = () => {
         ))}
       </ol>
       {locks.some((v) => v.unlocked) ? (
-        <DialogButton title="Unlock" content={() => <Unlock />}>
+        <TransactionButton
+          signer={selectedAccount?.polkadotSigner}
+          createTx={async () => {
+            const [api, slashingSpans] = await Promise.all([
+              firstValueFrom(stakingApi$),
+              firstValueFrom(slashingSpans$.pipe(filter((v) => v != null))),
+            ]);
+
+            return api.tx.NominationPools.withdraw_unbonded({
+              member_account: MultiAddress.Id(selectedAccount!.address),
+              num_slashing_spans: slashingSpans,
+            });
+          }}
+        >
           Unlock funds
-        </DialogButton>
+        </TransactionButton>
       ) : null}
-    </div>
-  );
-};
-
-const slashingSpans$ = state(
-  // TODO verify it's actually on relay chain
-  combineLatest([
-    relayApi$,
-    selectedSignerAccount$.pipe(filter((v) => v != null)),
-  ]).pipe(
-    switchMap(([api, account]) =>
-      api.query.Staking.SlashingSpans.getValue(account?.address)
-    ),
-    map((r) => (r ? 1 + r.prior.length : 0))
-  ),
-  null
-);
-const Unlock = () => {
-  //   const pool = useStateObservable(currentNominationPoolStatus$);
-  const selectedAccount = useStateObservable(selectedSignerAccount$);
-  const locks = useStateObservable(locks$);
-  const unlockableLocks = locks.filter((l) => l.unlocked);
-
-  const totalUnlockedValue = unlockableLocks
-    .map((l) => l.value)
-    .reduce((a, b) => a + b, 0n);
-
-  // Preload slashingSpans as we'll need these when signing
-  useStateObservable(slashingSpans$);
-  const [submitting, setSubmitting] = useState(false);
-
-  const unlock = async () => {
-    if (!selectedAccount) return;
-
-    setSubmitting(true);
-    try {
-      const [api, slashingSpans] = await Promise.all([
-        firstValueFrom(stakingApi$),
-        firstValueFrom(slashingSpans$.pipe(filter((v) => v != null))),
-      ]);
-
-      return api.tx.NominationPools.withdraw_unbonded({
-        member_account: MultiAddress.Id(selectedAccount.address),
-        num_slashing_spans: slashingSpans,
-      })
-        .signSubmitAndWatch(selectedAccount.polkadotSigner)
-        .subscribe(
-          (v) => console.log(v),
-          (err) => console.error(err)
-        );
-    } catch (ex) {
-      console.error(ex);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <div>
-        A total of <TokenValue value={totalUnlockedValue} /> can be unlocked.
-      </div>
-      <div>
-        <Button onClick={unlock}>Unlock</Button>
-      </div>
     </div>
   );
 };

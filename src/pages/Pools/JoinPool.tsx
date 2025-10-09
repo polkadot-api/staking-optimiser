@@ -55,7 +55,7 @@ export const JoinPool: FC<{ poolId: number }> = ({ poolId }) => {
       <DialogButton
         disabled={cantJoinReason != null}
         title="Join Pool"
-        content={() => <JoinPoolModal poolId={poolId} />}
+        content={({ close }) => <JoinPoolModal poolId={poolId} close={close} />}
       >
         Join pool
       </DialogButton>
@@ -72,7 +72,8 @@ const pool$ = state((id: number) =>
 
 const JoinPoolModal: FC<{
   poolId: number;
-}> = ({ poolId }) => {
+  close?: () => void;
+}> = ({ poolId, close }) => {
   const accountStatus = useStateObservable(accountStatus$);
   const signer = useStateObservable(selectedSignerAccount$);
   const minBond = useStateObservable(minJoin$);
@@ -197,6 +198,7 @@ const JoinPoolModal: FC<{
               pool_id: poolId,
             });
           }}
+          onSuccess={close}
         >
           Join
         </TransactionButton>

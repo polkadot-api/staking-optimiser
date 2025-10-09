@@ -85,7 +85,10 @@ const CurrentStatus = () => {
         {currentPool.unlocks.length ? <ManageLocks /> : null}
       </div>
       <div className="space-x-2 mt-4">
-        <DialogButton title="Manage bond" content={() => <ManageBond />}>
+        <DialogButton
+          title="Manage bond"
+          content={({ close }) => <ManageBond close={close} />}
+        >
           Manage bond
         </DialogButton>
         {currentPool.pendingRewards > 0 ? <Claim /> : null}

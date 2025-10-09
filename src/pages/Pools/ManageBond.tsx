@@ -13,12 +13,19 @@ import {
   tokenDecimals$,
   tokenProps$,
 } from "@/state/chain";
-import { currentEra$, eraDurationInMs$ } from "@/state/era";
+import {
+  currentEra$,
+  eraDurationInMs$,
+  unbondDurationInMs$,
+} from "@/state/era";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
-import { NominationPoolsBondExtra } from "@polkadot-api/descriptors";
-import { state, useStateObservable } from "@react-rxjs/core";
+import {
+  MultiAddress,
+  NominationPoolsBondExtra,
+} from "@polkadot-api/descriptors";
+import { state, useStateObservable, withDefault } from "@react-rxjs/core";
 import { useState, type FC } from "react";
-import { firstValueFrom, switchMap } from "rxjs";
+import { firstValueFrom, map, switchMap } from "rxjs";
 import { format } from "timeago.js";
 
 const minBond$ = state(
@@ -27,10 +34,15 @@ const minBond$ = state(
   )
 );
 
-export const ManageBond = () => {
+const unbondDurationInDays$ = unbondDurationInMs$.pipeState(
+  map((v) => Math.round(v / (1000 * 60 * 60 * 24)).toString()),
+  withDefault("…")
+);
+
+export const ManageBond: FC<{ close?: () => void }> = ({ close }) => {
   const poolStatus = useStateObservable(currentNominationPoolStatus$);
   const balance = useStateObservable(accountBalance$);
-  const [mode, setMode] = useState<"bond" | "unbond">("bond");
+  const [mode, setMode] = useState<"bond" | "unbond" | "leave">("bond");
   const [bond, setBond] = useState(0);
   const [unbond, setUnbond] = useState(0);
 
@@ -45,26 +57,43 @@ export const ManageBond = () => {
         onValueChange={(value) => setMode(value as any)}
         className="space-y-4"
       >
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="bond">Bond Extra</TabsTrigger>
-          <TabsTrigger value="unbond">Unbond</TabsTrigger>
+          <TabsTrigger value="unbond" disabled={poolStatus.bond == 0n}>
+            Unbond
+          </TabsTrigger>
+          <TabsTrigger value="leave" disabled={poolStatus.bond == 0n}>
+            Leave
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="bond">
-          <BondInput bond={bond} setBond={setBond} />
+          <BondInput bond={bond} setBond={setBond} close={close} />
         </TabsContent>
         <TabsContent value="unbond">
-          <UnbondInput bond={unbond} setBond={setUnbond} />
+          <UnbondInput bond={unbond} setBond={setUnbond} close={close} />
+        </TabsContent>
+        <TabsContent value="leave">
+          <Leave close={close} />
         </TabsContent>
       </Tabs>
-      <Result bond={mode === "bond" ? bond : -unbond} />
+      <Result
+        bond={
+          mode === "leave"
+            ? -Number(poolStatus.bond)
+            : mode === "bond"
+              ? bond
+              : -unbond
+        }
+      />
     </section>
   );
 };
 
-const BondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
-  bond,
-  setBond,
-}) => {
+const BondInput: FC<{
+  bond: number;
+  setBond: (bond: number) => void;
+  close?: () => void;
+}> = ({ bond, setBond, close }) => {
   const accountStatus = useStateObservable(accountStatus$);
   const token = useStateObservable(tokenProps$);
   const minBond = useStateObservable(minBond$);
@@ -98,6 +127,7 @@ const BondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
   const showBelowMinWarning = resultingBond > 0n && resultingBond < minBond;
   const showSafeMaxWarning =
     maxSafeBond > 0n && resultingBond > maxSafeBond + poolStatus.pendingRewards;
+  const isLeaving = !!poolStatus.pool && poolStatus.currentBond === 0n;
 
   const performBond = async () => {
     if (!selectedAccount) return null;
@@ -159,7 +189,12 @@ const BondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
           bond or remove all of it.
         </AlertCard>
       ) : null}
-
+      {isLeaving ? (
+        <AlertCard type="error">
+          You have are currently leaving the pool. You have to wait until the
+          locking period ends before you can bond more tokens.
+        </AlertCard>
+      ) : null}
       {showSafeMaxWarning ? (
         <AlertCard type="warning">
           Careful! If you bond all your balance you might not have enough to pay
@@ -168,20 +203,24 @@ const BondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
       ) : null}
       <TransactionButton
         className="w-full"
-        disabled={resultingBond < minBond || resultingBondExtra == 0n}
+        disabled={
+          resultingBond < minBond || resultingBondExtra == 0n || isLeaving
+        }
         signer={selectedAccount?.polkadotSigner}
         createTx={performBond}
+        onSuccess={close}
       >
-        Bond
+        Add Stake
       </TransactionButton>
     </div>
   );
 };
 
-const UnbondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
-  bond,
-  setBond,
-}) => {
+const UnbondInput: FC<{
+  bond: number;
+  setBond: (bond: number) => void;
+  close?: () => void;
+}> = ({ bond, setBond, close }) => {
   const poolStatus = useStateObservable(currentNominationPoolStatus$);
   const accountStatus = useStateObservable(accountStatus$);
   const token = useStateObservable(tokenProps$);
@@ -193,32 +232,26 @@ const UnbondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
   const currentBond = accountStatus.nominationPool.currentBond;
 
   const bigBond = Number.isNaN(bond) ? 0n : BigInt(Math.round(bond));
-  const resultingBond = currentBond - bigBond;
 
   const tokenUnit = 10n ** BigInt(decimals);
 
   const clampBondValue = (value: number) => {
     if (!Number.isFinite(value)) return 0;
-    return Math.min(Math.max(value, 0), Number(currentBond));
+    return Math.min(Math.max(value, 0), Number(currentBond - minBond));
   };
 
   const setBondValue = (value: number) => setBond(clampBondValue(value));
-
-  const showBelowMinWarning = resultingBond > 0n && resultingBond < minBond;
 
   const unbond = async () => {
     if (!selectedAccount) return null;
 
     const sdk = await firstValueFrom(stakingSdk$);
 
+    const resultingBond = currentBond - bigBond;
+
     // Accounting for BigInt <-> Number error
     // assuming we're not letting the user unbond with an in-between value.
-    const unbonding =
-      resultingBond == 0n
-        ? currentBond
-        : resultingBond < minBond
-          ? currentBond - minBond
-          : bigBond;
+    const unbonding = resultingBond < minBond ? currentBond - minBond : bigBond;
     return sdk.unbondNominationPool(selectedAccount.address, unbonding);
   };
 
@@ -228,7 +261,7 @@ const UnbondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
         <div>
           <p className="text-sm font-medium">Amount to unbond</p>
           <p className="text-xs text-muted-foreground">
-            Starts the unbonding period (about 28 days).
+            Starts the unbonding period (about {unbondDurationInDays$} days).
           </p>
         </div>
         <TokenValue className="text-base font-semibold" value={bigBond} />
@@ -236,7 +269,7 @@ const UnbondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
       <Slider
         value={[bond]}
         min={0}
-        max={Number(currentBond)}
+        max={Number(currentBond - minBond)}
         step={10 ** (token.decimals - 2)}
         onValueChange={([value]) => setBondValue(value)}
         onValueCommit={([value]) => setBondValue(value)}
@@ -266,20 +299,55 @@ const UnbondInput: FC<{ bond: number; setBond: (bond: number) => void }> = ({
         </div>
       </div>
 
-      {showBelowMinWarning ? (
-        <AlertCard type="error">
-          Can't have a bond smaller than{" "}
-          <TokenValue value={minBond} colored={false} />. Please increase the
-          bond or remove all of it.
-        </AlertCard>
-      ) : null}
       <TransactionButton
         className="w-full"
-        disabled={resultingBond < minBond || bigBond == 0n}
+        disabled={bigBond == 0n}
         signer={selectedAccount?.polkadotSigner}
         createTx={unbond}
+        onSuccess={close}
       >
         Unbond
+      </TransactionButton>
+    </div>
+  );
+};
+
+const Leave: FC<{ close?: () => void }> = ({ close }) => {
+  const accountStatus = useStateObservable(accountStatus$);
+  const selectedAccount = useStateObservable(selectedSignerAccount$);
+
+  if (!accountStatus || !selectedAccount) return null;
+
+  const leave = async () => {
+    const api = await firstValueFrom(stakingApi$);
+
+    return api.tx.NominationPools.unbond({
+      member_account: MultiAddress.Id(selectedAccount.address),
+      unbonding_points: accountStatus.nominationPool.points,
+    });
+  };
+
+  return (
+    <div className="space-y-4 rounded-lg border border-border/60 bg-background/90 p-4">
+      <div className="space-y-2">
+        <p className="font-medium  text-sm">Leave pool</p>
+        <p>
+          To leave the pool, you will unbond all of your current stake. Once the
+          unlocking period ends (in {unbondDurationInDays$} days), you will
+          automatically leave the pool once you unlock your tokens
+        </p>
+        <AlertCard type="warning">
+          You won't be able to bond other tokens until the unlocking period
+          ends.
+        </AlertCard>
+      </div>
+      <TransactionButton
+        className="w-full"
+        signer={selectedAccount?.polkadotSigner}
+        createTx={leave}
+        onSuccess={close}
+      >
+        Leave pool
       </TransactionButton>
     </div>
   );

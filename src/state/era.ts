@@ -36,6 +36,17 @@ export const eraDurationInMs$ = state(
   )
 );
 
+export const unbondDurationInMs$ = state(
+  combineLatest([
+    eraDurationInMs$,
+    stakingApi$.pipe(
+      switchMap((api) => api.constants.Staking.BondingDuration())
+    ),
+  ]).pipe(
+    map(([eraDuration, bondingDuration]) => eraDuration * bondingDuration)
+  )
+);
+
 export function getEraApy(
   eraReward: bigint,
   invested: bigint,

@@ -1,13 +1,11 @@
-import { DialogButton } from "@/components/DialogButton";
 import { TokenValue } from "@/components/TokenValue";
-import { Button } from "@/components/ui/button";
+import { TransactionButton } from "@/components/Transactions";
 import { selectedSignerAccount$ } from "@/state/account";
 import { relayApi$, stakingApi$ } from "@/state/chain";
 import { activeEra$, eraDurationInMs$ } from "@/state/era";
 import { currentNominatorBond$ } from "@/state/nominate";
 import { estimatedFuture } from "@/util/date";
 import { state, useStateObservable } from "@react-rxjs/core";
-import { useState } from "react";
 import { combineLatest, filter, firstValueFrom, map, switchMap } from "rxjs";
 
 const locks$ = state(
@@ -35,6 +33,7 @@ const locks$ = state(
 
 export const NominateLocks = () => {
   const locks = useStateObservable(locks$);
+  const selectedAccount = useStateObservable(selectedSignerAccount$);
 
   return (
     <div className="grow">
@@ -50,15 +49,27 @@ export const NominateLocks = () => {
         ))}
       </ol>
       {locks.some((v) => v.unlocked) ? (
-        <DialogButton title="Unlock" content={() => <Unlock />} needsSigner>
+        <TransactionButton
+          signer={selectedAccount?.polkadotSigner}
+          createTx={async () => {
+            const [api, slashingSpans] = await Promise.all([
+              firstValueFrom(stakingApi$),
+              firstValueFrom(slashingSpans$.pipe(filter((v) => v != null))),
+            ]);
+
+            return api.tx.Staking.withdraw_unbonded({
+              num_slashing_spans: slashingSpans,
+            });
+          }}
+        >
           Unlock funds
-        </DialogButton>
+        </TransactionButton>
       ) : null}
     </div>
   );
 };
 
-const slashingSpans$ = state(
+export const slashingSpans$ = state(
   // TODO verify it's actually on relay chain
   combineLatest([
     relayApi$,
@@ -71,53 +82,3 @@ const slashingSpans$ = state(
   ),
   null
 );
-const Unlock = () => {
-  //   const pool = useStateObservable(currentNominationPoolStatus$);
-  const selectedAccount = useStateObservable(selectedSignerAccount$);
-  const locks = useStateObservable(locks$);
-  const unlockableLocks = locks.filter((l) => l.unlocked);
-
-  const totalUnlockedValue = unlockableLocks
-    .map((l) => l.value)
-    .reduce((a, b) => a + b, 0n);
-
-  // Preload slashingSpans as we'll need these when signing
-  useStateObservable(slashingSpans$);
-  const [submitting, setSubmitting] = useState(false);
-
-  const unlock = async () => {
-    if (!selectedAccount) return;
-
-    setSubmitting(true);
-    try {
-      const [api, slashingSpans] = await Promise.all([
-        firstValueFrom(stakingApi$),
-        firstValueFrom(slashingSpans$.pipe(filter((v) => v != null))),
-      ]);
-
-      return api.tx.Staking.withdraw_unbonded({
-        num_slashing_spans: slashingSpans,
-      })
-        .signSubmitAndWatch(selectedAccount.polkadotSigner)
-        .subscribe(
-          (v) => console.log(v),
-          (err) => console.error(err)
-        );
-    } catch (ex) {
-      console.error(ex);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <div>
-        A total of <TokenValue value={totalUnlockedValue} /> can be unlocked.
-      </div>
-      <div>
-        <Button onClick={unlock}>Unlock</Button>
-      </div>
-    </div>
-  );
-};
