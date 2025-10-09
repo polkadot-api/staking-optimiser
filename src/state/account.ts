@@ -18,7 +18,6 @@ import {
   defer,
   endWith,
   filter,
-  from,
   fromEventPattern,
   ignoreElements,
   interval,
@@ -268,7 +267,8 @@ export const selectedSignerAccount$ = selectedAccount$.pipeState(
       : v?.type === "extension"
         ? v.value
         : null
-  )
+  ),
+  tap((v) => console.log("ssa", v))
 );
 
 export const selectedAccountAddr$ = selectedAccount$.pipeState(
@@ -286,7 +286,7 @@ export const accountStatus$ = state(
     switchMap(([sdk, addr]) => {
       if (!addr) return [null];
 
-      return from(sdk.getAccountStatus(addr)).pipe(startWith(null));
+      return sdk.getAccountStatus$(addr).pipe(startWith(null));
     })
   )
 );

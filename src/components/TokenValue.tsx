@@ -53,7 +53,7 @@ export const TokenValue: FC<{
           {decimalPart}
         </span>
       )}
-      <span className="ml-1">{symbol}</span>
+      <span> {symbol}</span>
     </span>
   );
 };

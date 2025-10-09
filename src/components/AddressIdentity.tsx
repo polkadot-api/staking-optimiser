@@ -4,7 +4,7 @@ import { getPublicKey, sliceMiddleAddr } from "@/util/ss58";
 import { CopyText, PolkadotIdenticon } from "@polkadot-api/react-components";
 import { useStateObservable } from "@react-rxjs/core";
 import { CheckCircle } from "lucide-react";
-import type { FC } from "react";
+import { useEffect, useRef, type FC, type PropsWithChildren } from "react";
 
 export const AddressIdentity: FC<{
   addr: string;
@@ -42,28 +42,30 @@ export const AddressIdentity: FC<{
       )}
     >
       {copyable ? (
-        <CopyText
-          text={addr}
-          copiedContent={
-            <CheckCircle size={18} className="text-positive w-6" />
-          }
-        >
-          <PolkadotIdenticon
-            className="size-6"
-            publicKey={getPublicKey(addr)}
-          />
-        </CopyText>
+        <StopClickPropagation>
+          <CopyText
+            text={addr}
+            copiedContent={
+              <CheckCircle size={18} className="text-positive w-6" />
+            }
+          >
+            <PolkadotIdenticon
+              className="size-6"
+              publicKey={getPublicKey(addr)}
+            />
+          </CopyText>
+        </StopClickPropagation>
       ) : (
         <PolkadotIdenticon className="size-6" publicKey={getPublicKey(addr)} />
       )}
       {identity ? (
         identity.verified ? (
-          <div className="flex items-center gap-2">
-            <span>
+          <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
+            <span className="overflow-hidden text-ellipsis">
               <span className="font-medium">{identity.value}</span>
               {subIdLabel}
             </span>
-            <CheckCircle size={18} className="text-positive" />
+            <CheckCircle size={18} className="text-positive shrink-0" />
           </div>
         ) : (
           <div className="leading-tight text-left">
@@ -81,4 +83,18 @@ export const AddressIdentity: FC<{
       )}
     </div>
   );
+};
+
+const StopClickPropagation: FC<PropsWithChildren> = ({ children }) => {
+  const ref = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const element = ref.current;
+    const handleEvt = (evt: MouseEvent) => evt.preventDefault();
+    element.addEventListener("click", handleEvt);
+    return () => element.removeEventListener("click", handleEvt);
+  }, []);
+
+  return <span ref={ref}>{children}</span>;
 };

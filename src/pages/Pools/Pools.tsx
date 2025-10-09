@@ -11,6 +11,9 @@ import { Subscribe, useStateObservable } from "@react-rxjs/core";
 import { lazy } from "react";
 import { ManageBond } from "./ManageBond";
 import { ManageLocks } from "./ManageUnlocks";
+import { isNominating$ } from "@/state/nominate";
+import { Link, Route, Routes } from "react-router-dom";
+import { PoolDetail } from "./PoolDetail";
 
 const PoolList = lazy(() => import("./PoolList"));
 
@@ -19,10 +22,18 @@ export const Pools = () => {
     <div>
       <NavMenu />
       <Subscribe fallback="Loading…">
-        <div className="space-y-4">
-          <CurrentStatus />
-          <PoolList />
-        </div>
+        <Routes>
+          <Route path=":poolId" Component={PoolDetail} />
+          <Route
+            path="*"
+            element={
+              <div className="space-y-4">
+                <CurrentStatus />
+                <PoolList />
+              </div>
+            }
+          />
+        </Routes>
       </Subscribe>
     </div>
   );
@@ -30,9 +41,24 @@ export const Pools = () => {
 
 const CurrentStatus = () => {
   const currentPool = useStateObservable(currentNominationPoolStatus$);
+  const isNominating = useStateObservable(isNominating$);
 
   if (!currentPool?.pool) {
-    return <Card title="Status">Not currently in a nomination pool</Card>;
+    return (
+      <Card title="Status">
+        <p>Not currently in a nomination pool</p>
+        {isNominating ? (
+          <p>
+            Can't join a pool because you are already{" "}
+            <Link className="underline" to="../nominate">
+              nominating
+            </Link>
+          </p>
+        ) : (
+          <p>Join a pool by selecting one below</p>
+        )}
+      </Card>
+    );
   }
 
   return (

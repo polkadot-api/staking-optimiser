@@ -17,6 +17,7 @@ import {
   sortedPools$,
   type NominationPool,
 } from "./poolList.state";
+import { Link } from "react-router-dom";
 
 const SortByButton = createSortByButton(sortBy$, setSortBy);
 
@@ -85,7 +86,7 @@ const PoolsTable = () => {
             </SortByButton>
           </th>
           <th>
-            <SortByButton prop="members">Members</SortByButton>
+            <SortByButton prop="memberCount">Members</SortByButton>
           </th>
         </tr>
       )}
@@ -99,10 +100,15 @@ const PoolsTable = () => {
           <>
             <td>{(pool.position ?? idx) + 1}</td>
             <td>
-              <div className="flex items-center gap-2">
-                <div className="text-sm">#{pool.id}</div>
-                <AddressIdentity addr={pool.address} name={pool.name} />
-              </div>
+              <Link to={pool.id.toString()}>
+                <div className="flex items-center gap-2">
+                  <div className="text-sm">#{pool.id}</div>
+                  <AddressIdentity
+                    addr={pool.addresses.pool}
+                    name={pool.name}
+                  />
+                </div>
+              </Link>
             </td>
             <td
               className={cn("text-right font-bold", {
@@ -113,8 +119,8 @@ const PoolsTable = () => {
             </td>
             <td>{formatPercentage(pool.maxApy)}</td>
             <td>{formatPercentage(pool.minApy)}</td>
-            <td>{formatPercentage(pool.commission)}</td>
-            <td>{pool.members}</td>
+            <td>{formatPercentage(pool.commission.current)}</td>
+            <td>{pool.memberCount}</td>
           </>
         );
       }}
@@ -131,8 +137,8 @@ const TableRow: FC<ItemProps<NominationPool>> = ({ item: pool, ...props }) => {
         {...props}
         className={cn({
           "bg-muted": idx % 2 === 0,
-          "bg-destructive/5": pool.state.type !== "Open",
-          "bg-destructive/10": pool.state.type !== "Open" && idx % 2 === 0,
+          "bg-destructive/5": pool.state !== "Open",
+          "bg-destructive/10": pool.state !== "Open" && idx % 2 === 0,
         })}
       >
         {props.children}

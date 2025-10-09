@@ -1,6 +1,6 @@
-import { accountBalance$ } from "@/components/AccountBalance";
 import { Card } from "@/components/Card";
 import { TokenValue } from "@/components/TokenValue";
+import { accountStatus$ } from "@/state/account";
 import { stakingApi$ } from "@/state/chain";
 import { activeEra$ } from "@/state/era";
 import { state, useStateObservable } from "@react-rxjs/core";
@@ -24,11 +24,8 @@ export const lastMinActiveStake$ = state(
   )
 );
 
-export const bondableAmount$ = accountBalance$.pipeState(
-  map((balance) => {
-    if (!balance) return null;
-    return balance.frozen + balance.spendable;
-  })
+export const bondableAmount$ = accountStatus$.pipeState(
+  map((account) => account?.nomination.maxBond ?? null)
 );
 
 export const MinBondingAmounts = () => {

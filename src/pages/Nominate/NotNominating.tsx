@@ -13,7 +13,7 @@ const PickValidators = lazy(() => import("./PickValidators"));
 
 export const NotNominatingContent = () => {
   const minBond = useStateObservable(minBond$);
-  const pool = useStateObservable(currentNominationPoolStatus$);
+  const poolStatus = useStateObservable(currentNominationPoolStatus$);
   const bondableAmount = useStateObservable(bondableAmount$);
 
   const renderNotEnough = () => {
@@ -53,7 +53,7 @@ export const NotNominatingContent = () => {
       <Card title="Start nominating">
         {bondableAmount == null
           ? "Select an account to start nominating"
-          : pool
+          : poolStatus?.pool
             ? renderInPools()
             : bondableAmount <= minBond
               ? renderNotEnough()

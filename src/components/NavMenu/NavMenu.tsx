@@ -41,7 +41,7 @@ export const NavMenu: FC<PropsWithChildren> = ({ children }) => {
     path: v.path.replace(":chain", params.chain!),
   }));
   const matchedPath = chainPages.find((page) =>
-    matchPath(page.path, location.pathname)
+    matchPath(page.path + "/*", location.pathname)
   );
 
   return (

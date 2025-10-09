@@ -49,7 +49,7 @@ const StatusCard = () => {
     <Card title="Status">
       <div className="flex flex-wrap gap-2 items-start">
         <AccountBalance className="grow-[2]" />
-        {currentBond?.unlocking.length ? <NominateLocks /> : null}
+        {currentBond?.unlocks.length ? <NominateLocks /> : null}
       </div>
       <div className="mt-4">
         <DialogButton
@@ -91,7 +91,7 @@ const validatorPerformance$ = state((addr: SS58String) =>
           try {
             const [rewards, nominatorStatus] = await Promise.all([
               stakingSdk.getValidatorRewards(addr, era),
-              stakingSdk.getNominatorStatus(nominator, era),
+              stakingSdk.getNominatorActiveValidators(nominator, era),
             ]);
             return {
               era,
@@ -167,7 +167,7 @@ const currentNominatorStatus$ = state(
     activeEraNumber$,
   ]).pipe(
     switchMap(([nominator, stakingSdk, activeEra]) =>
-      stakingSdk.getNominatorStatus(nominator, activeEra)
+      stakingSdk.getNominatorActiveValidators(nominator, activeEra)
     )
   )
 );
