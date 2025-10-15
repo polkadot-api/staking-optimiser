@@ -1,9 +1,12 @@
 import { AddressIdentity } from "@/components/AddressIdentity";
+import { Card } from "@/components/Card";
 import { ContractableText, createSortByButton } from "@/components/SortBy";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { formatPercentage } from "@/util/format";
 import { Subscribe, useStateObservable } from "@react-rxjs/core";
-import { Square, SquareCheck, X } from "lucide-react";
+import { Search, Square, SquareCheck, X } from "lucide-react";
 import { useMemo, type FC } from "react";
 import { useMediaQuery } from "react-responsive";
 import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso";
@@ -14,26 +17,44 @@ import {
   type HistoricValidator,
   type PositionValidator,
 } from "../Validators/validatorList.state";
+import { NominateButton } from "./NominateButton";
 import {
+  MAX_VALIDATORS,
+  search$,
   selectedValidators$,
+  setSearch,
   setSortBy,
   sortBy$,
   sortedValidators$,
   toggleValidator,
   validatorsWithPreferences$,
 } from "./pickValidators.state";
-import { formatPercentage } from "@/util/format";
 
 const SortByButton = createSortByButton(sortBy$, setSortBy);
 
 export default function PickValidators() {
+  const search = useStateObservable(search$);
+
   return (
     <div className="space-y-4">
       <Subscribe>
         <Selection />
       </Subscribe>
       <Subscribe fallback="Loading…">
-        <MaParams />
+        <div className="space-y-4 pb-2 min-md:space-y-0 min-md:flex gap-2 justify-stretch">
+          <Card title="Data Options" className="basis-xl grow">
+            <MaParams />
+          </Card>
+          <Card title="Search" className="basis-lg">
+            <label className="flex items-center gap-2">
+              <Search />
+              <Input
+                value={search}
+                onChange={(evt) => setSearch(evt.target.value)}
+              />
+            </label>
+          </Card>
+        </div>
       </Subscribe>
       <Subscribe fallback="Loading…" source$={sortedValidators$}>
         <ValidatorsDisplay />
@@ -42,7 +63,6 @@ export default function PickValidators() {
   );
 }
 
-const MAX_VALIDATORS = 16;
 const Selection = () => {
   const selection = useStateObservable(selectedValidators$);
   const selectionArr = Array.from(selection);
@@ -60,7 +80,10 @@ const Selection = () => {
 
   return (
     <div className="space-y-4">
-      <h3>You can select up to {MAX_VALIDATORS} validators</h3>
+      <div className="flex items-center justify-between">
+        <h3>You can select up to {MAX_VALIDATORS} validators</h3>
+        <NominateButton />
+      </div>
       <ul className="flex flex-wrap gap-2 justify-evenly">
         {slots.map((selection, i) => {
           const isActive = selection
@@ -235,7 +258,7 @@ const ValidatorTable: FC<{
           <th className="w-52 min-lg:w-60">
             <SortByButton prop="address">Validator</SortByButton>
           </th>
-          <th>
+          <th className="max-w-[10%]">
             <SortByButton prop="nominatorApy">
               <ContractableText smol="Nom. APY">Nominator APY</ContractableText>
             </SortByButton>

@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@polkadot-api/descriptors": "file:.papi/descriptors",
-    "@polkadot-api/react-components": "^0.1.0",
+    "@polkadot-api/react-components": "0.2.0",
     "@polkadot-api/sdk-accounts": "^0.5.0",
     "@polkadot-api/sdk-staking": "0.0.1-local.9",
     "@polkadot-api/substrate-bindings": "^0.16.3",

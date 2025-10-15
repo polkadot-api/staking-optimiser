@@ -1,5 +1,5 @@
 import { genericSort, type SortBy } from "@/components/SortBy";
-import { stakingApi$, stakingSdk$ } from "@/state/chain";
+import { identitySdk$, stakingApi$, stakingSdk$ } from "@/state/chain";
 import { activeEraNumber$ } from "@/state/era";
 import {
   registeredValidators$,
@@ -7,20 +7,25 @@ import {
   type ValidatorRewards,
 } from "@/state/validators";
 import { createState } from "@/util/rxjs";
+import { getPublicKey } from "@/util/ss58";
+import type { Identity } from "@polkadot-api/sdk-accounts";
 import { state } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
-import type { SS58String } from "polkadot-api";
+import { Binary, type SS58String } from "polkadot-api";
 import {
   combineLatest,
-  combineLatestWith,
   concat,
   distinct,
   map,
   mergeAll,
   mergeMap,
+  Observable,
   scan,
+  startWith,
   switchMap,
   take,
+  withLatestFrom,
+  type MonoTypeOperatorFunction,
 } from "rxjs";
 
 export const [maPeriod$, setMaPeriod] = createState(1);
@@ -154,6 +159,16 @@ const validatorHistory$ = stakingSdk$.pipe(
   )
 );
 
+// Only fetching for the current era
+const validatorIdentities$ = activeEraNumber$.pipe(
+  switchMap((era) => validatorsEra$(era - 1)),
+  withLatestFrom(identitySdk$),
+  switchMap(([validators, identitySdk]) =>
+    identitySdk.getIdentities(validators.map((v) => v.address))
+  ),
+  startWith({} as Record<SS58String, Identity | null>)
+);
+
 export const aggregatedValidators$ = combineLatest([
   validatorHistory$,
   selectedEra$,
@@ -199,21 +214,25 @@ const filteredValidators$ = combineLatest([
   filterBlocked$,
   filterCommision$,
 ]).pipe(
-  map(([validators, registerdValidators, filterBlocked, filterCommission]) =>
-    filterBlocked || filterCommission != null
-      ? (validators?.filter((v) => {
-          const prefs = registerdValidators[v.address];
-          // We are in the branch that we have a filter blocked or commission.
-          // Exclude validators that are not eligible to be nominated now (counts as blocked or commission 100%)
-          if (!prefs) return false;
+  map(([validators, registerdValidators, filterBlocked, filterCommission]) => {
+    if ((!filterBlocked && filterCommision$ == null) || !validators) {
+      return validators ?? [];
+    }
 
-          if (filterBlocked && prefs.blocked) return false;
-          if (prefs.commission > filterCommission / 100) return false;
+    return validators.filter((v) => {
+      if (filterBlocked || filterCommision$ != null) {
+        const prefs = registerdValidators[v.address];
+        // We are in the branch that we have a filter blocked or commission.
+        // Exclude validators that are not eligible to be nominated now (counts as blocked or commission 100%)
+        if (!prefs) return false;
 
-          return true;
-        }) ?? [])
-      : (validators ?? [])
-  )
+        if (filterBlocked && prefs.blocked) return false;
+        if (prefs.commission > filterCommission / 100) return false;
+      }
+
+      return true;
+    });
+  })
 );
 
 export const [sortBy$, setSortBy] = createState<SortBy<HistoricValidator>>({
@@ -221,24 +240,59 @@ export const [sortBy$, setSortBy] = createState<SortBy<HistoricValidator>>({
   dir: "desc",
 });
 
+export const withSearch =
+  (
+    search$: Observable<string>
+  ): MonoTypeOperatorFunction<(HistoricValidator & { position?: number })[]> =>
+  (source$) =>
+    combineLatest([source$, search$, validatorIdentities$]).pipe(
+      map(([sorted, search, identities]) => {
+        if (!search.trim()) return sorted;
+
+        let searchPk = "";
+        const ss58ToHex = (ss58: string) =>
+          Binary.fromBytes(getPublicKey(ss58)).asHex();
+        try {
+          searchPk = ss58ToHex(search);
+        } catch (ex) {
+          /* empty */
+        }
+
+        return sorted
+          .map((v, i) => ({ ...v, position: i }))
+          .filter((v) => {
+            const identity = identities[v.address];
+            if (
+              identity?.info.display
+                ?.toLocaleLowerCase()
+                .includes(search.toLocaleLowerCase())
+            ) {
+              return true;
+            }
+
+            // Try for an SS58 match
+            try {
+              if (searchPk === ss58ToHex(v.address)) {
+                return true;
+              }
+            } catch (ex) {
+              /* empty */
+            }
+
+            return false;
+          });
+      })
+    );
+
 export const sortedValidators$ = state(
   combineLatest([filteredValidators$, sortBy$]).pipe(
     map(([validators, sortBy]) =>
       sortBy === null ? validators : [...validators].sort(genericSort(sortBy))
     ),
-    combineLatestWith(search$),
-    map(
-      ([sorted, search]): Array<HistoricValidator & { position?: number }> =>
-        search
-          ? sorted
-              .map((v, i) => ({ ...v, position: i }))
-              .filter((v) =>
-                v.address
-                  .toLocaleLowerCase()
-                  .includes(search.toLocaleLowerCase())
-              )
-          : sorted
-    )
+    // this "search" filter is different: It must happen after sorting because we
+    // want to keep the original position (so that the user can look for validator
+    // X and it will show that it's in 15th position instead of #1)
+    withSearch(search$)
   ),
   []
 );

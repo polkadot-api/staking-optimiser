@@ -18,8 +18,8 @@ export const ValidatorRow: FC<{
   return (
     <>
       <td className="text-muted-foreground">{validator.position + 1}</td>
-      <td>
-        <AddressIdentity addr={validator.address} />
+      <td className="overflow-hidden">
+        <AddressIdentity className="w-52" addr={validator.address} />
       </td>
       <td
         className={cn("text-right font-bold", {

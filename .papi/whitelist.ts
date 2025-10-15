@@ -14,4 +14,5 @@ export const whitelist: (DotWhitelistEntry | DotPplWhitelistEntry)[] = [
   "const.Babe.*",
   "const.System.SS58Prefix",
   "api.NominationPoolsApi.*",
+  "tx.Utility.batch_all",
 ];

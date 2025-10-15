@@ -5,20 +5,15 @@ import { createState } from "@/util/rxjs";
 import { state } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
 import { type SS58String } from "polkadot-api";
-import {
-  combineLatest,
-  combineLatestWith,
-  filter,
-  map,
-  scan,
-  startWith,
-  switchMap,
-} from "rxjs";
+import { combineLatest, filter, map, scan, startWith, switchMap } from "rxjs";
 import {
   aggregatedValidators$,
   validatorPrefs$,
+  withSearch,
   type HistoricValidator,
 } from "../Validators/validatorList.state";
+
+export const MAX_VALIDATORS = 16;
 
 export const onChainSelectedValidators$ = state(
   combineLatest([
@@ -83,19 +78,7 @@ export const sortedValidators$ = state(
     map(([validators, sortBy]) =>
       sortBy === null ? validators : [...validators].sort(genericSort(sortBy))
     ),
-    combineLatestWith(search$),
-    map(
-      ([sorted, search]): Array<HistoricValidator & { position?: number }> =>
-        search
-          ? sorted
-              .map((v, i) => ({ ...v, position: i }))
-              .filter((v) =>
-                v.address
-                  .toLocaleLowerCase()
-                  .includes(search.toLocaleLowerCase())
-              )
-          : sorted
-    )
+    withSearch(search$)
   ),
   []
 );

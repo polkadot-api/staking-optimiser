@@ -121,12 +121,10 @@ const BondInput: FC<{
 
   const setBondValue = (value: number) => setBond(clampBondValue(value));
 
-  const resultingBondExtra = bigBond + poolStatus.pendingRewards;
-  const resultingBond = poolStatus.currentBond + resultingBondExtra;
-
+  const resultingBond = poolStatus.currentBond + bigBond;
   const showBelowMinWarning = resultingBond > 0n && resultingBond < minBond;
   const showSafeMaxWarning =
-    maxSafeBond > 0n && resultingBond > maxSafeBond + poolStatus.pendingRewards;
+    resultingBond > maxSafeBond + poolStatus.pendingRewards;
   const isLeaving = !!poolStatus.pool && poolStatus.currentBond === 0n;
 
   const performBond = async () => {
@@ -203,9 +201,7 @@ const BondInput: FC<{
       ) : null}
       <TransactionButton
         className="w-full"
-        disabled={
-          resultingBond < minBond || resultingBondExtra == 0n || isLeaving
-        }
+        disabled={resultingBond < minBond || isLeaving}
         signer={selectedAccount?.polkadotSigner}
         createTx={performBond}
         onSuccess={close}

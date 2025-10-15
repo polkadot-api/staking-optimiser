@@ -1,15 +1,13 @@
 import { Card } from "@/components/Card";
+import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import { useStateObservable } from "@react-rxjs/core";
+import { Link } from "react-router-dom";
+import { ManageNomination } from "./ManageNomination";
 import {
   bondableAmount$,
   minBond$,
   MinBondingAmounts,
 } from "./MinBondingAmounts";
-import { Link } from "react-router-dom";
-import { currentNominationPoolStatus$ } from "@/state/nominationPool";
-import { lazy, Suspense } from "react";
-
-const PickValidators = lazy(() => import("./PickValidators"));
 
 export const NotNominatingContent = () => {
   const minBond = useStateObservable(minBond$);
@@ -41,23 +39,19 @@ export const NotNominatingContent = () => {
     );
   };
 
-  const renderSelect = () => (
-    <Suspense fallback="Loading…">
-      <PickValidators />
-    </Suspense>
-  );
-
   return (
-    <div>
+    <div className="space-y-4">
       <MinBondingAmounts />
-      <Card title="Start nominating">
-        {bondableAmount == null
-          ? "Select an account to start nominating"
-          : poolStatus?.pool
-            ? renderInPools()
-            : bondableAmount <= minBond
-              ? renderNotEnough()
-              : renderSelect()}
+      <Card title="Start nominating" className="space-y-4">
+        {bondableAmount == null ? (
+          "Select an account to start nominating"
+        ) : poolStatus?.pool ? (
+          renderInPools()
+        ) : bondableAmount <= minBond ? (
+          renderNotEnough()
+        ) : (
+          <ManageNomination />
+        )}
       </Card>
     </div>
   );

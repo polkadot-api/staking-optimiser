@@ -96,5 +96,9 @@ const StopClickPropagation: FC<PropsWithChildren> = ({ children }) => {
     return () => element.removeEventListener("click", handleEvt);
   }, []);
 
-  return <span ref={ref}>{children}</span>;
+  return (
+    <span className="inline-flex" ref={ref}>
+      {children}
+    </span>
+  );
 };

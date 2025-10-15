@@ -11,7 +11,7 @@ import { currentNominatorBond$ } from "@/state/nominate";
 import { useStateObservable } from "@react-rxjs/core";
 import { useState } from "react";
 import { firstValueFrom } from "rxjs";
-import { minBond$ } from "../Nominate/MinBondingAmounts";
+import { minBond$ } from "./MinBondingAmounts";
 
 export const ManageBond = () => {
   const currentBond = useStateObservable(currentNominatorBond$);
