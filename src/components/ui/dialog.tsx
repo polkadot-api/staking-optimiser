@@ -130,8 +130,15 @@ function DialogDescription({
   );
 }
 
-function DialogBody({ children }: React.PropsWithChildren) {
-  return <div className="overflow-auto px-6 py-2 last:pb-6">{children}</div>;
+function DialogBody({
+  children,
+  id,
+}: React.PropsWithChildren<{ id?: string }>) {
+  return (
+    <div className="overflow-auto px-6 py-2 last:pb-6" id={id}>
+      {children}
+    </div>
+  );
 }
 
 export {

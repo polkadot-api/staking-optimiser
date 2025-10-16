@@ -4,7 +4,7 @@ import { Card } from "@/components/Card";
 import { DialogButton } from "@/components/DialogButton";
 import { PERBILL } from "@/constants";
 import { cn } from "@/lib/utils";
-import { selectedAccountAddr$ } from "@/state/account";
+import { accountStatus$, selectedAccountAddr$ } from "@/state/account";
 import { stakingApi$, stakingSdk$ } from "@/state/chain";
 import {
   activeEraNumber$,
@@ -15,20 +15,22 @@ import {
 import { currentNominatorBond$ } from "@/state/nominate";
 import { roundToDecimalPlaces } from "@/util/format";
 import { state, useStateObservable } from "@react-rxjs/core";
-import { type SS58String } from "polkadot-api";
+import { type SS58String, type Transaction } from "polkadot-api";
 import { lazy, type FC } from "react";
 import {
   combineLatest,
   filter,
+  firstValueFrom,
   map,
   mergeMap,
   scan,
   switchMap,
   withLatestFrom,
 } from "rxjs";
-import { ManageBond } from "./ManageBond";
+import { ManageNomination } from "./ManageNomination";
 import { MinBondingAmounts } from "./MinBondingAmounts";
 import { NominateLocks } from "./NominateLocks";
+import { TransactionButton } from "@/components/Transactions";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
 
@@ -44,6 +46,33 @@ export const NominatingContent = () => {
 
 const StatusCard = () => {
   const currentBond = useStateObservable(currentNominatorBond$);
+  const status = useStateObservable(accountStatus$);
+
+  const stopNominating = async () => {
+    const api = await firstValueFrom(stakingApi$);
+
+    const txs: Transaction<any, any, any, any>[] = [];
+
+    if (status!.nomination.nominating?.validators.length) {
+      txs.push(api.tx.Staking.chill());
+    }
+    if (status!.nomination.currentBond > 0) {
+      txs.push(
+        api.tx.Staking.unbond({
+          value: status!.nomination.currentBond,
+        })
+      );
+    }
+
+    const calls = txs.map((tx) => tx.decodedCall);
+    if (txs.length == 1) {
+      return txs[0];
+    }
+
+    return api.tx.Utility.batch_all({
+      calls,
+    });
+  };
 
   return (
     <Card title="Status">
@@ -51,14 +80,20 @@ const StatusCard = () => {
         <AccountBalance className="grow-[2]" />
         {currentBond?.unlocks.length ? <NominateLocks /> : null}
       </div>
-      <div className="mt-4">
+      <div className="mt-4 space-x-2">
         <DialogButton
-          title="Manage bond"
-          content={() => <ManageBond />}
+          title="Manage nomination"
+          content={() => <ManageNomination />}
+          dialogClassName="md:max-w-3xl lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl"
           needsSigner
         >
-          Manage bond
+          Manage nomination
         </DialogButton>
+        {status?.nomination.currentBond ? (
+          <TransactionButton createTx={stopNominating}>
+            Stop nominating
+          </TransactionButton>
+        ) : null}
       </div>
     </Card>
   );

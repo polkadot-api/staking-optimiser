@@ -64,13 +64,7 @@ const NominateStatus = () => {
   return (
     <Card title="Currently Nominating">
       Bond:{" "}
-      <TokenValue
-        value={bond.active}
-        decimalsFn={significantDigitsDecimals(2)}
-      />{" "}
-      active /{" "}
-      <TokenValue value={bond.bond} decimalsFn={significantDigitsDecimals(2)} />{" "}
-      total
+      <TokenValue value={bond.bond} decimalsFn={significantDigitsDecimals(2)} />
     </Card>
   );
 };

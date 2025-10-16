@@ -75,7 +75,6 @@ const JoinPoolModal: FC<{
   close?: () => void;
 }> = ({ poolId, close }) => {
   const accountStatus = useStateObservable(accountStatus$);
-  const signer = useStateObservable(selectedSignerAccount$);
   const minBond = useStateObservable(minJoin$);
   const pool = useStateObservable(pool$(poolId));
   const decimals = useStateObservable(tokenDecimals$);
@@ -190,7 +189,6 @@ const JoinPoolModal: FC<{
           next era.
         </p>
         <TransactionButton
-          signer={signer?.polkadotSigner}
           createTx={async () => {
             const api = await firstValueFrom(stakingApi$);
             return api.tx.NominationPools.join({

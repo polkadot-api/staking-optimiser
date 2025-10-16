@@ -1,12 +1,8 @@
+import { selectedSignerAccount$ } from "@/state/account";
 import type { AsyncTransaction } from "@polkadot-api/sdk-staking";
-import { shareLatest } from "@react-rxjs/core";
+import { shareLatest, useStateObservable } from "@react-rxjs/core";
 import { Loader2, Zap } from "lucide-react";
-import {
-  InvalidTxError,
-  type PolkadotSigner,
-  type Transaction,
-  type TxEvent,
-} from "polkadot-api";
+import { InvalidTxError, type Transaction, type TxEvent } from "polkadot-api";
 import { lazy, useState, type ComponentType, type FC } from "react";
 import { from, lastValueFrom, switchMap, type Observable } from "rxjs";
 import { Button } from "./ui/button";
@@ -107,13 +103,15 @@ export const TransactionButton: FC<
     createTx: () => Awaitable<
       Transaction<any, any, any, any> | AsyncTransaction | null
     >;
-    signer: PolkadotSigner | null | undefined;
     onSuccess?: () => void;
     onError?: (err: any) => void;
   }
-> = ({ createTx, signer, children, onSuccess, onError, ...props }) => {
+> = ({ createTx, children, onSuccess, onError, ...props }) => {
+  const account = useStateObservable(selectedSignerAccount$);
   const [isOngoing, trackTx] = useSingleTransaction();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const signer = account?.polkadotSigner;
 
   return (
     <Button

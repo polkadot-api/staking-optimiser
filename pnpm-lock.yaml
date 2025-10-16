@@ -23,8 +23,8 @@ importers:
         specifier: ^0.5.0
         version: 0.5.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(polkadot-api@1.19.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@polkadot-api/sdk-staking':
-        specifier: 0.0.1-local.9
-        version: 0.0.1-local.9(polkadot-api@1.19.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)
+        specifier: 0.0.1-local.10
+        version: 0.0.1-local.10(polkadot-api@1.19.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)
       '@polkadot-api/substrate-bindings':
         specifier: ^0.16.3
         version: 0.16.3
@@ -642,8 +642,8 @@ packages:
       polkadot-api: '>=1.12.0'
       rxjs: '>=7.8.0'
 
-  '@polkadot-api/sdk-staking@0.0.1-local.9':
-    resolution: {integrity: sha512-aWbdwwUBFOe1ioc+9Y2CrW5+zK0vuXUDK5XfIrBv0rDpYYpp83nJB3XBCi/vWSpyf4prX668q/D56L4SfKduew==}
+  '@polkadot-api/sdk-staking@0.0.1-local.10':
+    resolution: {integrity: sha512-rpORCOh2qMBbnH4/ZX8ycR3YcwLnhjVeiR2UjgaEuS3iqY04BuDHEcPgiQUTpS0GU5ovm2CsKjNHdhs8iG6z3Q==}
     peerDependencies:
       polkadot-api: '>=1.12.0'
       rxjs: '>=7.8.0'
@@ -3346,7 +3346,7 @@ snapshots:
       - '@react-rxjs/core'
       - react
 
-  '@polkadot-api/sdk-staking@0.0.1-local.9(polkadot-api@1.19.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)':
+  '@polkadot-api/sdk-staking@0.0.1-local.10(polkadot-api@1.19.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)':
     dependencies:
       '@polkadot-api/common-sdk-utils': 0.1.0(polkadot-api@1.19.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)
       '@polkadot-api/substrate-bindings': 0.16.3

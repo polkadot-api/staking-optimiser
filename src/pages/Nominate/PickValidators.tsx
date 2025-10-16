@@ -249,7 +249,10 @@ const ValidatorTable: FC<{
   return (
     <TableVirtuoso
       className={cn("data-table", className)}
-      customScrollParent={document.getElementById("app-content")!}
+      customScrollParent={
+        document.getElementById("dialog-content") ??
+        document.getElementById("app-content")!
+      }
       data={validators}
       components={{ TableRow }}
       fixedHeaderContent={() => (
@@ -323,7 +326,10 @@ const ValidatorCards: FC<{
     <div>
       <SortBy />
       <Virtuoso
-        customScrollParent={document.getElementById("app-content")!}
+        customScrollParent={
+          document.getElementById("dialog-content") ??
+          document.getElementById("app-content")!
+        }
         totalCount={validators.length}
         components={{ Item }}
         itemContent={(idx) => {

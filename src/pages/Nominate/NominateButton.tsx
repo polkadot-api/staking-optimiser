@@ -1,9 +1,11 @@
 import { TransactionButton } from "@/components/Transactions";
-import { accountStatus$, selectedSignerAccount$ } from "@/state/account";
+import { accountStatus$ } from "@/state/account";
+import { stakingApi$ } from "@/state/chain";
+import {
+  MultiAddress,
+  StakingRewardDestination,
+} from "@polkadot-api/descriptors";
 import { useStateObservable } from "@react-rxjs/core";
-import { bond$ } from "./BondInput";
-import { minBond$ } from "./MinBondingAmounts";
-import { MAX_VALIDATORS, selectedValidators$ } from "./pickValidators.state";
 import type { Transaction } from "polkadot-api";
 import {
   combineLatest,
@@ -12,21 +14,16 @@ import {
   map,
   withLatestFrom,
 } from "rxjs";
-import { stakingApi$ } from "@/state/chain";
-import {
-  MultiAddress,
-  StakingRewardDestination,
-} from "@polkadot-api/descriptors";
+import { bond$ } from "./BondInput";
+import { minBond$ } from "./MinBondingAmounts";
+import { MAX_VALIDATORS, selectedValidators$ } from "./pickValidators.state";
 
 export const NominateButton = () => {
-  const account = useStateObservable(selectedSignerAccount$);
   const selection = useStateObservable(selectedValidators$);
   const bond = useStateObservable(bond$);
   const minBond = useStateObservable(minBond$);
   const status = useStateObservable(accountStatus$);
-  const maxBond = status
-    ? status.balance.spendable + status.nomination.activeBond
-    : 0n;
+  const maxBond = status?.nomination.maxBond ?? 0n;
 
   const canNominate =
     bond != null &&
@@ -36,11 +33,7 @@ export const NominateButton = () => {
     selection.size <= MAX_VALIDATORS;
 
   return (
-    <TransactionButton
-      disabled={!canNominate}
-      createTx={createNominateTx}
-      signer={account?.polkadotSigner}
-    >
+    <TransactionButton disabled={!canNominate} createTx={createNominateTx}>
       Nominate
     </TransactionButton>
   );
@@ -54,24 +47,42 @@ const nominateTx$ = combineLatest([
 ]).pipe(
   withLatestFrom(stakingApi$),
   map(([[status, bond, selectedValidators], api]) => {
-    const transactions: Array<AnyTransaction> = [];
+    const txs: Array<AnyTransaction> = [];
 
     const bondDiff = bond - status.nomination.currentBond;
     if (bondDiff > 0) {
-      if (status.nomination.currentBond) {
-        transactions.push(
-          api.tx.Staking.bond_extra({ max_additional: bondDiff })
-        );
-      } else {
-        transactions.push(
+      if (status.nomination.totalLocked == 0n) {
+        txs.push(
           api.tx.Staking.bond({
             value: bond,
             payee: StakingRewardDestination.Stash(),
           })
         );
+      } else {
+        const unlocking = status.nomination.unlocks.reduce(
+          (acc, v) => acc + v.value,
+          0n
+        );
+        const rebond = unlocking < bondDiff ? unlocking : bondDiff;
+        const bondAfterRebond = bondDiff - rebond;
+
+        if (rebond > 0) {
+          txs.push(
+            api.tx.Staking.rebond({
+              value: rebond,
+            })
+          );
+        }
+        if (bondAfterRebond > 0) {
+          txs.push(
+            api.tx.Staking.bond_extra({
+              max_additional: bondAfterRebond,
+            })
+          );
+        }
       }
     } else if (bondDiff < 0) {
-      transactions.push(api.tx.Staking.unbond({ value: -bondDiff }));
+      txs.push(api.tx.Staking.unbond({ value: -bondDiff }));
     }
 
     const oldSelection = status.nomination.nominating?.validators ?? [];
@@ -79,7 +90,7 @@ const nominateTx$ = combineLatest([
       oldSelection.length != selectedValidators.size ||
       oldSelection.some((old) => !selectedValidators.has(old));
     if (hasDifferentValidators) {
-      transactions.push(
+      txs.push(
         api.tx.Staking.nominate({
           targets: Array.from(selectedValidators).map((v) =>
             MultiAddress.Id(v)
@@ -88,11 +99,14 @@ const nominateTx$ = combineLatest([
       );
     }
 
-    if (transactions.length === 1) {
-      return transactions[0];
+    const calls = txs.map((tx) => tx.decodedCall);
+    console.log(calls);
+
+    if (txs.length === 1) {
+      return txs[0];
     }
     return api.tx.Utility.batch_all({
-      calls: transactions.map((tx) => tx.decodedCall),
+      calls,
     });
   })
 );

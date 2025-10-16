@@ -16,7 +16,7 @@ const bondedStatus$ = accountStatus$.pipeState(
   map((v) => {
     if (!v) return null;
 
-    if (v.nomination.currentBond) {
+    if (v.nomination.totalLocked) {
       return {
         bond: v.nomination.currentBond,
         unlocks: v.nomination.unlocks,

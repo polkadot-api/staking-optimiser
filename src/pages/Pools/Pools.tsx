@@ -3,16 +3,15 @@ import { Card } from "@/components/Card";
 import { DialogButton } from "@/components/DialogButton";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
 import { TransactionButton } from "@/components/Transactions";
-import { selectedSignerAccount$ } from "@/state/account";
 import { stakingApi$ } from "@/state/chain";
+import { isNominating$ } from "@/state/nominate";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import { NominationPoolsBondExtra } from "@polkadot-api/descriptors";
 import { Subscribe, useStateObservable } from "@react-rxjs/core";
 import { lazy } from "react";
+import { Link, Route, Routes } from "react-router-dom";
 import { ManageBond } from "./ManageBond";
 import { ManageLocks } from "./ManageUnlocks";
-import { isNominating$ } from "@/state/nominate";
-import { Link, Route, Routes } from "react-router-dom";
 import { PoolDetail } from "./PoolDetail";
 
 const PoolList = lazy(() => import("./PoolList"));
@@ -50,7 +49,7 @@ const CurrentStatus = () => {
         {isNominating ? (
           <p>
             Can't join a pool because you are already{" "}
-            <Link className="underline" to="../nominate">
+            <Link className="underline" to="../../nominate">
               nominating
             </Link>
           </p>
@@ -98,15 +97,12 @@ const CurrentStatus = () => {
 };
 
 const Claim = () => {
-  const signer =
-    useStateObservable(selectedSignerAccount$)?.polkadotSigner ?? null;
   const stakingApi = useStateObservable(stakingApi$);
 
   return (
     <>
       <TransactionButton
         createTx={() => stakingApi.tx.NominationPools.claim_payout()}
-        signer={signer}
       >
         Claim rewards
       </TransactionButton>
@@ -116,7 +112,6 @@ const Claim = () => {
             extra: NominationPoolsBondExtra.Rewards(),
           })
         }
-        signer={signer}
       >
         Compound rewards
       </TransactionButton>

@@ -33,7 +33,6 @@ const locks$ = state(
 
 export const NominateLocks = () => {
   const locks = useStateObservable(locks$);
-  const selectedAccount = useStateObservable(selectedSignerAccount$);
 
   return (
     <div className="grow">
@@ -50,7 +49,6 @@ export const NominateLocks = () => {
       </ol>
       {locks.some((v) => v.unlocked) ? (
         <TransactionButton
-          signer={selectedAccount?.polkadotSigner}
           createTx={async () => {
             const [api, slashingSpans] = await Promise.all([
               firstValueFrom(stakingApi$),

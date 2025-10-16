@@ -6,8 +6,10 @@ const PickValidators = lazy(() => import("./PickValidators"));
 export const ManageNomination = () => {
   return (
     <Suspense fallback="Loading…">
-      <BondInput />
-      <PickValidators />
+      <div className="space-y-2">
+        <BondInput />
+        <PickValidators />
+      </div>
     </Suspense>
   );
 };

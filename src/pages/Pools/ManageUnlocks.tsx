@@ -52,7 +52,6 @@ export const ManageLocks = () => {
       </ol>
       {locks.some((v) => v.unlocked) ? (
         <TransactionButton
-          signer={selectedAccount?.polkadotSigner}
           createTx={async () => {
             const [api, slashingSpans] = await Promise.all([
               firstValueFrom(stakingApi$),

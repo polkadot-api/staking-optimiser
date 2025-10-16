@@ -97,7 +97,6 @@ const BondInput: FC<{
   const accountStatus = useStateObservable(accountStatus$);
   const token = useStateObservable(tokenProps$);
   const minBond = useStateObservable(minBond$);
-  const selectedAccount = useStateObservable(selectedSignerAccount$);
 
   if (!accountStatus || !token) return null;
   const { decimals, symbol } = token;
@@ -128,8 +127,6 @@ const BondInput: FC<{
   const isLeaving = !!poolStatus.pool && poolStatus.currentBond === 0n;
 
   const performBond = async () => {
-    if (!selectedAccount) return null;
-
     const api = await firstValueFrom(stakingApi$);
     return api.tx.NominationPools.bond_extra({
       extra: NominationPoolsBondExtra.FreeBalance(bigBond),
@@ -202,7 +199,6 @@ const BondInput: FC<{
       <TransactionButton
         className="w-full"
         disabled={resultingBond < minBond || isLeaving}
-        signer={selectedAccount?.polkadotSigner}
         createTx={performBond}
         onSuccess={close}
       >
@@ -298,7 +294,6 @@ const UnbondInput: FC<{
       <TransactionButton
         className="w-full"
         disabled={bigBond == 0n}
-        signer={selectedAccount?.polkadotSigner}
         createTx={unbond}
         onSuccess={close}
       >
@@ -337,12 +332,7 @@ const Leave: FC<{ close?: () => void }> = ({ close }) => {
           ends.
         </AlertCard>
       </div>
-      <TransactionButton
-        className="w-full"
-        signer={selectedAccount?.polkadotSigner}
-        createTx={leave}
-        onSuccess={close}
-      >
+      <TransactionButton className="w-full" createTx={leave} onSuccess={close}>
         Leave pool
       </TransactionButton>
     </div>

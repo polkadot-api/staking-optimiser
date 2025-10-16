@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { accountStatus$ } from "@/state/account";
 import { tokenProps$ } from "@/state/chain";
+import type { TokenProperties } from "@polkadot-api/react-components";
+import type { AccountStatus } from "@polkadot-api/sdk-staking";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
 import { type FC } from "react";
@@ -12,6 +14,21 @@ import { combineLatest, concat, filter, map, take } from "rxjs";
 import { minBond$ } from "./MinBondingAmounts";
 
 const [bondChange$, setBond] = createSignal<bigint | null>();
+
+const getStakingEffectiveFrozen = (
+  accountStatus: AccountStatus,
+  token: TokenProperties
+) => {
+  const nonStakingReserves =
+    accountStatus.balance.raw.reserved - accountStatus.nomination.totalLocked;
+
+  const rounding = 10n ** BigInt(token.decimals - 2);
+
+  return (
+    rounding *
+    ((accountStatus.balance.raw.frozen - nonStakingReserves) / rounding + 1n)
+  );
+};
 
 export const bond$ = state(
   concat(
@@ -23,12 +40,9 @@ export const bond$ = state(
             return account.nomination.currentBond;
 
           // Default to frozen balance that's overlapping with the free balance
-          const frozen =
-            account.balance.untouchable -
-            account.balance.raw.existentialDeposit;
-          const rounding = 10n ** BigInt(token.decimals - 2);
-
-          return rounding * (frozen / rounding + 1n);
+          const stakingFrozen = getStakingEffectiveFrozen(account, token);
+          const minBond = account.nomination.minNominationBond;
+          return stakingFrozen < minBond ? minBond : stakingFrozen;
         })
       )
       .pipe(take(1)),
@@ -52,15 +66,10 @@ export const BondInput: FC = () => {
 
   const showSafeMaxWarning = bond != null && bond > maxSafeBond;
 
-  // TODO and unlocks?
-  const nonStakingReserves =
-    accountStatus.balance.raw.reserved - accountStatus.nomination.activeBond;
-
-  const rounding = 10n ** BigInt(token.decimals - 2);
-
-  const stakingEffectiveFrozen =
-    rounding *
-    ((accountStatus.balance.raw.frozen - nonStakingReserves) / rounding + 1n);
+  const stakingEffectiveFrozen = getStakingEffectiveFrozen(
+    accountStatus,
+    token
+  );
 
   return (
     <div className="space-y-4 rounded-lg border border-border/60 bg-background/90 p-4">

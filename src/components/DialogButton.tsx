@@ -18,6 +18,7 @@ export type DialogButtonProps = PropsWithChildren<{
   content: (args: { isOpen: boolean; close: () => void }) => ReactNode;
   needsSigner?: boolean;
   disabled?: boolean;
+  dialogClassName?: string;
 }>;
 
 const hasSigner$ = selectedSignerAccount$.pipeState(
@@ -45,7 +46,15 @@ export const DialogButton = codeSplit(
       {children}
     </Trigger>
   ),
-  ({ payload, disabled, needsSigner, title, children, content }) => {
+  ({
+    payload,
+    disabled,
+    needsSigner,
+    title,
+    children,
+    dialogClassName,
+    content,
+  }) => {
     const [open, setOpen] = useState(false);
 
     const {
@@ -64,7 +73,7 @@ export const DialogButton = codeSplit(
             {children}
           </Trigger>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className={dialogClassName}>
           {title ? (
             <DialogHeader>
               <DialogTitle>{title}</DialogTitle>
@@ -72,7 +81,7 @@ export const DialogButton = codeSplit(
           ) : (
             <div className="pt-4" />
           )}
-          <DialogBody>
+          <DialogBody id="dialog-content">
             <Subscribe fallback={null}>
               {content({ isOpen: open, close: () => setOpen(false) })}
             </Subscribe>

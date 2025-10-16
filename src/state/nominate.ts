@@ -19,11 +19,10 @@ import { activeEraNumber$, allEras$, eraDurationInMs$, getEraApy } from "./era";
 export const currentNominatorBond$ = state(
   accountStatus$.pipe(
     map((v) => {
-      if (!v || !v.nomination.currentBond) return null;
+      if (!v || !v.nomination.totalLocked) return null;
 
       return {
         bond: v.nomination.currentBond,
-        active: v.nomination.activeBond,
         unlocks: v.nomination.unlocks,
       };
     })
