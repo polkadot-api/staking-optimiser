@@ -2,35 +2,25 @@ import { AccountBalance } from "@/components/AccountBalance";
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
 import { DialogButton } from "@/components/DialogButton";
+import { TransactionButton } from "@/components/Transactions";
 import { PERBILL } from "@/constants";
 import { cn } from "@/lib/utils";
 import { accountStatus$, selectedAccountAddr$ } from "@/state/account";
-import { stakingApi$, stakingSdk$ } from "@/state/chain";
+import { stakingApi$ } from "@/state/chain";
+import { activeEraNumber$ } from "@/state/era";
 import {
-  activeEraNumber$,
-  allEras$,
-  eraDurationInMs$,
-  getEraApy,
-} from "@/state/era";
-import { currentNominatorBond$ } from "@/state/nominate";
+  currentNominatorBond$,
+  currentNominatorStatus$,
+  validatorPerformance$,
+} from "@/state/nominate";
 import { roundToDecimalPlaces } from "@/util/format";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { type SS58String, type Transaction } from "polkadot-api";
 import { lazy, type FC } from "react";
-import {
-  combineLatest,
-  filter,
-  firstValueFrom,
-  map,
-  mergeMap,
-  scan,
-  switchMap,
-  withLatestFrom,
-} from "rxjs";
+import { combineLatest, firstValueFrom, map, switchMap } from "rxjs";
 import { ManageNomination } from "./ManageNomination";
 import { MinBondingAmounts } from "./MinBondingAmounts";
 import { NominateLocks } from "./NominateLocks";
-import { TransactionButton } from "@/components/Transactions";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
 
@@ -108,69 +98,10 @@ const selectedValidators$ = state(
   )
 );
 
-const HISTORY_DEPTH = 21;
 const validatorPrefs$ = state((addr: SS58String) =>
   combineLatest([activeEraNumber$, stakingApi$]).pipe(
     switchMap(([era, stakingApi]) =>
       stakingApi.query.Staking.ErasValidatorPrefs.getValue(era, addr)
-    )
-  )
-);
-
-const validatorPerformance$ = state((addr: SS58String) =>
-  stakingSdk$.pipe(
-    switchMap((stakingSdk) =>
-      allEras$(HISTORY_DEPTH).pipe(
-        withLatestFrom(selectedAccountAddr$.pipe(filter((v) => v != null))),
-        mergeMap(async ([era, nominator]) => {
-          try {
-            const [rewards, nominatorStatus] = await Promise.all([
-              stakingSdk.getValidatorRewards(addr, era),
-              stakingSdk.getNominatorActiveValidators(nominator, era),
-            ]);
-            return {
-              era,
-              rewards,
-              isActive: !!nominatorStatus.find((v) => v.validator === addr),
-            };
-          } catch (ex) {
-            console.error(ex);
-            return { era, rewards: null, isActive: false };
-          }
-        }, 3),
-        withLatestFrom(eraDurationInMs$),
-        scan(
-          (
-            acc: Array<{
-              era: number;
-              isActive: boolean;
-              apy: number | null;
-            }>,
-            [v, eraDuration]
-          ) => {
-            let result = [
-              ...acc,
-              {
-                era: v.era,
-                apy: v.rewards
-                  ? getEraApy(
-                      v.rewards.nominatorsShare,
-                      v.rewards.activeBond,
-                      eraDuration
-                    ) * 100
-                  : null,
-                isActive: v.isActive,
-              },
-            ];
-            if (result.length > HISTORY_DEPTH) {
-              result = result.slice(1);
-            }
-            result.sort((a, b) => a.era - b.era);
-            return result;
-          },
-          []
-        )
-      )
     )
   )
 );
@@ -194,18 +125,6 @@ const SelectedValidators = () => {
     </Card>
   );
 };
-
-const currentNominatorStatus$ = state(
-  combineLatest([
-    selectedAccountAddr$.pipe(filter((v) => v != null)),
-    stakingSdk$,
-    activeEraNumber$,
-  ]).pipe(
-    switchMap(([nominator, stakingSdk, activeEra]) =>
-      stakingSdk.getNominatorActiveValidators(nominator, activeEra)
-    )
-  )
-);
 
 const validatorIsCurrentlyActive$ = state(
   (addr: SS58String) =>

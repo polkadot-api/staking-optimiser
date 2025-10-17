@@ -2,9 +2,13 @@ import { HISTORY_DEPTH } from "@/constants";
 import { accountStatus$, selectedAccountAddr$ } from "@/state/account";
 import { amountToNumber, roundToDecimalPlaces } from "@/util/format";
 import { state } from "@react-rxjs/core";
+import type { SS58String } from "polkadot-api";
 import {
   combineLatest,
+  defer,
   filter,
+  firstValueFrom,
+  fromEvent,
   map,
   mergeMap,
   scan,
@@ -13,8 +17,64 @@ import {
   take,
   withLatestFrom,
 } from "rxjs";
-import { stakingApi$, stakingSdk$, tokenDecimals$ } from "./chain";
+import {
+  selectedChain$,
+  stakingApi$,
+  stakingSdk$,
+  tokenDecimals$,
+} from "./chain";
 import { activeEraNumber$, allEras$, eraDurationInMs$, getEraApy } from "./era";
+import {
+  type NominatorRewardsResult,
+  type NominatorValidatorsResult,
+  type Request,
+  type Response,
+} from "./rewards.worker";
+import MyWorker from "./rewards.worker?worker";
+
+const worker = new MyWorker();
+const message$ = fromEvent<MessageEvent<Response>>(worker, "message").pipe(
+  map((evt) => evt.data)
+);
+
+let workerReqId = 0;
+const request = <T>(msg: {
+  type: "getNominatorRewards" | "getNominatorActiveValidators";
+  value: {
+    address: SS58String;
+    era: number;
+  };
+}) =>
+  firstValueFrom(
+    defer(() => {
+      const id = workerReqId++;
+
+      worker.postMessage({
+        type: msg.type,
+        value: {
+          ...msg.value,
+          id,
+        },
+      } satisfies Request);
+
+      return message$.pipe(
+        filter((v) => v.type === "result" && v.value.id === id),
+        map((v) => v.value!.result as T)
+      );
+    })
+  );
+
+message$
+  .pipe(
+    filter((v) => v.type === "ready"),
+    switchMap(() => selectedChain$)
+  )
+  .subscribe((value) =>
+    worker.postMessage({
+      type: "setChain",
+      value,
+    } satisfies Request)
+  );
 
 export const currentNominatorBond$ = state(
   accountStatus$.pipe(
@@ -37,10 +97,15 @@ export const lastReward$ = state(
   combineLatest([
     selectedAccountAddr$.pipe(filter((v) => v != null)),
     activeEraNumber$,
-    stakingSdk$,
   ]).pipe(
-    switchMap(([addr, era, stakingSdk]) =>
-      stakingSdk.getNominatorRewards(addr, era - 1)
+    switchMap(([addr, era]) =>
+      request<NominatorRewardsResult>({
+        type: "getNominatorRewards",
+        value: {
+          address: addr,
+          era: era - 1,
+        },
+      })
     ),
     withLatestFrom(eraDurationInMs$),
     map(([{ total, totalCommission, activeBond }, eraDurationInMs]) => {
@@ -72,13 +137,19 @@ export const rewardHistory$ = state(
         }))
       )
     ),
-    withLatestFrom(stakingSdk$, tokenDecimals$),
-    switchMap(([{ addr, era: startEra }, stakingSdk, decimals]) =>
+    withLatestFrom(tokenDecimals$),
+    switchMap(([{ addr, era: startEra }, decimals]) =>
       addr
         ? allEras$(HISTORY_DEPTH).pipe(
             mergeMap(async (era) => {
               try {
-                const rewards = await stakingSdk.getNominatorRewards(addr, era);
+                const rewards = await request<NominatorRewardsResult>({
+                  type: "getNominatorRewards",
+                  value: {
+                    address: addr,
+                    era: era,
+                  },
+                });
                 return {
                   era,
                   rewards: amountToNumber(rewards.total, decimals),
@@ -106,4 +177,85 @@ export const rewardHistory$ = state(
     )
   ),
   []
+);
+
+export const currentNominatorStatus$ = state(
+  combineLatest([
+    selectedAccountAddr$.pipe(filter((v) => v != null)),
+    activeEraNumber$,
+  ]).pipe(
+    switchMap(([nominator, activeEra]) =>
+      request<NominatorValidatorsResult>({
+        type: "getNominatorActiveValidators",
+        value: {
+          address: nominator,
+          era: activeEra,
+        },
+      })
+    )
+  )
+);
+
+export const validatorPerformance$ = state((addr: SS58String) =>
+  stakingSdk$.pipe(
+    switchMap((stakingSdk) =>
+      allEras$(HISTORY_DEPTH).pipe(
+        withLatestFrom(selectedAccountAddr$.pipe(filter((v) => v != null))),
+        mergeMap(async ([era, nominator]) => {
+          try {
+            const [rewards, nominatorStatus] = await Promise.all([
+              stakingSdk.getValidatorRewards(addr, era),
+              request<NominatorValidatorsResult>({
+                type: "getNominatorActiveValidators",
+                value: {
+                  address: nominator,
+                  era,
+                },
+              }),
+            ]);
+            return {
+              era,
+              rewards,
+              isActive: !!nominatorStatus.find((v) => v.validator === addr),
+            };
+          } catch (ex) {
+            console.error(ex);
+            return { era, rewards: null, isActive: false };
+          }
+        }, 3),
+        withLatestFrom(eraDurationInMs$),
+        scan(
+          (
+            acc: Array<{
+              era: number;
+              isActive: boolean;
+              apy: number | null;
+            }>,
+            [v, eraDuration]
+          ) => {
+            let result = [
+              ...acc,
+              {
+                era: v.era,
+                apy: v.rewards
+                  ? getEraApy(
+                      v.rewards.nominatorsShare,
+                      v.rewards.activeBond,
+                      eraDuration
+                    ) * 100
+                  : null,
+                isActive: v.isActive,
+              },
+            ];
+            if (result.length > HISTORY_DEPTH) {
+              result = result.slice(1);
+            }
+            result.sort((a, b) => a.era - b.era);
+            return result;
+          },
+          []
+        )
+      )
+    )
+  )
 );
