@@ -6,7 +6,7 @@ import { TransactionButton } from "@/components/Transactions";
 import { PERBILL } from "@/constants";
 import { cn } from "@/lib/utils";
 import { accountStatus$, selectedAccountAddr$ } from "@/state/account";
-import { stakingApi$ } from "@/state/chain";
+import { stakingApi$, stakingSdk$ } from "@/state/chain";
 import { activeEraNumber$ } from "@/state/era";
 import {
   currentNominatorBond$,
@@ -15,7 +15,7 @@ import {
 } from "@/state/nominate";
 import { roundToDecimalPlaces } from "@/util/format";
 import { state, useStateObservable } from "@react-rxjs/core";
-import { type SS58String, type Transaction } from "polkadot-api";
+import { type SS58String } from "polkadot-api";
 import { lazy, type FC } from "react";
 import { combineLatest, firstValueFrom, map, switchMap } from "rxjs";
 import { ManageNomination } from "./ManageNomination";
@@ -39,29 +39,12 @@ const StatusCard = () => {
   const status = useStateObservable(accountStatus$);
 
   const stopNominating = async () => {
-    const api = await firstValueFrom(stakingApi$);
+    const [nominator, sdk] = await firstValueFrom(
+      combineLatest([selectedAccountAddr$, stakingSdk$])
+    );
+    if (!nominator) return null;
 
-    const txs: Transaction<any, any, any, any>[] = [];
-
-    if (status!.nomination.nominating?.validators.length) {
-      txs.push(api.tx.Staking.chill());
-    }
-    if (status!.nomination.currentBond > 0) {
-      txs.push(
-        api.tx.Staking.unbond({
-          value: status!.nomination.currentBond,
-        })
-      );
-    }
-
-    const calls = txs.map((tx) => tx.decodedCall);
-    if (txs.length == 1) {
-      return txs[0];
-    }
-
-    return api.tx.Utility.batch_all({
-      calls,
-    });
+    return sdk.stopNomination(nominator);
   };
 
   return (
