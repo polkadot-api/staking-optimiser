@@ -17,6 +17,9 @@ importers:
       polkadot-api:
         specifier: ^1.19.1
         version: 1.19.1(rxjs@7.8.2)
+      qr:
+        specifier: 0.6.0-local.0
+        version: 0.6.0-local.0
     devDependencies:
       bun:
         specifier: ^1.2.23
@@ -1391,6 +1394,7 @@ packages:
     resolution: {integrity: sha512-Quz3MvAwHxVYNXsOByL7xI5EB2WYOeFswqaHIA3qOK3isRWTxiplBEocmmru6XmxDB2L7jDNYtYA4FyimoAFEw==}
     engines: {node: '>=8.17.0'}
     hasBin: true
+    bundledDependencies: []
 
   lilconfig@3.1.3:
     resolution: {integrity: sha512-/vlFKAoH5Cgt3Ie+JLhRbwOsCQePABiU3tJ1egGvyQ+33R/vcwM2Zl2QR/LzjsBeItPt3oSVXapn+m4nQDvpzw==}
@@ -1725,6 +1729,10 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
+
+  qr@0.6.0-local.0:
+    resolution: {integrity: sha512-NSdQetsAUo+8bkl/pnfE0sedAlOeYv/PpGs0q429bXCrEfH7AT7ikrEiTFGUZouWhipzEEe1p8/w3XE9e6UxJQ==}
+    engines: {node: '>= 20.19.0'}
 
   quick-format-unescaped@4.0.4:
     resolution: {integrity: sha512-tYC1Q1hgyRuHgloV/YXs2w15unPVh8qfu/qCTfhTYamaw7fyhumKa2yGpdSo87vY32rIclj+4fWYQXUMs9EHvg==}
@@ -4203,6 +4211,8 @@ snapshots:
       once: 1.4.0
 
   punycode@2.3.1: {}
+
+  qr@0.6.0-local.0: {}
 
   quick-format-unescaped@4.0.4: {}
 

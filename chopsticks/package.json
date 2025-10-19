@@ -15,7 +15,8 @@
   "dependencies": {
     "@acala-network/chopsticks": "^1.2.2",
     "@types/bun": "^1.2.23",
-    "polkadot-api": "^1.19.1"
+    "polkadot-api": "^1.19.1",
+    "qr": "0.6.0-local.0"
   },
   "packageManager": "pnpm@10.15.0"
 }
