@@ -8,6 +8,7 @@ import { useStateObservable } from "@react-rxjs/core";
 import { CircleQuestionMark, Eye } from "lucide-react";
 import type { FC, MouseEvent, PropsWithChildren, ReactElement } from "react";
 import { Button } from "../ui/button";
+import { VaultAccounts } from "../vault/VaultAccounts";
 import { ManageAddresses } from "./ManageAddresses";
 
 const knownExtensions: Record<string, { name: string; logo: string }> = {
@@ -70,7 +71,12 @@ export const ConnectSource: FC<{
               className="h-10 rounded"
             />
           </SourceButton>
-          <SourceButton label="Vault" disabled>
+          <SourceButton
+            label="Vault"
+            onClick={() =>
+              setContent(<VaultAccounts setContent={setContent} />)
+            }
+          >
             <img
               src={import.meta.env.BASE_URL + "vault.webp"}
               alt="Vault"

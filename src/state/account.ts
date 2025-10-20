@@ -3,7 +3,7 @@ import { createLocalStorageState } from "@/util/rxjs";
 import { getPublicKey } from "@/util/ss58";
 import { state } from "@react-rxjs/core";
 import { combineKeys } from "@react-rxjs/utils";
-import type { Enum, SS58String } from "polkadot-api";
+import type { Enum, PolkadotSigner, SS58String } from "polkadot-api";
 import {
   connectInjectedExtension,
   getInjectedExtensions,
@@ -35,6 +35,7 @@ import {
 } from "rxjs";
 import { stakingSdk$ } from "./chain";
 import { USE_CHOPSTICKS } from "./chainConfig";
+import { createVaultSigner, vaultAccounts$, type VaultAccount } from "./vault";
 
 export type AccountSource = Enum<{
   extension: {
@@ -42,6 +43,7 @@ export type AccountSource = Enum<{
     address: string;
   };
   address: SS58String;
+  vault: VaultAccount;
 }>;
 
 export const [accountSource$, setAccountSource] =
@@ -50,6 +52,7 @@ export const [accountSource$, setAccountSource] =
 export type Account = Enum<{
   extension: InjectedPolkadotAccount;
   address: SS58String;
+  vault: VaultAccount;
 }>;
 
 export const availableExtensions$ = state(
@@ -179,6 +182,16 @@ export const availableSources$ = state(
         )
       )
     ),
+    vault: vaultAccounts$.pipe(
+      map((v) =>
+        v.map(
+          (address): AccountSource => ({
+            type: "vault",
+            value: address,
+          })
+        )
+      )
+    ),
   }).pipe(
     map(
       ({ extensions, ...rest }): Record<string, AccountSource[]> => ({
@@ -203,6 +216,10 @@ const deselectWhenRemoved$ = (
               return !sources.find(
                 (src) => src.type === "address" && src.value === source.value
               );
+            case "vault":
+              return !sources.find(
+                (src) => src.type === "vault" && src.value === source.value
+              );
             case "extension":
               return !sources.find(
                 (src) =>
@@ -222,7 +239,7 @@ export const selectedAccount$ = state(
     switchMap((v): ObservableInput<Account | null> => {
       if (v == null) return [null];
 
-      if (v.type === "address") {
+      if (v.type === "address" || v.type === "vault") {
         return deselectWhenRemoved$([v], v);
       }
 
@@ -255,30 +272,45 @@ const fakeSigner = (address: SS58String) =>
     return signature;
   });
 
+export type SignerAccount = {
+  address: SS58String;
+  polkadotSigner: PolkadotSigner;
+};
 export const selectedSignerAccount$ = selectedAccount$.pipeState(
-  map((v): InjectedPolkadotAccount | null =>
-    v?.type === "address"
-      ? USE_CHOPSTICKS
-        ? {
-            address: v.value,
-            polkadotSigner: fakeSigner(v.value),
-          }
-        : null
-      : v?.type === "extension"
-        ? v.value
-        : null
-  ),
-  tap((v) => console.log("ssa", v))
+  map((v): SignerAccount | null => {
+    if (!v) return null;
+
+    switch (v.type) {
+      case "address":
+        return USE_CHOPSTICKS
+          ? {
+              address: v.value,
+              polkadotSigner: fakeSigner(v.value),
+            }
+          : null;
+      case "extension":
+        return v.value;
+      case "vault":
+        return {
+          address: v.value.address,
+          polkadotSigner: createVaultSigner(v.value),
+        };
+    }
+  })
 );
 
 export const selectedAccountAddr$ = selectedAccount$.pipeState(
-  map((v) =>
-    v?.type === "address"
-      ? v.value
-      : v?.type === "extension"
-        ? v.value.address
-        : null
-  )
+  map((v): SS58String | null => {
+    if (!v) return null;
+
+    switch (v.type) {
+      case "address":
+        return v.value;
+      case "vault":
+      case "extension":
+        return v.value.address;
+    }
+  })
 );
 
 export const accountStatus$ = state(

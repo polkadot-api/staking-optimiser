@@ -5,7 +5,7 @@ import { sliceMiddleAddr } from "@/util/ss58";
 import { PolkadotIdenticon } from "@polkadot-api/react-components";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
-import { AccountId } from "polkadot-api";
+import { AccountId, type SS58String } from "polkadot-api";
 import {
   forwardRef,
   useState,
@@ -34,10 +34,13 @@ const selectedAccountName$ = selectedAccount$.pipeState(
       ];
     }
 
-    return identity$(v.value).pipe(
+    const address: SS58String =
+      v.type === "address" ? v.value : v.value.address;
+
+    return identity$(address).pipe(
       map((id) => ({
-        name: id ? (id.value + (id.subId ? `/${id.subId}` : "")) : null,
-        address: v.value,
+        name: id ? id.value + (id.subId ? `/${id.subId}` : "") : null,
+        address,
       }))
     );
   })
@@ -62,7 +65,9 @@ const Trigger = forwardRef<
   const publicKey =
     selectedAccount.type === "address"
       ? AccountId().enc(selectedAccount.value)
-      : selectedAccount.value.polkadotSigner.publicKey;
+      : selectedAccount.type === "vault"
+        ? AccountId().enc(selectedAccount.value.address)
+        : selectedAccount.value.polkadotSigner.publicKey;
 
   return (
     <Button
