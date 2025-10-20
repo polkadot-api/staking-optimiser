@@ -218,7 +218,9 @@ const deselectWhenRemoved$ = (
               );
             case "vault":
               return !sources.find(
-                (src) => src.type === "vault" && src.value === source.value
+                (src) =>
+                  src.type === "vault" &&
+                  src.value.address === source.value.address
               );
             case "extension":
               return !sources.find(

@@ -13,8 +13,10 @@ import {
   type PolkadotSigner,
   type SS58String,
 } from "polkadot-api";
-import { mergeUint8 } from "polkadot-api/utils";
+import { mergeUint8, toHex } from "polkadot-api/utils";
 import { firstValueFrom, map, merge, race } from "rxjs";
+import { createV4Tx } from "@polkadot-api/signers-common";
+import { getExtrinsicDecoder } from "./tx_dec";
 
 export interface VaultAccount {
   address: SS58String;
@@ -26,8 +28,8 @@ export const [vaultAccounts$, setVaultAccounts] = createLocalStorageState(
 );
 
 const [newTx$, setTx] = createSignal<Uint8Array>();
-const [scannedSignature$, setSignature] = createSignal<Uint8Array>();
-const [cancelledTx$, cancelTx] = createSignal();
+export const [scannedSignature$, setSignature] = createSignal<Uint8Array>();
+export const [cancelledTx$, cancelTx] = createSignal();
 
 export const activeTx$ = state(
   merge(newTx$, merge(scannedSignature$, cancelledTx$).pipe(map(() => null))),
@@ -124,8 +126,43 @@ export const createVaultSigner = ({
         throw new Error("Cancelled");
       }
 
-      // TODO
-      return signature;
+      const tx = createV4Tx(
+        decMeta,
+        publicKey,
+        // Remove encryption code, we already know it
+        signature.slice(1),
+        extra,
+        callData,
+        "Sr25519"
+      );
+
+      return tx;
     },
   };
+};
+
+export const binaryToString = (value: Uint8Array) =>
+  Array.from(value, (b) => String.fromCharCode(b)).join("");
+export const stringToBinary = (value: string) =>
+  Uint8Array.from(value, (c) => c.charCodeAt(0) & 0xff);
+
+export const createFrames = (payload: Uint8Array): Uint8Array[] => {
+  const frames = [];
+  const frameSize = 1024;
+
+  let idx = 0;
+  while (idx < payload.length) {
+    frames.push(payload.subarray(idx, idx + frameSize));
+    idx += frameSize;
+  }
+
+  return frames.map(
+    (f, i): Uint8Array =>
+      mergeUint8([
+        new Uint8Array([0x00]),
+        Binary.fromHex(frames.length.toString(16).padStart(4, "0")).asBytes(),
+        Binary.fromHex(i.toString(16).padStart(4, "0")).asBytes(),
+        f,
+      ])
+  );
 };

@@ -7,8 +7,12 @@ import {
   type VaultAccount,
 } from "@/state/vault";
 import { useStateObservable } from "@react-rxjs/core";
+import { createSignal } from "@react-rxjs/utils";
 import { Trash2 } from "lucide-react";
-import { useCallback, useState, type FC, type ReactElement } from "react";
+import { getSs58AddressInfo } from "polkadot-api";
+import { useCallback, type FC, type ReactElement } from "react";
+import { withLatestFrom } from "rxjs";
+import { QrCamera } from "./QrCamera";
 
 export const VaultAccounts: FC<{
   setContent: (element: ReactElement | null) => void;
@@ -78,25 +82,6 @@ export const VaultAccounts: FC<{
   );
 };
 
-import { createSignal } from "@react-rxjs/utils";
-import { getSs58AddressInfo } from "polkadot-api";
-import { frameLoop, frontalCamera, QRCanvas } from "qr/dom.js";
-import { withLatestFrom } from "rxjs";
-type QrCamera = Awaited<ReturnType<typeof frontalCamera>>;
-
-const binaryToString = (value: Uint8Array) =>
-  // new TextDecoder("latin1").decode(value);
-  Array.from(value, (b) => String.fromCharCode(b)).join("");
-const stringToBinary = (value: string) =>
-  Uint8Array.from(value, (c) => c.charCodeAt(0) & 0xff);
-
-const canvas = new QRCanvas(
-  {},
-  {
-    textDecoder: binaryToString,
-  }
-);
-
 const [scannedAccount$, scannedAccount] = createSignal<VaultAccount>();
 scannedAccount$
   .pipe(withLatestFrom(vaultAccounts$))
@@ -109,74 +94,32 @@ scannedAccount$
     setVaultAccounts([...oldAccounts, account]);
   });
 
-const ScanAccount: FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [error, setError] = useState<null | "camera" | "invalid_qr">(null);
-
-  const ref = useCallback(
-    (element: HTMLVideoElement) => {
-      let stopped = false;
-      let camera: QrCamera | null = null;
-      async function showCamera() {
-        camera = await frontalCamera(element);
-        if (stopped) {
-          setTimeout(() => camera?.stop(), 1000);
-          camera = null;
-          return;
+const ScanAccount: FC<{ onClose: () => void }> = ({ onClose }) => (
+  <QrCamera
+    onRead={useCallback(
+      (res) => {
+        // Expected format: `substrate:${Addr}:${genesis}`
+        const split = res.split(":");
+        if (
+          split[0] !== "substrate" ||
+          split.length != 3 ||
+          !split[2].startsWith("0x")
+        ) {
+          throw new Error("Invalid QR");
         }
-        if (!camera) {
-          setError("camera");
-          return;
+        const [, address, genesis] = split;
+        const account = getSs58AddressInfo(address);
+        if (!account.isValid) {
+          throw new Error("Invalid QR");
         }
 
-        const stop = frameLoop(() => {
-          if (!camera || stopped) {
-            stop();
-            return;
-          }
-
-          const res = camera.readFrame(canvas);
-          if (!res) return;
-
-          // Expected format: `substrate:${Addr}:${genesis}`
-          const split = res.split(":");
-          if (
-            split[0] !== "substrate" ||
-            split.length != 3 ||
-            !split[2].startsWith("0x")
-          ) {
-            setError("invalid_qr");
-            return;
-          }
-          const [, address, genesis] = split;
-          const account = getSs58AddressInfo(address);
-          if (!account.isValid) {
-            setError("invalid_qr");
-            return;
-          }
-
-          scannedAccount({
-            address,
-            genesis,
-          });
-          camera.stop();
-          stop();
-          onClose();
+        scannedAccount({
+          address,
+          genesis,
         });
-      }
-      showCamera();
-
-      return () => {
-        stopped = true;
-        camera?.stop();
-      };
-    },
-    [onClose]
-  );
-
-  return (
-    <div>
-      <video ref={ref} />
-      {error ? <div>Error!</div> : null}
-    </div>
-  );
-};
+        onClose();
+      },
+      [onClose]
+    )}
+  />
+);
