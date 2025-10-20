@@ -55,8 +55,10 @@ export const QrCamera: FC<{ onRead: (payload: string) => void }> = ({
 
   return (
     <div>
-      <video ref={ref} />
-      {error ? <div>Error!</div> : null}
+      <video
+        ref={ref}
+        poster={error ? "/video-error.svg" : "/video-placeholder.svg"}
+      />
     </div>
   );
 };

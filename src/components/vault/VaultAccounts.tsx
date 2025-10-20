@@ -8,9 +8,9 @@ import {
 } from "@/state/vault";
 import { useStateObservable } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
-import { Trash2 } from "lucide-react";
+import { Camera, ChevronLeft, Trash2 } from "lucide-react";
 import { getSs58AddressInfo } from "polkadot-api";
-import { useCallback, type FC, type ReactElement } from "react";
+import { useCallback, useEffect, type FC, type ReactElement } from "react";
 import { withLatestFrom } from "rxjs";
 import { QrCamera } from "./QrCamera";
 
@@ -19,6 +19,19 @@ export const VaultAccounts: FC<{
 }> = ({ setContent }) => {
   const vaultAccounts = useStateObservable(vaultAccounts$);
 
+  useEffect(() => {
+    if (vaultAccounts.length === 0) {
+      setContent(
+        <ScanAccount
+          onScanned={() =>
+            setContent(<VaultAccounts setContent={setContent} />)
+          }
+          onClose={() => setContent(null)}
+        />
+      );
+    }
+  }, [vaultAccounts, setContent]);
+
   return (
     <div className="space-y-4">
       <Button
@@ -26,6 +39,9 @@ export const VaultAccounts: FC<{
         onClick={() =>
           setContent(
             <ScanAccount
+              onScanned={() =>
+                setContent(<VaultAccounts setContent={setContent} />)
+              }
               onClose={() =>
                 setContent(<VaultAccounts setContent={setContent} />)
               }
@@ -33,6 +49,7 @@ export const VaultAccounts: FC<{
           )
         }
       >
+        <Camera />
         Scan new account
       </Button>
       {vaultAccounts.length ? (
@@ -71,13 +88,16 @@ export const VaultAccounts: FC<{
           </ul>
         </div>
       ) : null}
-      <Button
-        onClick={() => setContent(null)}
-        variant="secondary"
-        type="button"
-      >
-        Back
-      </Button>
+      <div>
+        <Button
+          onClick={() => setContent(null)}
+          variant="secondary"
+          type="button"
+        >
+          <ChevronLeft />
+          Back
+        </Button>
+      </div>
     </div>
   );
 };
@@ -94,32 +114,41 @@ scannedAccount$
     setVaultAccounts([...oldAccounts, account]);
   });
 
-const ScanAccount: FC<{ onClose: () => void }> = ({ onClose }) => (
-  <QrCamera
-    onRead={useCallback(
-      (res) => {
-        // Expected format: `substrate:${Addr}:${genesis}`
-        const split = res.split(":");
-        if (
-          split[0] !== "substrate" ||
-          split.length != 3 ||
-          !split[2].startsWith("0x")
-        ) {
-          throw new Error("Invalid QR");
-        }
-        const [, address, genesis] = split;
-        const account = getSs58AddressInfo(address);
-        if (!account.isValid) {
-          throw new Error("Invalid QR");
-        }
+const ScanAccount: FC<{ onScanned: () => void; onClose: () => void }> = ({
+  onScanned,
+  onClose,
+}) => (
+  <div className="space-y-2">
+    <QrCamera
+      onRead={useCallback(
+        (res) => {
+          // Expected format: `substrate:${Addr}:${genesis}`
+          const split = res.split(":");
+          if (
+            split[0] !== "substrate" ||
+            split.length != 3 ||
+            !split[2].startsWith("0x")
+          ) {
+            throw new Error("Invalid QR");
+          }
+          const [, address, genesis] = split;
+          const account = getSs58AddressInfo(address);
+          if (!account.isValid) {
+            throw new Error("Invalid QR");
+          }
 
-        scannedAccount({
-          address,
-          genesis,
-        });
-        onClose();
-      },
-      [onClose]
-    )}
-  />
+          scannedAccount({
+            address,
+            genesis,
+          });
+          onScanned();
+        },
+        [onScanned]
+      )}
+    />
+    <Button onClick={onClose} variant="secondary" type="button">
+      <ChevronLeft />
+      Back
+    </Button>
+  </div>
 );

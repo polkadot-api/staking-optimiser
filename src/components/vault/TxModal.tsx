@@ -55,8 +55,8 @@ const VaultTxContent: FC<{
       <div className="flex flex-col items-center gap-2">
         <VaultTx tx={activeTx} />
         <Button type="button" variant="outline" onClick={() => setMode("sig")}>
-          Scan Signature
           <Camera />
+          Scan Signature
         </Button>
       </div>
     );

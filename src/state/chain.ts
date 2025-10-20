@@ -148,12 +148,4 @@ export const identitySdk$ = peopleApi$.pipeState(
   map((peopleApi) => createIdentitySdk(peopleApi))
 );
 
-export const stakingGenesis$ = clients$.pipeState(
-  switchMap((v) =>
-    concat(v.stakingClient.getChainSpecData(), NEVER).pipe(
-      map((v) => v.genesisHash)
-    )
-  )
-);
-
 merge(stakingSdk$, identitySdk$).subscribe();
