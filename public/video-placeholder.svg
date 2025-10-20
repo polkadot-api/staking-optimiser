@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+<title id="title">Camera loading placeholder</title>
+<desc id="desc">Muted gradient background with a camera icon to show while the video stream is loading.</desc>
+<defs>
+<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#f6f7f8"/>
+<stop offset="100%" stop-color="#e6e8eb"/>
+</linearGradient>
+</defs>
+<rect width="640" height="360" fill="url(#bg)" rx="16"/>
+<g fill="none" stroke="#9aa0a6" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+<rect x="200" y="120" width="180" height="120" rx="24"/>
+<path d="M380 140l60-32v144l-60-32z" fill="#f6f7f8"/>
+<circle cx="260" cy="180" r="12"/>
+<path d="M240 220h100" stroke-width="8"/>
+</g>
+<text x="320" y="300" text-anchor="middle" font-family="sans-serif" font-size="24" fill="#7c828a">Camera loading…</text>
+</svg>

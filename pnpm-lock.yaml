@@ -25,6 +25,9 @@ importers:
       '@polkadot-api/sdk-staking':
         specifier: 0.0.1-local.11
         version: 0.0.1-local.11(polkadot-api@1.19.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@polkadot-api/signers-common':
+        specifier: ^0.1.17
+        version: 0.1.17
       '@polkadot-api/substrate-bindings':
         specifier: ^0.16.3
         version: 0.16.3
@@ -82,6 +85,9 @@ importers:
       polkadot-api:
         specifier: ^1.19.1
         version: 1.19.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      qr:
+        specifier: 0.6.0-local.1
+        version: 0.6.0-local.1
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -610,6 +616,9 @@ packages:
   '@polkadot-api/metadata-builders@0.13.5':
     resolution: {integrity: sha512-3XqLKVv3eGDOUHEeC1KkBCeb/IjnfzdGNxydXJtonr+sbu6Ds7om5sSjqqWASf1bRSO0aHzVO3upPANveCcysg==}
 
+  '@polkadot-api/metadata-builders@0.13.6':
+    resolution: {integrity: sha512-4VIdMkuSYldfzUNBj/fqx4zL4brqFcCVTcwZg0B5zdmAz8Bu2HaNqe06kG13H1qYN4lnEgNX0aBpKxNewsGHbQ==}
+
   '@polkadot-api/metadata-compatibility@0.3.6':
     resolution: {integrity: sha512-rt6LTWph3L5sr7u940Ipvw2hao5to6T5BlbpRDkXHru+Xkl46tipTtrEjghtqkLBmOdVR6yiAVelOLWsiqPXnQ==}
 
@@ -654,6 +663,9 @@ packages:
   '@polkadot-api/signers-common@0.1.16':
     resolution: {integrity: sha512-/+EqdH+aIWCzV0TWiHG7vuklxyHQ2lOkQAL6H/sVe2zsHpUjGfFzO/VAzVLH2acYHbpslKFLrA/y8RAIzYHhkg==}
 
+  '@polkadot-api/signers-common@0.1.17':
+    resolution: {integrity: sha512-Cp9amiZ99Ofh+7cUNIjeWIxEYorGOO/ZFucZHiX8mEjInMjFroZWZhxmcgoqw1t8y677wsov4npJTXKDqAFApg==}
+
   '@polkadot-api/sm-provider@0.1.11':
     resolution: {integrity: sha512-XSli7BF3Xpyh0sdu1MNRJ1qyT3Werd5Z+tQa4iXR+nzo5Kpvg67paG9A8z1K7vNF83pRw4rvnXE9G5HbC+tPvA==}
     peerDependencies:
@@ -664,6 +676,9 @@ packages:
 
   '@polkadot-api/substrate-bindings@0.16.3':
     resolution: {integrity: sha512-KN/nghI3SM0t7WsULwLRB3s4DnWogGCi5TuvXB0yPkkiB5GJugMPuHTTUxDkWmjZ0vLUFlmkaZ/sfFf0tvo8xQ==}
+
+  '@polkadot-api/substrate-bindings@0.16.4':
+    resolution: {integrity: sha512-J6xz4WzERKtH/WJZGTcaKxc9boUGfgq1YxzgBSmpUIKg0iqHTno2KE8p/ccSuuM9BIxG9mFRAKXyNvHq2tWWgw==}
 
   '@polkadot-api/substrate-client@0.4.7':
     resolution: {integrity: sha512-Mmx9VKincVqfVQmq89gzDk4DN3uKwf8CxoqYvq+EiPUZ1QmMUc7X4QMwG1MXIlYdnm5LSXzn+2Jn8ik8xMgL+w==}
@@ -2304,6 +2319,10 @@ packages:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
 
+  qr@0.6.0-local.1:
+    resolution: {integrity: sha512-fmjyy2RndyXWri3HjzGZGMf4h/YqzmBTI9VtBd4VyY/9uA23wAHjkzRhdw30f0H2Xs5lvy+YDhnbPqZw2ckohA==}
+    engines: {node: '>= 20.19.0'}
+
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
@@ -3298,6 +3317,11 @@ snapshots:
       '@polkadot-api/substrate-bindings': 0.16.3
       '@polkadot-api/utils': 0.2.0
 
+  '@polkadot-api/metadata-builders@0.13.6':
+    dependencies:
+      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/utils': 0.2.0
+
   '@polkadot-api/metadata-compatibility@0.3.6':
     dependencies:
       '@polkadot-api/metadata-builders': 0.13.5
@@ -3369,6 +3393,13 @@ snapshots:
       '@polkadot-api/substrate-bindings': 0.16.3
       '@polkadot-api/utils': 0.2.0
 
+  '@polkadot-api/signers-common@0.1.17':
+    dependencies:
+      '@polkadot-api/metadata-builders': 0.13.6
+      '@polkadot-api/polkadot-signer': 0.1.6
+      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/utils': 0.2.0
+
   '@polkadot-api/sm-provider@0.1.11(@polkadot-api/smoldot@0.3.14)':
     dependencies:
       '@polkadot-api/json-rpc-provider': 0.0.4
@@ -3384,6 +3415,13 @@ snapshots:
       - utf-8-validate
 
   '@polkadot-api/substrate-bindings@0.16.3':
+    dependencies:
+      '@noble/hashes': 2.0.1
+      '@polkadot-api/utils': 0.2.0
+      '@scure/base': 2.0.0
+      scale-ts: 1.6.1
+
+  '@polkadot-api/substrate-bindings@0.16.4':
     dependencies:
       '@noble/hashes': 2.0.1
       '@polkadot-api/utils': 0.2.0
@@ -4976,6 +5014,8 @@ snapshots:
       react-is: 16.13.1
 
   punycode@2.3.1: {}
+
+  qr@0.6.0-local.1: {}
 
   queue-microtask@1.2.3: {}
 

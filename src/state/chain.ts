@@ -16,7 +16,6 @@ import {
   merge,
   NEVER,
   switchMap,
-  tap,
 } from "rxjs";
 import {
   descriptorsByChain,
@@ -128,18 +127,12 @@ const createClients = (chain: KnownChains) => {
 
 export const clients$ = state(
   selectedChain$.pipe(
-    tap((v) => {
-      console.log("chain changed", v);
-    }),
     switchMap((chain) => {
       const [clients, teardown] = createClients(chain);
 
       return concat([clients], NEVER).pipe(
         finalize(() => setTimeout(teardown, 100))
       );
-    }),
-    finalize(() => {
-      console.log("finalize clients$");
     })
   )
 );
@@ -151,7 +144,6 @@ export const peopleApi$ = clients$.pipeState(map((v) => v.peopleApi));
 export const stakingSdk$ = clients$.pipeState(
   map((client) => createStakingSdk(client.stakingClient))
 );
-
 export const identitySdk$ = peopleApi$.pipeState(
   map((peopleApi) => createIdentitySdk(peopleApi))
 );

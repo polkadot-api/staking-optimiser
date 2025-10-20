@@ -25,6 +25,7 @@ import { combineLatest, map } from "rxjs";
 import { twMerge } from "tailwind-merge";
 import { AddressIdentity } from "../AddressIdentity";
 import { readOnlyAddresses$ } from "./ManageAddresses";
+import { vaultAccounts$ } from "@/state/vault";
 
 type SelectableAccount = {
   address: string;
@@ -34,6 +35,7 @@ type SelectableAccount = {
 
 const groupLabels: Record<string, string> = {
   readOnly: "Read Only",
+  vault: "Vault",
 };
 
 const availableAccountGroups$ = state(
@@ -69,6 +71,20 @@ const availableAccountGroups$ = state(
               }),
           })),
         ])
+      )
+    ),
+    vault: vaultAccounts$.pipe(
+      map((v) =>
+        v.map(
+          (acc): SelectableAccount => ({
+            address: acc.address,
+            onSelect: () =>
+              setAccountSource({
+                type: "vault",
+                value: acc,
+              }),
+          })
+        )
       )
     ),
   }).pipe(

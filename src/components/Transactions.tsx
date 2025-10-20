@@ -86,10 +86,9 @@ export const useSingleTransaction = () => {
     setIsPending(true);
     try {
       await lastValueFrom(trackTransaction(tx$));
-    } catch (ex) {
-      console.error(ex);
+    } finally {
+      setIsPending(false);
     }
-    setIsPending(false);
   };
 
   return [isPending, startTx] as const;
