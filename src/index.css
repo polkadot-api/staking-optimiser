@@ -133,6 +133,10 @@
     height: 5rem;
 }
 
+.data-table.compact tbody td {
+    height: 4rem;
+}
+
 .data-table thead th {
     position: relative;
     padding: 0.5rem;

@@ -114,7 +114,7 @@ const ValidatorTable: FC<{
       fixedHeaderContent={() => (
         <tr className="bg-background">
           <th></th>
-          <th className="w-52 min-lg:w-60">
+          <th className="w-52 lg:w-60">
             <SortByButton prop="address">Validator</SortByButton>
           </th>
           <th>
@@ -143,7 +143,7 @@ const ValidatorTable: FC<{
           <th>
             <SortByButton prop="points">Points</SortByButton>
           </th>
-          <th className="hidden min-xl:table-cell">
+          <th className="hidden xl:table-cell">
             <SortByButton prop="activeBond">Active bond</SortByButton>
           </th>
           <th></th>

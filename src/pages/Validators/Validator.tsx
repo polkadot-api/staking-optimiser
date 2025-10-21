@@ -39,7 +39,7 @@ export const ValidatorRow: FC<{
       <td className="text-right">
         {Math.round(validator.points).toLocaleString()}
       </td>
-      <td className="text-right hidden min-xl:table-cell">
+      <td className="text-right hidden xl:table-cell">
         <TokenValue value={validator.activeBond} />
       </td>
       <td>

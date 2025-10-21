@@ -12,14 +12,14 @@ import { state, useStateObservable } from "@react-rxjs/core";
 import { useState, type FC } from "react";
 import { firstValueFrom, switchMap } from "rxjs";
 
-const minJoin$ = stakingApi$.pipeState(
+export const minPoolJoin$ = stakingApi$.pipeState(
   switchMap((api) => api.query.NominationPools.MinJoinBond.getValue())
 );
 
 export const JoinPool: FC<{ poolId: number }> = ({ poolId }) => {
   const accountStatus = useStateObservable(accountStatus$);
   const signer = useStateObservable(selectedSignerAccount$);
-  const minBond = useStateObservable(minJoin$);
+  const minBond = useStateObservable(minPoolJoin$);
 
   const cantJoinReason =
     !accountStatus || !signer
@@ -75,7 +75,7 @@ const JoinPoolModal: FC<{
   close?: () => void;
 }> = ({ poolId, close }) => {
   const accountStatus = useStateObservable(accountStatus$);
-  const minBond = useStateObservable(minJoin$);
+  const minBond = useStateObservable(minPoolJoin$);
   const pool = useStateObservable(pool$(poolId));
   const decimals = useStateObservable(tokenDecimals$);
   const [bondAmount, setBondAmount] = useState<number>(Number(minBond));

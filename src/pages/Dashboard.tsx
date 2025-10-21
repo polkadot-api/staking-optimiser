@@ -10,6 +10,7 @@ import {
 } from "@/components/infocards";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
 import { significantDigitsDecimals, TokenValue } from "@/components/TokenValue";
+import { accountStatus$ } from "@/state/account";
 import { activeEraNumber$ } from "@/state/era";
 import {
   currentNominatorBond$,
@@ -18,6 +19,14 @@ import {
 } from "@/state/nominate";
 import { Subscribe, useStateObservable } from "@react-rxjs/core";
 import { lazy, Suspense } from "react";
+import { map } from "rxjs";
+import TopValidators from "./Validators/TopValidators";
+import TopPools from "./Pools/TopPools";
+import { Button } from "@/components/ui/button";
+import { openSelectAccount } from "@/components/Header/SelectAccount";
+import { minBond$ } from "./Nominate/MinBondingAmounts";
+import { minPoolJoin$ } from "./Pools/JoinPool";
+import { Link } from "react-router-dom";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
 
@@ -51,7 +60,7 @@ export const Dashboard = () => {
             <Inflation />
           </div>
           <BalanceContent />
-          <NominatingContent />
+          <NominationContent />
         </div>
       </Subscribe>
     </div>
@@ -70,16 +79,85 @@ const BalanceContent = () => {
   );
 };
 
-const NominatingContent = () => {
-  const bond = useStateObservable(currentNominatorBond$);
+const bondStatus$ = accountStatus$.pipeState(
+  map((v) => {
+    if (!v) return null;
 
-  if (!bond) return null;
+    if (v.nomination.totalLocked) {
+      return "nominating" as const;
+    }
 
+    if (v.nominationPool.pool) {
+      return "pool" as const;
+    }
+
+    return null;
+  })
+);
+
+const NominationContent = () => {
+  const status = useStateObservable(bondStatus$);
+
+  switch (status) {
+    case "nominating":
+      return (
+        <>
+          <NominateStatus />
+          <NominateRewards />
+        </>
+      );
+    case "pool":
+      return <div>In a pool</div>;
+    case null:
+      return (
+        <>
+          <UnactiveActions />
+          <Card title="Top Validators">
+            <TopValidators />
+          </Card>
+          <Card title="Top Pools">
+            <TopPools />
+          </Card>
+        </>
+      );
+  }
+};
+
+const UnactiveActions = () => {
+  const balance = useStateObservable(accountBalance$);
+  const minNomination = useStateObservable(minBond$);
+  const minPoolNomination = useStateObservable(minPoolJoin$);
+
+  if (!balance) {
+    return (
+      <Card title="Actions">
+        <Button onClick={openSelectAccount}>Connect</Button>
+      </Card>
+    );
+  }
+
+  const buttons = [];
+  if (balance.raw.free - balance.raw.existentialDeposit > minNomination) {
+    buttons.push(
+      <Button asChild key="nominate">
+        <Link to="../nominate">Nominate</Link>
+      </Button>
+    );
+  }
+
+  if (balance.raw.free - balance.raw.existentialDeposit > minPoolNomination) {
+    buttons.push(
+      <Button asChild key="pools">
+        <Link to="../pools">Join Pool</Link>
+      </Button>
+    );
+  }
+
+  if (!buttons.length) return null;
   return (
-    <>
-      <NominateStatus />
-      <NominateRewards />
-    </>
+    <Card title="Actions">
+      <div className="space-x-2">{buttons}</div>
+    </Card>
   );
 };
 

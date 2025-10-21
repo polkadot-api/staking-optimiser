@@ -69,7 +69,7 @@ const CurrentStatus = () => {
       </div>
       <div className="flex flex-wrap gap-2 items-start">
         <AccountBalance
-          className="grow-[2]"
+          className="grow-2"
           extraValues={[
             {
               label: "Rewards",
