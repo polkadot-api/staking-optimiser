@@ -149,7 +149,7 @@ export const rpcsByChain: Record<
 
 export const stakingTypeByChain: Record<KnownChains, ChainType> = {
   polkadot: "relay",
-  kusama: "relay",
+  kusama: "assetHub",
   westend: "assetHub",
   paseo: "assetHub",
 };
@@ -168,9 +168,9 @@ export type PeopleTypedApi =
 
 export type StakingTypedApi =
   | TypedApi<typeof dot>
-  | TypedApi<typeof ksm>
+  | TypedApi<typeof ksmAH>
   | TypedApi<typeof wndAH>
-  | TypedApi<typeof pas>;
+  | TypedApi<typeof pasAH>;
 
 export const descriptorsByChain = {
   polkadot: {

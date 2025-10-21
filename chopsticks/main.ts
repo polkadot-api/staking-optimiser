@@ -15,7 +15,7 @@ const chopsticksProcess = spawn("pnpm", [
   "chopsticks",
   `--endpoint=${ENDPOINT}`,
   `--port=${LOCAL_RPC_PORT}`,
-  `--db=chopsticks.db`,
+  // `--db=chopsticks.db`,
   `--mock-signature-host`,
 ]);
 chopsticksProcess.stdout.pipe(logStream);

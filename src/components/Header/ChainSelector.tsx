@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { codeSplit } from "@/util/codeSplit";
 
-const chainNameByChain: Record<KnownChains, string> = {
+export const chainNameByChain: Record<KnownChains, string> = {
   polkadot: "Polkadot",
   kusama: "Kusama",
   westend: "Westend",
   paseo: "Paseo",
 };
 
-const chainLogoByChain: Record<KnownChains, string> = {
+export const chainLogoByChain: Record<KnownChains, string> = {
   polkadot: import.meta.env.BASE_URL + "polkadot.svg",
   kusama: import.meta.env.BASE_URL + "kusama.webp",
   westend: import.meta.env.BASE_URL + "westend.webp",

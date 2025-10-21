@@ -14,5 +14,7 @@ export const whitelist: (DotWhitelistEntry | DotPplWhitelistEntry)[] = [
   "const.Babe.*",
   "const.System.SS58Prefix",
   "api.NominationPoolsApi.*",
+  "api.Inflation.experimental_inflation_prediction_info",
   "tx.Utility.batch_all",
+  "query.Balances.TotalIssuance",
 ];

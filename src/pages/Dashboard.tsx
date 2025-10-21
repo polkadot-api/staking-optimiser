@@ -1,19 +1,40 @@
-import { AccountBalance } from "@/components/AccountBalance";
+import { AccountBalance, accountBalance$ } from "@/components/AccountBalance";
 import { Card } from "@/components/Card";
+import {
+  ActiveEra,
+  ActiveNominators,
+  ActiveValidators,
+  Inflation,
+  Staked,
+  TotalValidators,
+} from "@/components/infocards";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
 import { significantDigitsDecimals, TokenValue } from "@/components/TokenValue";
-import { activeEra$, activeEraNumber$ } from "@/state/era";
+import { activeEraNumber$ } from "@/state/era";
 import {
   currentNominatorBond$,
   lastReward$,
   rewardHistory$,
 } from "@/state/nominate";
-import { estimatedFuture } from "@/util/date";
-import { formatPercentage } from "@/util/format";
 import { Subscribe, useStateObservable } from "@react-rxjs/core";
 import { lazy, Suspense } from "react";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
+
+/*
+- staking status
+              <img
+                src={chainLogoByChain[chain]}
+                alt={chain}
+                className="size-6 rounded"
+              />{" "}
+              {chainNameByChain[chain]}
+- APR trend
+- reward history
+- payout countdown
+- fiat equivalent
+- actions: Stake more, unbond, etc.
+ */
 
 export const Dashboard = () => {
   return (
@@ -21,14 +42,31 @@ export const Dashboard = () => {
       <NavMenu />
       <Subscribe fallback="Loading…">
         <div className="space-y-4">
-          <ActiveEra />
-          <Card title="Balance">
-            <AccountBalance />
-          </Card>
+          <div className="flex justify-center flex-wrap gap-4">
+            <ActiveEra />
+            <ActiveValidators />
+            <TotalValidators />
+            <ActiveNominators />
+            <Staked />
+            <Inflation />
+          </div>
+          <BalanceContent />
           <NominatingContent />
         </div>
       </Subscribe>
     </div>
+  );
+};
+
+const BalanceContent = () => {
+  const balance = useStateObservable(accountBalance$);
+
+  if (!balance?.total) return null;
+
+  return (
+    <Card title="Balance">
+      <AccountBalance />
+    </Card>
   );
 };
 
@@ -42,17 +80,6 @@ const NominatingContent = () => {
       <NominateStatus />
       <NominateRewards />
     </>
-  );
-};
-
-const ActiveEra = () => {
-  const activeEra = useStateObservable(activeEra$);
-  return (
-    <Card title="Active Era">
-      <div>{activeEra.era}</div>
-      <div>{formatPercentage(activeEra.pctComplete)}</div>
-      <div>Expected end: {estimatedFuture(activeEra.estimatedEnd)}</div>
-    </Card>
   );
 };
 
