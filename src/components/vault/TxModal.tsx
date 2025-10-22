@@ -8,12 +8,12 @@ import {
 } from "@/state/vault";
 import { codeSplit } from "@/util/codeSplit";
 import { useStateObservable } from "@react-rxjs/core";
+import { Camera, ChevronLeft } from "lucide-react";
+import { Binary } from "polkadot-api";
 import encodeQr from "qr";
 import { useCallback, useEffect, useState, type FC } from "react";
 import { Button } from "../ui/button";
-import { Camera, ChevronLeft, ChevronRight } from "lucide-react";
 import { QrCamera } from "./QrCamera";
-import { Binary } from "polkadot-api";
 
 const dialogModule = import("@/components/ui/dialog");
 

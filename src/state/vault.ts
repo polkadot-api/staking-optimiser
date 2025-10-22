@@ -41,25 +41,25 @@ const currentScannedSignature$ = race(
 
 // https://github.com/novasamatech/parity-signer/blob/738e34f0b60f86b718267cfe1ca766bd291640ed/docs/src/development/UOS.md
 const VAULT_QR_HEADER = new Uint8Array([0x53]);
-enum VaultQrEncryption {
-  Ed25519 = 0x00,
-  Sr25519 = 0x01,
-  Ecdsa = 0x02,
-  Unsigned = 0xff,
-}
-enum VaultQrPayloadType {
-  LegacyTx = 0x00,
-  Tx = 0x02,
-  Message = 0x03,
-  BulkTx = 0x04,
-  LoadMetadataUpdate = 0x80,
-  LoadTypesUpdate = 0x81,
-  AddSpecsUpdate = 0xc1,
-  DerivationsImport = 0xce,
-}
+const VaultQrEncryption = {
+  Ed25519: 0x00,
+  Sr25519: 0x01,
+  Ecdsa: 0x02,
+  Unsigned: 0xff,
+};
+const VaultQrPayloadType = {
+  LegacyTx: 0x00,
+  Tx: 0x02,
+  Message: 0x03,
+  BulkTx: 0x04,
+  LoadMetadataUpdate: 0x80,
+  LoadTypesUpdate: 0x81,
+  AddSpecsUpdate: 0xc1,
+  DerivationsImport: 0xce,
+};
 
 const createQrTransaction = (
-  encrpytion: VaultQrEncryption,
+  encrpytion: number,
   publicKey: Uint8Array,
   callData: Uint8Array,
   extensions: Uint8Array,

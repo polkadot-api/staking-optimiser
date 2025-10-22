@@ -45,7 +45,7 @@ export const AddressIdentity: FC<{
         <StopClickPropagation>
           <CopyText
             text={addr}
-            copiedContent={
+            copiedIndicator={
               <CheckCircle size={18} className="text-positive w-6" />
             }
           >

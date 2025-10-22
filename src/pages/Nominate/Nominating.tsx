@@ -50,7 +50,7 @@ const StatusCard = () => {
   return (
     <Card title="Status">
       <div className="flex flex-wrap gap-2 items-start">
-        <AccountBalance className="grow-[2]" />
+        <AccountBalance className="grow-2" />
         {currentBond?.unlocks.length ? <NominateLocks /> : null}
       </div>
       <div className="mt-4 space-x-2">

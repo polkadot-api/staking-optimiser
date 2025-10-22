@@ -5,10 +5,7 @@ import { state } from "@react-rxjs/core";
 import type { SS58String } from "polkadot-api";
 import {
   combineLatest,
-  defer,
   filter,
-  firstValueFrom,
-  fromEvent,
   map,
   mergeMap,
   scan,
@@ -17,64 +14,13 @@ import {
   take,
   withLatestFrom,
 } from "rxjs";
-import {
-  selectedChain$,
-  stakingApi$,
-  stakingSdk$,
-  tokenDecimals$,
-} from "./chain";
+import { stakingApi$, stakingSdk$, tokenDecimals$ } from "./chain";
 import { activeEraNumber$, allEras$, eraDurationInMs$, getEraApy } from "./era";
-import {
-  type NominatorRewardsResult,
-  type NominatorValidatorsResult,
-  type Request,
-  type Response,
+import type {
+  NominatorRewardsResult,
+  NominatorValidatorsResult,
 } from "./rewards.worker";
-import MyWorker from "./rewards.worker?worker";
-
-const worker = new MyWorker();
-const message$ = fromEvent<MessageEvent<Response>>(worker, "message").pipe(
-  map((evt) => evt.data)
-);
-
-let workerReqId = 0;
-const request = <T>(msg: {
-  type: "getNominatorRewards" | "getNominatorActiveValidators";
-  value: {
-    address: SS58String;
-    era: number;
-  };
-}) =>
-  firstValueFrom(
-    defer(() => {
-      const id = workerReqId++;
-
-      worker.postMessage({
-        type: msg.type,
-        value: {
-          ...msg.value,
-          id,
-        },
-      } satisfies Request);
-
-      return message$.pipe(
-        filter((v) => v.type === "result" && v.value.id === id),
-        map((v) => v.value!.result as T)
-      );
-    })
-  );
-
-message$
-  .pipe(
-    filter((v) => v.type === "ready"),
-    switchMap(() => selectedChain$)
-  )
-  .subscribe((value) =>
-    worker.postMessage({
-      type: "setChain",
-      value,
-    } satisfies Request)
-  );
+import { requestNominator } from "./nominatorInfo";
 
 export const currentNominatorBond$ = state(
   accountStatus$.pipe(
@@ -99,7 +45,7 @@ export const lastReward$ = state(
     activeEraNumber$,
   ]).pipe(
     switchMap(([addr, era]) =>
-      request<NominatorRewardsResult>({
+      requestNominator<NominatorRewardsResult>({
         type: "getNominatorRewards",
         value: {
           address: addr,
@@ -143,7 +89,7 @@ export const rewardHistory$ = state(
         ? allEras$(HISTORY_DEPTH).pipe(
             mergeMap(async (era) => {
               try {
-                const rewards = await request<NominatorRewardsResult>({
+                const rewards = await requestNominator<NominatorRewardsResult>({
                   type: "getNominatorRewards",
                   value: {
                     address: addr,
@@ -185,7 +131,7 @@ export const currentNominatorStatus$ = state(
     activeEraNumber$,
   ]).pipe(
     switchMap(([nominator, activeEra]) =>
-      request<NominatorValidatorsResult>({
+      requestNominator<NominatorValidatorsResult>({
         type: "getNominatorActiveValidators",
         value: {
           address: nominator,
@@ -205,7 +151,7 @@ export const validatorPerformance$ = state((addr: SS58String) =>
           try {
             const [rewards, nominatorStatus] = await Promise.all([
               stakingSdk.getValidatorRewards(addr, era),
-              request<NominatorValidatorsResult>({
+              requestNominator<NominatorValidatorsResult>({
                 type: "getNominatorActiveValidators",
                 value: {
                   address: nominator,
