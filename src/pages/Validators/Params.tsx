@@ -27,7 +27,7 @@ import { Card } from "@/components/Card";
 
 export const Params = () => {
   return (
-    <div className="space-y-4 pb-2 min-md:space-y-0 min-md:flex gap-2 justify-stretch">
+    <div className="space-y-4 pb-2 md:space-y-0 md:flex gap-2 justify-stretch">
       <Card title="Data Options" className="grow">
         <MaParams />
       </Card>

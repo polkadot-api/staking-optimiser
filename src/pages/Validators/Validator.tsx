@@ -9,6 +9,7 @@ import {
   type HistoricValidator,
   type PositionValidator,
 } from "./validatorList.state";
+import { Link } from "react-router-dom";
 
 export const ValidatorRow: FC<{
   validator: PositionValidator;
@@ -19,7 +20,9 @@ export const ValidatorRow: FC<{
     <>
       <td className="text-muted-foreground">{validator.position + 1}</td>
       <td className="overflow-hidden">
-        <AddressIdentity className="w-52" addr={validator.address} />
+        <Link to={validator.address}>
+          <AddressIdentity className="w-52" addr={validator.address} />
+        </Link>
       </td>
       <td
         className={cn("text-right font-bold", {

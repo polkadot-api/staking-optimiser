@@ -2,7 +2,6 @@ import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
 import { Loading } from "@/components/Spinner";
 import { TokenValue } from "@/components/TokenValue";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { accountStatus$ } from "@/state/account";
 import { stakingSdk$ } from "@/state/chain";
@@ -91,13 +90,9 @@ export const PoolDetail = () => {
 
   return (
     <div className="space-y-6 p-2">
-      <div className="flex flex-wrap items-center gap-3">
-        <Button asChild variant="ghost" size="sm" className="-ml-2">
-          <Link to=".." className="flex items-center gap-2">
-            <ArrowLeft className="size-4" /> Back to pools
-          </Link>
-        </Button>
-      </div>
+      <Link to=".." className="flex items-center gap-2">
+        <ArrowLeft className="size-4" /> Back to pools
+      </Link>
 
       <header className="rounded-2xl border border-border/60 bg-background/90 p-6 shadow-sm">
         <div className="space-y-2">
@@ -264,7 +259,7 @@ export const PoolDetail = () => {
   );
 };
 
-const Stat: FC<
+export const Stat: FC<
   PropsWithChildren<{
     icon: ReactElement;
     label: string;

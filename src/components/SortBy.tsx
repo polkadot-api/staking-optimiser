@@ -75,7 +75,7 @@ export const ContractableText: FC<PropsWithChildren<{ smol: string }>> = ({
   children,
 }) => (
   <>
-    <span className="hidden min-xl:inline">{children}</span>
-    <span className="min-xl:hidden">{smol}</span>
+    <span className="hidden xl:inline">{children}</span>
+    <span className="xl:hidden">{smol}</span>
   </>
 );

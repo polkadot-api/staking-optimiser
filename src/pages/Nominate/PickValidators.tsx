@@ -41,7 +41,7 @@ export default function PickValidators() {
         <Selection />
       </Subscribe>
       <Subscribe fallback="Loading…">
-        <div className="space-y-4 pb-2 min-md:space-y-0 min-md:flex gap-2 justify-stretch">
+        <div className="space-y-4 pb-2 md:space-y-0 md:flex gap-2 justify-stretch">
           <Card title="Data Options" className="basis-xl grow">
             <MaParams />
           </Card>
@@ -258,7 +258,7 @@ const ValidatorTable: FC<{
       fixedHeaderContent={() => (
         <tr className="bg-background">
           <th></th>
-          <th className="w-52 min-lg:w-60">
+          <th className="w-52 lg:w-60">
             <SortByButton prop="address">Validator</SortByButton>
           </th>
           <th className="max-w-[10%]">
@@ -287,7 +287,7 @@ const ValidatorTable: FC<{
           <th>
             <SortByButton prop="points">Points</SortByButton>
           </th>
-          <th className="hidden min-xl:table-cell">
+          <th className="hidden xl:table-cell">
             <SortByButton prop="activeBond">Active bond</SortByButton>
           </th>
           <th></th>

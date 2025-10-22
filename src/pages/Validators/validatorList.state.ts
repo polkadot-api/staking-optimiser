@@ -84,6 +84,7 @@ const aggregateHistoricValidatorProp = <T extends keyof HistoricValidator>(
   }
 
   if (maType === "simple") {
+    // This works whether the type is a number or a bigint
     let sum: any = validators[0][key];
     for (let i = 1; i < validators.length; i++) {
       sum += validators[i][key];

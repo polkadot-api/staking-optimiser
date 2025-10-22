@@ -1,6 +1,7 @@
 import { ContractableText, createSortByButton } from "@/components/SortBy";
 import { cn } from "@/lib/utils";
 import { Subscribe, useStateObservable } from "@react-rxjs/core";
+import { Pin } from "lucide-react";
 import type { SS58String } from "polkadot-api";
 import { useMemo, useState, type FC, type SetStateAction } from "react";
 import { useMediaQuery } from "react-responsive";
@@ -15,7 +16,6 @@ import {
   type HistoricValidator,
   type PositionValidator,
 } from "./validatorList.state";
-import { Pin } from "lucide-react";
 
 const SortByButton = createSortByButton(sortBy$, setSortBy);
 
