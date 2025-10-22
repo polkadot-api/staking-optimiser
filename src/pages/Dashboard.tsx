@@ -1,5 +1,7 @@
 import { AccountBalance, accountBalance$ } from "@/components/AccountBalance";
 import { Card } from "@/components/Card";
+import { DialogButton } from "@/components/DialogButton";
+import { openSelectAccount } from "@/components/Header/SelectAccount";
 import {
   ActiveEra,
   ActiveNominators,
@@ -9,41 +11,23 @@ import {
   TotalValidators,
 } from "@/components/infocards";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
-import { significantDigitsDecimals, TokenValue } from "@/components/TokenValue";
-import { accountStatus$ } from "@/state/account";
-import { activeEraNumber$ } from "@/state/era";
-import {
-  currentNominatorBond$,
-  lastReward$,
-  rewardHistory$,
-} from "@/state/nominate";
-import { Subscribe, useStateObservable } from "@react-rxjs/core";
-import { lazy, Suspense } from "react";
-import { map } from "rxjs";
-import TopValidators from "./Validators/TopValidators";
-import TopPools from "./Pools/TopPools";
+import { TokenValue } from "@/components/TokenValue";
 import { Button } from "@/components/ui/button";
-import { openSelectAccount } from "@/components/Header/SelectAccount";
-import { minBond$ } from "./Nominate/MinBondingAmounts";
-import { minPoolJoin$ } from "./Pools/JoinPool";
+import { accountStatus$ } from "@/state/account";
+import { activeEra$, eraDurationInMs$ } from "@/state/era";
+import { currentNominationPoolStatus$ } from "@/state/nominationPool";
+import { estimatedFuture } from "@/util/date";
+import { Subscribe, useStateObservable } from "@react-rxjs/core";
 import { Link } from "react-router-dom";
-
-const EraChart = lazy(() => import("@/components/EraChart"));
-
-/*
-- staking status
-              <img
-                src={chainLogoByChain[chain]}
-                alt={chain}
-                className="size-6 rounded"
-              />{" "}
-              {chainNameByChain[chain]}
-- APR trend
-- reward history
-- payout countdown
-- fiat equivalent
-- actions: Stake more, unbond, etc.
- */
+import { map } from "rxjs";
+import { minBond$ } from "./Nominate/MinBondingAmounts";
+import { ManageNominationBtn, NominateRewards } from "./Nominate/Nominating";
+import { ClaimRewards } from "./Pools";
+import { minPoolJoin$ } from "./Pools/JoinPool";
+import { ManageBond } from "./Pools/ManageBond";
+import { UnlockPoolBonds } from "./Pools/ManageUnlocks";
+import TopPools from "./Pools/TopPools";
+import TopValidators from "./Validators/TopValidators";
 
 export const Dashboard = () => {
   return (
@@ -102,12 +86,14 @@ const NominationContent = () => {
     case "nominating":
       return (
         <>
-          <NominateStatus />
+          <Card title="Actions">
+            <ManageNominationBtn />
+          </Card>
           <NominateRewards />
         </>
       );
     case "pool":
-      return <div>In a pool</div>;
+      return <PoolStatus />;
     case null:
       return (
         <>
@@ -161,38 +147,70 @@ const UnactiveActions = () => {
   );
 };
 
-const NominateStatus = () => {
-  const bond = useStateObservable(currentNominatorBond$);
+const PoolStatus = () => {
+  const poolStatus = useStateObservable(currentNominationPoolStatus$);
+  const activeEra = useStateObservable(activeEra$);
+  const eraDuration = useStateObservable(eraDurationInMs$);
 
-  if (!bond) return <Card title="Not nominating" />;
+  // This should not happen
+  if (!poolStatus?.pool) return null;
+
+  const isLeaving = poolStatus.bond === 0n;
+  if (isLeaving) {
+    const lastUnlock = poolStatus.unlocks.reduce(
+      (
+        acc: {
+          value: bigint;
+          era: number;
+        } | null,
+        v
+      ) => (acc == null ? v : acc.era > v.era ? acc : v),
+      null
+    );
+    const unlocked = lastUnlock && lastUnlock.era <= activeEra.era;
+    const estimatedUnlock =
+      lastUnlock &&
+      new Date(
+        Date.now() +
+          Math.max(0, activeEra.estimatedEnd.getTime() - Date.now()) +
+          (lastUnlock.era - activeEra.era - 1) * eraDuration
+      );
+
+    return (
+      <Card title="Pool">
+        <div>
+          Currently leaving pool{" "}
+          <span className="text-muted-foreground">#{poolStatus.pool.id}</span>{" "}
+          <span className="font-medium">{poolStatus.pool.name}</span>
+        </div>
+        {estimatedUnlock ? (
+          <div>Unlock: {estimatedFuture(estimatedUnlock)}</div>
+        ) : null}
+        <div className="mt-2">{unlocked ? <UnlockPoolBonds /> : null}</div>
+      </Card>
+    );
+  }
 
   return (
-    <Card title="Currently Nominating">
-      Bond:{" "}
-      <TokenValue value={bond.bond} decimalsFn={significantDigitsDecimals(2)} />
-    </Card>
-  );
-};
-
-const NominateRewards = () => {
-  const lastReward = useStateObservable(lastReward$);
-  const rewardHistory = useStateObservable(rewardHistory$);
-  const activeEra = useStateObservable(activeEraNumber$);
-
-  return (
-    <Card title="Nominate Rewards">
+    <Card title="Pool">
       <div>
-        Last reward: <TokenValue value={lastReward.total} /> (APY{" "}
-        {lastReward.apy.toLocaleString()}%)
+        Currently member of{" "}
+        <span className="text-muted-foreground">#{poolStatus.pool.id}</span>{" "}
+        <span className="font-medium">{poolStatus.pool.name}</span>
       </div>
-      <div>
-        Commission: <TokenValue value={lastReward.totalCommission} />
-      </div>
-      <div>
-        <div>History</div>
-        <Suspense>
-          <EraChart data={rewardHistory} activeEra={activeEra} />
-        </Suspense>
+      {poolStatus.pendingRewards > 0n ? (
+        <div>
+          Pending rewards: <TokenValue value={poolStatus.pendingRewards} />
+        </div>
+      ) : null}
+      <div className="space-x-2 mt-2">
+        <DialogButton
+          title="Manage bond"
+          content={({ close }) => <ManageBond close={close} />}
+        >
+          Manage bond
+        </DialogButton>
+        {poolStatus.pendingRewards > 0n ? <ClaimRewards /> : null}
       </div>
     </Card>
   );

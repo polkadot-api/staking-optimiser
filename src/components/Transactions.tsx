@@ -1,7 +1,7 @@
 import { selectedSignerAccount$ } from "@/state/account";
 import type { AsyncTransaction } from "@polkadot-api/sdk-staking";
 import { shareLatest, useStateObservable } from "@react-rxjs/core";
-import { Loader2, Zap } from "lucide-react";
+import { Eye, Loader2, Zap } from "lucide-react";
 import { InvalidTxError, type Transaction, type TxEvent } from "polkadot-api";
 import { lazy, useState, type ComponentType, type FC } from "react";
 import { from, lastValueFrom, switchMap, type Observable } from "rxjs";
@@ -132,7 +132,13 @@ export const TransactionButton: FC<
       }}
     >
       {children}
-      {isOngoing ? <Loader2 className="animate-spin" /> : <Zap />}
+      {isOngoing ? (
+        <Loader2 className="animate-spin" />
+      ) : signer ? (
+        <Zap />
+      ) : (
+        <Eye />
+      )}
     </Button>
   );
 };

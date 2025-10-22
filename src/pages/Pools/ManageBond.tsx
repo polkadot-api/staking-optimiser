@@ -1,8 +1,8 @@
 import { accountBalance$ } from "@/components/AccountBalance";
 import { AlertCard } from "@/components/AlertCard";
+import { TokenInput } from "@/components/TokenInput";
 import { TokenValue } from "@/components/TokenValue";
 import { TransactionButton } from "@/components/Transactions";
-import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -43,8 +43,8 @@ export const ManageBond: FC<{ close?: () => void }> = ({ close }) => {
   const poolStatus = useStateObservable(currentNominationPoolStatus$);
   const balance = useStateObservable(accountBalance$);
   const [mode, setMode] = useState<"bond" | "unbond" | "leave">("bond");
-  const [bond, setBond] = useState(0);
-  const [unbond, setUnbond] = useState(0);
+  const [bond, setBond] = useState<bigint | null>(0n);
+  const [unbond, setUnbond] = useState<bigint | null>(0n);
 
   if (!balance) return null;
   if (!poolStatus) return <div>TODO not in a pool</div>;
@@ -79,10 +79,10 @@ export const ManageBond: FC<{ close?: () => void }> = ({ close }) => {
       <Result
         bond={
           mode === "leave"
-            ? -Number(poolStatus.bond)
+            ? -poolStatus.bond
             : mode === "bond"
-              ? bond
-              : -unbond
+              ? (bond ?? 0n)
+              : -(unbond ?? 0n)
         }
       />
     </section>
@@ -90,8 +90,8 @@ export const ManageBond: FC<{ close?: () => void }> = ({ close }) => {
 };
 
 const BondInput: FC<{
-  bond: number;
-  setBond: (bond: number) => void;
+  bond: bigint | null;
+  setBond: (bond: bigint | null) => void;
   close?: () => void;
 }> = ({ bond, setBond, close }) => {
   const accountStatus = useStateObservable(accountStatus$);
@@ -102,8 +102,6 @@ const BondInput: FC<{
   const { decimals, symbol } = token;
   const { balance, nominationPool: poolStatus } = accountStatus;
 
-  const bigBond = Number.isNaN(bond) ? 0n : BigInt(Math.round(bond));
-
   const currentUnbonding = poolStatus.unlocks
     .map((v) => v.value)
     .reduce((a, b) => a + b, 0n);
@@ -113,23 +111,18 @@ const BondInput: FC<{
   const tokenUnit = 10n ** BigInt(decimals);
   const maxSafeBond = maxBond - tokenUnit;
 
-  const clampBondValue = (value: number) => {
-    if (!Number.isFinite(value)) return 0;
-    return Math.min(Math.max(value, 0), Number(maxBond));
-  };
-
-  const setBondValue = (value: number) => setBond(clampBondValue(value));
-
-  const resultingBond = poolStatus.currentBond + bigBond;
+  const resultingBond = poolStatus.currentBond + (bond ?? 0n);
   const showBelowMinWarning = resultingBond > 0n && resultingBond < minBond;
   const showSafeMaxWarning =
     resultingBond > maxSafeBond + poolStatus.pendingRewards;
   const isLeaving = !!poolStatus.pool && poolStatus.currentBond === 0n;
 
   const performBond = async () => {
+    if (bond == null) return null;
+
     const api = await firstValueFrom(stakingApi$);
     return api.tx.NominationPools.bond_extra({
-      extra: NominationPoolsBondExtra.FreeBalance(bigBond),
+      extra: NominationPoolsBondExtra.FreeBalance(bond),
     });
   };
 
@@ -142,15 +135,18 @@ const BondInput: FC<{
             Added immediately to your pool stake.
           </p>
         </div>
-        <TokenValue className="text-base font-semibold" value={bigBond} />
+        {bond != null ? (
+          <TokenValue className="text-base font-semibold" value={bond} />
+        ) : (
+          "-"
+        )}
       </div>
       <Slider
-        value={[bond]}
+        value={[Number(bond)]}
         min={0}
         max={Number(maxBond - poolStatus.currentBond)}
         step={10 ** (token.decimals - 2)}
-        onValueChange={([value]) => setBondValue(value)}
-        onValueCommit={([value]) => setBondValue(value)}
+        onValueChange={([value]) => setBond(BigInt(Math.round(value)))}
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="w-full sm:w-auto">
@@ -160,19 +156,13 @@ const BondInput: FC<{
           >
             Amount ({symbol})
           </label>
-          <Input
+          <TokenInput
             id="bond-amount-input"
-            type="number"
-            inputMode="decimal"
             className="w-full sm:w-52"
-            value={Number.isFinite(bond) ? bond / Number(tokenUnit) : 0}
-            onChange={(event) => {
-              const next = event.target.valueAsNumber;
-              if (Number.isNaN(next)) {
-                return;
-              }
-              setBondValue(next * Number(tokenUnit));
-            }}
+            value={bond}
+            onChange={(v) =>
+              setBond(v == null ? null : v < 0 ? 0n : v > maxBond ? maxBond : v)
+            }
           />
         </div>
       </div>
@@ -209,8 +199,8 @@ const BondInput: FC<{
 };
 
 const UnbondInput: FC<{
-  bond: number;
-  setBond: (bond: number) => void;
+  bond: bigint | null;
+  setBond: (bond: bigint | null) => void;
   close?: () => void;
 }> = ({ bond, setBond, close }) => {
   const poolStatus = useStateObservable(currentNominationPoolStatus$);
@@ -220,30 +210,20 @@ const UnbondInput: FC<{
   const selectedAccount = useStateObservable(selectedSignerAccount$);
 
   if (!accountStatus || !poolStatus || !token) return null;
-  const { decimals, symbol } = token;
+  const { symbol } = token;
   const currentBond = accountStatus.nominationPool.currentBond;
-
-  const bigBond = Number.isNaN(bond) ? 0n : BigInt(Math.round(bond));
-
-  const tokenUnit = 10n ** BigInt(decimals);
-
-  const clampBondValue = (value: number) => {
-    if (!Number.isFinite(value)) return 0;
-    return Math.min(Math.max(value, 0), Number(currentBond - minBond));
-  };
-
-  const setBondValue = (value: number) => setBond(clampBondValue(value));
+  const maxBond = currentBond - minBond;
 
   const unbond = async () => {
-    if (!selectedAccount) return null;
+    if (!selectedAccount || bond == null) return null;
 
     const sdk = await firstValueFrom(stakingSdk$);
 
-    const resultingBond = currentBond - bigBond;
+    const resultingBond = currentBond - bond;
 
     // Accounting for BigInt <-> Number error
     // assuming we're not letting the user unbond with an in-between value.
-    const unbonding = resultingBond < minBond ? currentBond - minBond : bigBond;
+    const unbonding = resultingBond < minBond ? maxBond : bond;
     return sdk.unbondNominationPool(selectedAccount.address, unbonding);
   };
 
@@ -256,15 +236,18 @@ const UnbondInput: FC<{
             Starts the unbonding period (about {unbondDurationInDays$} days).
           </p>
         </div>
-        <TokenValue className="text-base font-semibold" value={bigBond} />
+        {bond != null ? (
+          <TokenValue className="text-base font-semibold" value={bond} />
+        ) : (
+          "-"
+        )}
       </div>
       <Slider
-        value={[bond]}
+        value={[Number(bond)]}
         min={0}
-        max={Number(currentBond - minBond)}
+        max={Number(maxBond)}
         step={10 ** (token.decimals - 2)}
-        onValueChange={([value]) => setBondValue(value)}
-        onValueCommit={([value]) => setBondValue(value)}
+        onValueChange={([value]) => setBond(BigInt(Math.round(value)))}
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="w-full sm:w-auto">
@@ -274,26 +257,20 @@ const UnbondInput: FC<{
           >
             Amount ({symbol})
           </label>
-          <Input
+          <TokenInput
             id="bond-amount-input"
-            type="number"
-            inputMode="decimal"
             className="w-full sm:w-52"
-            value={Number.isFinite(bond) ? bond / Number(tokenUnit) : 0}
-            onChange={(event) => {
-              const next = event.target.valueAsNumber;
-              if (Number.isNaN(next)) {
-                return;
-              }
-              setBondValue(next * Number(tokenUnit));
-            }}
+            value={bond}
+            onChange={(v) =>
+              setBond(v == null ? null : v < 0 ? 0n : v > maxBond ? maxBond : v)
+            }
           />
         </div>
       </div>
 
       <TransactionButton
         className="w-full"
-        disabled={bigBond == 0n}
+        disabled={!bond}
         createTx={unbond}
         onSuccess={close}
       >
@@ -410,7 +387,7 @@ const StatTile: FC<{
   </div>
 );
 
-const Result: FC<{ bond: number }> = ({ bond }) => {
+const Result: FC<{ bond: bigint }> = ({ bond }) => {
   const account = useStateObservable(accountStatus$);
   const decimals = useStateObservable(tokenDecimals$);
   const currentEra = useStateObservable(currentEra$);
@@ -419,21 +396,17 @@ const Result: FC<{ bond: number }> = ({ bond }) => {
   if (!account || decimals == null || currentEra == null) return null;
   const { balance, nominationPool: poolStatus } = account;
 
-  const bigBond = Number.isNaN(bond) ? 0n : BigInt(Math.round(bond));
-
   const spendableAfter =
-    balance.spendable -
-    (bigBond < 0n ? 0n : bigBond) +
-    poolStatus.pendingRewards;
-  const resultingBond = poolStatus.currentBond + bigBond;
+    balance.spendable - (bond < 0n ? 0n : bond) + poolStatus.pendingRewards;
+  const resultingBond = poolStatus.currentBond + bond;
 
   const unlocks =
-    bigBond < 0n
+    bond < 0n
       ? [
           ...poolStatus.unlocks,
           {
             era: currentEra + 28,
-            value: -bigBond,
+            value: -bond,
           },
         ]
       : poolStatus.unlocks;
@@ -453,9 +426,9 @@ const Result: FC<{ bond: number }> = ({ bond }) => {
         />
       </div>
       <div className="text-xs text-muted-foreground">
-        {bigBond > 0n
+        {bond > 0n
           ? "Additional stake will be bonded immediately."
-          : bigBond < 0n
+          : bond < 0n
             ? "The amount will begin the unbonding period."
             : "Move the slider or enter an amount to preview the change."}
       </div>

@@ -35,7 +35,6 @@ const locks$ = state(
 
 export const ManageLocks = () => {
   const locks = useStateObservable(locks$);
-  const selectedAccount = useStateObservable(selectedSignerAccount$);
 
   return (
     <div className="grow">
@@ -50,23 +49,29 @@ export const ManageLocks = () => {
           </li>
         ))}
       </ol>
-      {locks.some((v) => v.unlocked) ? (
-        <TransactionButton
-          createTx={async () => {
-            const [api, slashingSpans] = await Promise.all([
-              firstValueFrom(stakingApi$),
-              firstValueFrom(slashingSpans$.pipe(filter((v) => v != null))),
-            ]);
-
-            return api.tx.NominationPools.withdraw_unbonded({
-              member_account: MultiAddress.Id(selectedAccount!.address),
-              num_slashing_spans: slashingSpans,
-            });
-          }}
-        >
-          Unlock funds
-        </TransactionButton>
-      ) : null}
+      {locks.some((v) => v.unlocked) ? <UnlockPoolBonds /> : null}
     </div>
+  );
+};
+
+export const UnlockPoolBonds = () => {
+  const selectedAccount = useStateObservable(selectedSignerAccount$);
+
+  return (
+    <TransactionButton
+      createTx={async () => {
+        const [api, slashingSpans] = await Promise.all([
+          firstValueFrom(stakingApi$),
+          firstValueFrom(slashingSpans$.pipe(filter((v) => v != null))),
+        ]);
+
+        return api.tx.NominationPools.withdraw_unbonded({
+          member_account: MultiAddress.Id(selectedAccount!.address),
+          num_slashing_spans: slashingSpans,
+        });
+      }}
+    >
+      Unlock funds
+    </TransactionButton>
   );
 };

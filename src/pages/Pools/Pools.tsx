@@ -90,13 +90,13 @@ const CurrentStatus = () => {
         >
           Manage bond
         </DialogButton>
-        {currentPool.pendingRewards > 0 ? <Claim /> : null}
+        {currentPool.pendingRewards > 0 ? <ClaimRewards /> : null}
       </div>
     </Card>
   );
 };
 
-const Claim = () => {
+export const ClaimRewards = () => {
   const stakingApi = useStateObservable(stakingApi$);
 
   return (

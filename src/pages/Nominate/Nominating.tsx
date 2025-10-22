@@ -11,12 +11,13 @@ import { activeEraNumber$ } from "@/state/era";
 import {
   currentNominatorBond$,
   currentNominatorStatus$,
+  rewardHistory$,
   validatorPerformance$,
 } from "@/state/nominate";
 import { roundToDecimalPlaces } from "@/util/format";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { type SS58String } from "polkadot-api";
-import { lazy, type FC } from "react";
+import { lazy, Suspense, type FC } from "react";
 import { combineLatest, firstValueFrom, map, switchMap } from "rxjs";
 import { ManageNomination } from "./ManageNomination";
 import { MinBondingAmounts } from "./MinBondingAmounts";
@@ -29,10 +30,22 @@ export const NominatingContent = () => {
     <div className="space-y-4">
       <MinBondingAmounts />
       <StatusCard />
+      <NominateRewards />
       <SelectedValidators />
     </div>
   );
 };
+
+export const ManageNominationBtn = () => (
+  <DialogButton
+    title="Manage nomination"
+    content={() => <ManageNomination />}
+    dialogClassName="md:max-w-3xl lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl"
+    needsSigner
+  >
+    Manage nomination
+  </DialogButton>
+);
 
 const StatusCard = () => {
   const currentBond = useStateObservable(currentNominatorBond$);
@@ -54,14 +67,7 @@ const StatusCard = () => {
         {currentBond?.unlocks.length ? <NominateLocks /> : null}
       </div>
       <div className="mt-4 space-x-2">
-        <DialogButton
-          title="Manage nomination"
-          content={() => <ManageNomination />}
-          dialogClassName="md:max-w-3xl lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl"
-          needsSigner
-        >
-          Manage nomination
-        </DialogButton>
+        <ManageNominationBtn />
         {status?.nomination.currentBond ? (
           <TransactionButton createTx={stopNominating}>
             Stop nominating
@@ -167,5 +173,18 @@ const SelectedValidator: FC<{
       </div>
       <EraChart height={200} data={rewardHistory} activeEra={activeEra} />
     </div>
+  );
+};
+
+export const NominateRewards = () => {
+  const rewardHistory = useStateObservable(rewardHistory$);
+  const activeEra = useStateObservable(activeEraNumber$);
+
+  return (
+    <Card title="Nominate Rewards">
+      <Suspense>
+        <EraChart data={rewardHistory} activeEra={activeEra} />
+      </Suspense>
+    </Card>
   );
 };
