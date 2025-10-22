@@ -54,7 +54,7 @@ export const TotalValidators = () => {
         </div>
         <div className="text-sm">
           {validators?.max
-            ? `${validators.count}/${validators.max}`
+            ? `${validators.count.toLocaleString()}/${validators.max.toLocaleString()}`
             : (validators?.count ?? `…`)}
         </div>
       </div>

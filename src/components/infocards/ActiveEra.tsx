@@ -20,13 +20,14 @@ export const ActiveEra = () => {
   return (
     <Card title="Next Payout">
       <div className="flex flex-col items-center">
-        <div className="text-xs text-chart-2">
-          <CircularProgress
-            progress={activeEra.pctComplete}
-            text={formatEnd(activeEra.estimatedEnd)}
-          />
+        <CircularProgress
+          className="text-xs stroke-accent-foreground"
+          progress={activeEra.pctComplete * 100}
+          text={formatEnd(activeEra.estimatedEnd)}
+        />
+        <div className="text-sm text-accent-foreground">
+          Era {activeEra.era}
         </div>
-        <div className="text-sm">Era {activeEra.era}</div>
       </div>
     </Card>
   );

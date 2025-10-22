@@ -8,9 +8,9 @@ import {
 } from "@polkadot-api/substrate-bindings";
 import { AccountId, type SS58String } from "polkadot-api";
 import { defer, filter, firstValueFrom, fromEvent, map, switchMap } from "rxjs";
-import { selectedChain$ } from "./chain";
+import { selectedChain$, stakingApi$ } from "./chain";
+import { indexerUrl } from "./chainConfig";
 import {
-  type NominatorRewardsResult,
   type NominatorValidatorsResult,
   type Request,
   type Response,
@@ -63,50 +63,58 @@ message$
     } satisfies Request)
   );
 
-const nomRewardCodec = Struct({
-  reward: compactBn,
-  bond: compactBn,
-  commission: compactBn,
-});
+const getIndexerCodec = (ss58Format: number) => {
+  const nomRewardCodec = Struct({
+    reward: compactBn,
+    bond: compactBn,
+    commission: compactBn,
+  });
 
-const byValidator = enhanceCodec(
-  Vector(Tuple(AccountId(0), nomRewardCodec)),
-  Object.entries as (
-    x: Record<SS58String, CodecType<typeof nomRewardCodec>>
-  ) => Array<[SS58String, CodecType<typeof nomRewardCodec>]>,
-  Object.fromEntries
-);
+  const byValidator = enhanceCodec(
+    Vector(Tuple(AccountId(ss58Format), nomRewardCodec)),
+    Object.entries as (
+      x: Record<SS58String, CodecType<typeof nomRewardCodec>>
+    ) => Array<[SS58String, CodecType<typeof nomRewardCodec>]>,
+    Object.fromEntries
+  );
 
-const [, nominatorsRewardDec] = Struct({
-  total: compactBn,
-  totalCommission: compactBn,
-  activeBond: compactBn,
-  byValidator,
-});
+  const [, nominatorsRewardDec] = Struct({
+    total: compactBn,
+    totalCommission: compactBn,
+    activeBond: compactBn,
+    byValidator,
+  });
 
-const throughIndexer = <T>(msg: NominatorRequest) =>
-  fetch(
-    `https://staking-eras.s3.us-east-1.amazonaws.com/${msg.value.era}/${msg.value.address}`
-  )
-    .then((x) => {
-      if (x.status >= 400) {
-        throw new Error(x.statusText);
-      }
-      return x.bytes();
-    })
-    .then(nominatorsRewardDec)
-    .then((r) => {
-      if (msg.type === "getNominatorActiveValidators") {
-        const validators: NominatorValidatorsResult = Object.entries(
-          (r as NominatorRewardsResult).byValidator
-        ).map(([validator, { bond }]) => ({
-          validator,
-          activeBond: bond,
-        }));
-        return validators as T;
-      }
-      return r as T;
-    });
+  return nominatorsRewardDec;
+};
+
+const throughIndexer = async <T>(msg: NominatorRequest) => {
+  const chain = await firstValueFrom(selectedChain$);
+  const api = await firstValueFrom(stakingApi$);
+  const ss58Format = await api.constants.System.SS58Prefix();
+
+  const response = await fetch(
+    `${indexerUrl[chain]}/${msg.value.era}/${msg.value.address}`
+  );
+
+  if (response.status >= 400) {
+    throw new Error(response.statusText);
+  }
+  const payload = await response.bytes();
+
+  const codec = getIndexerCodec(ss58Format);
+  const decoded = codec(payload);
+  if (msg.type === "getNominatorActiveValidators") {
+    const validators: NominatorValidatorsResult = Object.entries(
+      decoded.byValidator
+    ).map(([validator, { bond }]) => ({
+      validator,
+      activeBond: bond,
+    }));
+    return validators as T;
+  }
+  return decoded as T;
+};
 
 let indexerFailed = false;
 let successes = 0;

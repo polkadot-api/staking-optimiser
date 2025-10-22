@@ -180,7 +180,7 @@ const PoolStatus = () => {
       <Card title="Pool">
         <div>
           Currently leaving pool{" "}
-          <span className="text-muted-foreground">#{poolStatus.pool.id}</span>{" "}
+          <span className="text-accent-foreground">#{poolStatus.pool.id}</span>{" "}
           <span className="font-medium">{poolStatus.pool.name}</span>
         </div>
         {estimatedUnlock ? (
@@ -195,7 +195,7 @@ const PoolStatus = () => {
     <Card title="Pool">
       <div>
         Currently member of{" "}
-        <span className="text-muted-foreground">#{poolStatus.pool.id}</span>{" "}
+        <span className="text-accent-foreground">#{poolStatus.pool.id}</span>{" "}
         <span className="font-medium">{poolStatus.pool.name}</span>
       </div>
       {poolStatus.pendingRewards > 0n ? (

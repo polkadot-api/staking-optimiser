@@ -16,11 +16,11 @@ import {
 } from "rxjs";
 import { stakingApi$, stakingSdk$, tokenDecimals$ } from "./chain";
 import { activeEraNumber$, allEras$, eraDurationInMs$, getEraApy } from "./era";
+import { requestNominator } from "./nominatorInfo";
 import type {
   NominatorRewardsResult,
   NominatorValidatorsResult,
 } from "./rewards.worker";
-import { requestNominator } from "./nominatorInfo";
 
 export const currentNominatorBond$ = state(
   accountStatus$.pipe(

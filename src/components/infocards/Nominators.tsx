@@ -27,8 +27,8 @@ export const ActiveNominators = () => {
         </div>
         <div className="text-sm">
           {nominators?.max
-            ? `${nominators.count}/${nominators.max}`
-            : (nominators?.count ?? `…`)}
+            ? `${nominators.count.toLocaleString()}/${nominators.max.toLocaleString()}`
+            : (nominators?.count.toLocaleString() ?? `…`)}
         </div>
       </div>
     </Card>

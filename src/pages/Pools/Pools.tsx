@@ -64,7 +64,7 @@ const CurrentStatus = () => {
     <Card title="Status">
       <div>
         Currently member of{" "}
-        <span className="text-muted-foreground">#{currentPool.pool.id}</span>{" "}
+        <span className="text-accent-foreground">#{currentPool.pool.id}</span>{" "}
         <span className="font-medium">{currentPool.pool.name}</span>
       </div>
       <div className="flex flex-wrap gap-2 items-start">

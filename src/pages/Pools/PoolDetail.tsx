@@ -9,8 +9,8 @@ import { formatPercentage } from "@/util/format";
 import { state, useStateObservable, withDefault } from "@react-rxjs/core";
 import {
   ArrowLeft,
-  Crown,
   Gauge,
+  PieChart,
   ShieldAlert,
   ShieldCheck,
   Users,
@@ -110,9 +110,9 @@ export const PoolDetail = () => {
           <h1 className="text-2xl font-semibold capitalize">
             {pool.name || `Pool #${pool.id}`}
           </h1>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Pool ID</span>
-            <span>#{pool.id}</span>
+          <div className="text-sm">
+            <span className="font-medium text-foreground">Pool </span>
+            <span className="text-accent-foreground">#{pool.id}</span>
           </div>
         </div>
 
@@ -126,7 +126,7 @@ export const PoolDetail = () => {
           <Stat icon={<Gauge className="size-4" />} label="Average APY">
             {formatPercentage(pool.avgApy)}
           </Stat>
-          <Stat icon={<Crown className="size-4" />} label="Commission">
+          <Stat icon={<PieChart className="size-4" />} label="Commission">
             {formatPercentage(pool.commission.current)}
           </Stat>
           <Stat

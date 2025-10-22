@@ -56,6 +56,7 @@ export const JoinPool: FC<{ poolId: number }> = ({ poolId }) => {
         disabled={cantJoinReason != null}
         title="Join Pool"
         content={({ close }) => <JoinPoolModal poolId={poolId} close={close} />}
+        needsSigner
       >
         Join pool
       </DialogButton>

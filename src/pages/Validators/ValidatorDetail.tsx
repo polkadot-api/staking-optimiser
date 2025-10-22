@@ -10,7 +10,9 @@ import { formatPercentage } from "@/util/format";
 import { state, useStateObservable } from "@react-rxjs/core";
 import {
   ArrowLeft,
+  Crown,
   DollarSign,
+  Gauge,
   LineChart,
   PieChart,
   ShieldCheck,
@@ -102,17 +104,17 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
             </span>
           </div>
           <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat icon={<PieChart className="size-4" />} label="Commission">
-              {formatPercentage(validator.commission)}
+            <Stat icon={<Users className="size-4" />} label="Nominators">
+              {validator.nominatorCount.toLocaleString()}
             </Stat>
             <Stat icon={<ShieldCheck className="size-4" />} label="Active bond">
               <TokenValue value={validator.activeBond} />
             </Stat>
-            <Stat icon={<ShieldCheck className="size-4" />} label="Self stake">
+            <Stat icon={<Crown className="size-4" />} label="Self stake">
               <TokenValue value={validator.selfStake} />
             </Stat>
-            <Stat icon={<Users className="size-4" />} label="Nominators">
-              {validator.nominatorCount.toLocaleString()}
+            <Stat icon={<PieChart className="size-4" />} label="Commission">
+              {formatPercentage(validator.commission)}
             </Stat>
           </div>
         </div>
@@ -173,7 +175,12 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
         </Card>
 
         <Card
-          title="Reward insights"
+          title={
+            <>
+              <Gauge className="inline-block align-text-bottom" size={20} />{" "}
+              Reward insights
+            </>
+          }
           className="space-y-4 basis-1/4 grow min-w-sm"
         >
           <dl className="space-y-3 text-sm">
