@@ -7,6 +7,7 @@ import {
 import { useStateObservable } from "@react-rxjs/core";
 import { CircleQuestionMark, Eye } from "lucide-react";
 import type { FC, MouseEvent, PropsWithChildren, ReactElement } from "react";
+import { LedgerAccounts } from "../LedgerAccounts";
 import { Button } from "../ui/button";
 import { VaultAccounts } from "../vault/VaultAccounts";
 import { ManageAddresses } from "./ManageAddresses";
@@ -64,7 +65,12 @@ export const ConnectSource: FC<{
               <Eye className="size-10" />
             </div>
           </SourceButton>
-          <SourceButton label="Ledger" disabled>
+          <SourceButton
+            label="Ledger"
+            onClick={() =>
+              setContent(<LedgerAccounts setContent={setContent} />)
+            }
+          >
             <img
               src={import.meta.env.BASE_URL + "ledger.webp"}
               alt="Ledger"

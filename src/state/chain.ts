@@ -83,7 +83,9 @@ const createClients = (chain: KnownChains) => {
       ? ["ws://localhost:8132"]
       : shuffleArray(Object.values(rpcs[chainType]));
 
-    let rpcProvider: JsonRpcProvider = getWsProvider(url);
+    let rpcProvider: JsonRpcProvider = getWsProvider(url, {
+      heartbeatTimeout: USE_CHOPSTICKS ? 500_000 : undefined,
+    });
     if (useChopsticks) {
       rpcProvider = withChopsticksEnhancer(rpcProvider);
     } else {

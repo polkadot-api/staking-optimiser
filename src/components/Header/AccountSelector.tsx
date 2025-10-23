@@ -18,14 +18,15 @@ import {
   selectedAccountAddr$,
   setAccountSource,
 } from "@/state/account";
+import { ledgerAccounts$ } from "@/state/ledger";
+import { readOnlyAddresses$ } from "@/state/readonly";
+import { vaultAccounts$ } from "@/state/vault";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { ChevronsUpDown, X } from "lucide-react";
 import { useState, type FC } from "react";
 import { combineLatest, map } from "rxjs";
 import { twMerge } from "tailwind-merge";
 import { AddressIdentity } from "../AddressIdentity";
-import { readOnlyAddresses$ } from "./ManageAddresses";
-import { vaultAccounts$ } from "@/state/vault";
 
 type SelectableAccount = {
   address: string;
@@ -81,6 +82,20 @@ const availableAccountGroups$ = state(
             onSelect: () =>
               setAccountSource({
                 type: "vault",
+                value: acc,
+              }),
+          })
+        )
+      )
+    ),
+    ledger: ledgerAccounts$.pipe(
+      map((v) =>
+        v.map(
+          (acc): SelectableAccount => ({
+            address: acc.address,
+            onSelect: () =>
+              setAccountSource({
+                type: "ledger",
                 value: acc,
               }),
           })

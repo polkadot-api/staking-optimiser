@@ -1,17 +1,13 @@
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Button } from "@/components/ui/button";
-import { createLocalStorageState } from "@/util/rxjs";
+import { Input } from "@/components/ui/input";
+import { setAccountSource } from "@/state/account";
+import { readOnlyAddresses$, setAddresses } from "@/state/readonly";
 import { useStateObservable } from "@react-rxjs/core";
 import { Trash2 } from "lucide-react";
-import { useState, type FC } from "react";
-import { Input } from "@/components/ui/input";
 import { getSs58AddressInfo } from "polkadot-api";
-import { setAccountSource } from "@/state/account";
-
-export const [readOnlyAddresses$, setAddresses] = createLocalStorageState(
-  "read-only-addr",
-  [] as string[]
-);
+import { useState, type FC } from "react";
+import { TotalBalance } from "../AccountBalance";
 
 export const ManageAddresses: FC<{
   onClose: () => void;
@@ -73,6 +69,7 @@ export const ManageAddresses: FC<{
                   <Trash2 />
                 </Button>
                 <AddressIdentity addr={addr} />
+                <TotalBalance addr={addr} />
                 <Button
                   variant="secondary"
                   onClick={() => {

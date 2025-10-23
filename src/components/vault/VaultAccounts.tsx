@@ -12,6 +12,7 @@ import { Camera, ChevronLeft, Trash2 } from "lucide-react";
 import { getSs58AddressInfo } from "polkadot-api";
 import { useCallback, useEffect, type FC, type ReactElement } from "react";
 import { withLatestFrom } from "rxjs";
+import { TotalBalance } from "../AccountBalance";
 import { QrCamera } from "./QrCamera";
 
 export const VaultAccounts: FC<{
@@ -72,6 +73,7 @@ export const VaultAccounts: FC<{
                   <Trash2 />
                 </Button>
                 <AddressIdentity addr={acc.address} />
+                <TotalBalance addr={acc.address} />
                 <Button
                   variant="secondary"
                   onClick={() => {

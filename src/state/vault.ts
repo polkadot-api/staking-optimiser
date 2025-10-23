@@ -90,6 +90,7 @@ export const createVaultSigner = ({
   return {
     publicKey,
     async signBytes(data) {
+      // TODO
       return data;
     },
     async signTx(

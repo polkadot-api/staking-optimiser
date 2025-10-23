@@ -1,4 +1,3 @@
-import { readOnlyAddresses$ } from "@/components/Header/ManageAddresses";
 import { createLocalStorageState } from "@/util/rxjs";
 import { getPublicKey } from "@/util/ss58";
 import { state } from "@react-rxjs/core";
@@ -35,6 +34,12 @@ import {
 } from "rxjs";
 import { stakingSdk$ } from "./chain";
 import { USE_CHOPSTICKS } from "./chainConfig";
+import {
+  createLedgerSigner,
+  ledgerAccounts$,
+  type LedgerAccount,
+} from "./ledger";
+import { readOnlyAddresses$ } from "./readonly";
 import { createVaultSigner, vaultAccounts$, type VaultAccount } from "./vault";
 
 export type AccountSource = Enum<{
@@ -44,6 +49,7 @@ export type AccountSource = Enum<{
   };
   address: SS58String;
   vault: VaultAccount;
+  ledger: LedgerAccount;
 }>;
 
 export const [accountSource$, setAccountSource] =
@@ -53,6 +59,7 @@ export type Account = Enum<{
   extension: InjectedPolkadotAccount;
   address: SS58String;
   vault: VaultAccount;
+  ledger: LedgerAccount;
 }>;
 
 export const availableExtensions$ = state(
@@ -192,6 +199,16 @@ export const availableSources$ = state(
         )
       )
     ),
+    ledger: ledgerAccounts$.pipe(
+      map((v) =>
+        v.map(
+          (value): AccountSource => ({
+            type: "ledger",
+            value,
+          })
+        )
+      )
+    ),
   }).pipe(
     map(
       ({ extensions, ...rest }): Record<string, AccountSource[]> => ({
@@ -229,6 +246,14 @@ const deselectWhenRemoved$ = (
                   src.value.id === source.value.id &&
                   src.value.address === source.value.address
               );
+            case "ledger":
+              return !sources.find(
+                (src) =>
+                  src.type === "ledger" &&
+                  src.value.deviceId === source.value.deviceId &&
+                  src.value.index === source.value.index &&
+                  src.value.address === source.value.address
+              );
           }
         })
       )
@@ -241,7 +266,7 @@ export const selectedAccount$ = state(
     switchMap((v): ObservableInput<Account | null> => {
       if (v == null) return [null];
 
-      if (v.type === "address" || v.type === "vault") {
+      if (v.type === "address" || v.type === "vault" || v.type === "ledger") {
         return deselectWhenRemoved$([v], v);
       }
 
@@ -297,6 +322,11 @@ export const selectedSignerAccount$ = selectedAccount$.pipeState(
           address: v.value.address,
           polkadotSigner: createVaultSigner(v.value),
         };
+      case "ledger":
+        return {
+          address: v.value.address,
+          polkadotSigner: createLedgerSigner(v.value),
+        };
     }
   })
 );
@@ -310,6 +340,7 @@ export const selectedAccountAddr$ = selectedAccount$.pipeState(
         return v.value;
       case "vault":
       case "extension":
+      case "ledger":
         return v.value.address;
     }
   })

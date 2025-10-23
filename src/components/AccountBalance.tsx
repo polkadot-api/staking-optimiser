@@ -1,8 +1,10 @@
 import { cn } from "@/lib/utils";
 import { accountStatus$ } from "@/state/account";
-import { useStateObservable } from "@react-rxjs/core";
+import { stakingSdk$ } from "@/state/chain";
+import { state, useStateObservable, withDefault } from "@react-rxjs/core";
+import type { SS58String } from "polkadot-api";
 import { lazy, type FC } from "react";
-import { map } from "rxjs";
+import { map, switchMap } from "rxjs";
 import { TextHintTooltip } from "./HintTooltip";
 import { TokenValue } from "./TokenValue";
 
@@ -132,4 +134,19 @@ export const AccountBalance: FC<{
       </ol>
     </div>
   );
+};
+
+const totalBalance$ = state((addr: SS58String) =>
+  stakingSdk$.pipeState(
+    switchMap((v) => v.getAccountStatus$(addr)),
+    map((v) => v.balance.total),
+    withDefault(null)
+  )
+);
+
+export const TotalBalance: FC<{ addr: SS58String }> = ({ addr }) => {
+  const balance = useStateObservable(totalBalance$(addr));
+  if (!balance) return null;
+
+  return <TokenValue value={balance} />;
 };

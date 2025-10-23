@@ -65,7 +65,7 @@ const Trigger = forwardRef<
   const publicKey =
     selectedAccount.type === "address"
       ? AccountId().enc(selectedAccount.value)
-      : selectedAccount.type === "vault"
+      : selectedAccount.type === "vault" || selectedAccount.type === "ledger"
         ? AccountId().enc(selectedAccount.value.address)
         : selectedAccount.value.polkadotSigner.publicKey;
 
