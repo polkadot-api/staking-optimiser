@@ -4,6 +4,13 @@ import { firstValueFrom, switchMap } from "rxjs";
 import { selectedChain$, stakingApi$ } from "./chain";
 import { tokenDecimalsByChain, tokenSymbolByChain } from "./chainConfig";
 
+export class AlreadyInUseError extends Error {
+  constructor() {
+    super("Device already in use");
+  }
+}
+
+let usingLedger = false;
 async function initializeLedgerSigner() {
   const bufferModule = await import("buffer");
   globalThis.Buffer = bufferModule.Buffer;
@@ -14,13 +21,20 @@ async function initializeLedgerSigner() {
   ]);
   const TransportWebHID = ledgerModule.default;
 
+  if (usingLedger) throw new AlreadyInUseError();
+  usingLedger = true;
+
   const transport = await TransportWebHID.create();
+  const close = () => {
+    usingLedger = false;
+    transport.close();
+  };
   try {
     const ledgerSigner = new signerModule.LedgerSigner(transport);
 
-    return { ledgerSigner, transport };
+    return { ledgerSigner, transport, close };
   } catch (ex) {
-    transport.close();
+    close();
     throw ex;
   }
 }
@@ -35,26 +49,26 @@ export const [ledgerAccounts$, setLedgerAccounts] = createLocalStorageState(
   [] as LedgerAccount[]
 );
 
-export const getLedgerAccount = async (
-  index: number
-): Promise<LedgerAccount> => {
-  const { ledgerSigner, transport } = await initializeLedgerSigner();
+export const getLedgerAccounts = async (
+  idxs: Array<number>
+): Promise<Array<LedgerAccount>> => {
+  const { ledgerSigner, close } = await initializeLedgerSigner();
   try {
-    const [deviceId, publicKey, ss58Format] = await Promise.all([
+    const [deviceId, publicKeys, ss58Format] = await Promise.all([
       ledgerSigner.deviceId(),
-      ledgerSigner.getPubkey(index),
+      Promise.all(idxs.map((idx) => ledgerSigner.getPubkey(idx))),
       firstValueFrom(
         stakingApi$.pipe(switchMap((v) => v.constants.System.SS58Prefix()))
       ),
     ]);
 
-    return {
+    return publicKeys.map((publicKey, i) => ({
       address: AccountId(ss58Format).dec(publicKey),
       deviceId,
-      index,
-    };
+      index: idxs[i],
+    }));
   } finally {
-    transport.close();
+    close();
   }
 };
 
@@ -64,7 +78,7 @@ export const createLedgerSigner = (account: LedgerAccount): PolkadotSigner => {
   const operateWithSigner = async <R>(
     cb: (signer: PolkadotSigner) => Promise<R>
   ) => {
-    const { ledgerSigner, transport } = await initializeLedgerSigner();
+    const { ledgerSigner, close } = await initializeLedgerSigner();
     try {
       const chain = await firstValueFrom(selectedChain$);
 
@@ -82,7 +96,7 @@ export const createLedgerSigner = (account: LedgerAccount): PolkadotSigner => {
       console.log("Cb");
       return await cb(signer);
     } finally {
-      transport.close();
+      close();
     }
   };
 

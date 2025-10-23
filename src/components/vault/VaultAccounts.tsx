@@ -35,24 +35,6 @@ export const VaultAccounts: FC<{
 
   return (
     <div className="space-y-4">
-      <Button
-        type="button"
-        onClick={() =>
-          setContent(
-            <ScanAccount
-              onScanned={() =>
-                setContent(<VaultAccounts setContent={setContent} />)
-              }
-              onClose={() =>
-                setContent(<VaultAccounts setContent={setContent} />)
-              }
-            />
-          )
-        }
-      >
-        <Camera />
-        Scan new account
-      </Button>
       {vaultAccounts.length ? (
         <div>
           <h3 className="font-medium text-muted-foreground">Added addresses</h3>
@@ -90,7 +72,7 @@ export const VaultAccounts: FC<{
           </ul>
         </div>
       ) : null}
-      <div>
+      <div className="flex items-center justify-between">
         <Button
           onClick={() => setContent(null)}
           variant="secondary"
@@ -98,6 +80,24 @@ export const VaultAccounts: FC<{
         >
           <ChevronLeft />
           Back
+        </Button>
+        <Button
+          type="button"
+          onClick={() =>
+            setContent(
+              <ScanAccount
+                onScanned={() =>
+                  setContent(<VaultAccounts setContent={setContent} />)
+                }
+                onClose={() =>
+                  setContent(<VaultAccounts setContent={setContent} />)
+                }
+              />
+            )
+          }
+        >
+          <Camera />
+          Scan new account
         </Button>
       </div>
     </div>
@@ -121,6 +121,7 @@ const ScanAccount: FC<{ onScanned: () => void; onClose: () => void }> = ({
   onClose,
 }) => (
   <div className="space-y-2">
+    <p>Scan your account QR from the vault app</p>
     <QrCamera
       onRead={useCallback(
         (res) => {

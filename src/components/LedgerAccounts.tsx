@@ -2,70 +2,37 @@ import { AddressIdentity } from "@/components/AddressIdentity";
 import { Button } from "@/components/ui/button";
 import { setAccountSource } from "@/state/account";
 import {
-  getLedgerAccount,
+  AlreadyInUseError,
+  getLedgerAccounts,
   ledgerAccounts$,
   setLedgerAccounts,
+  type LedgerAccount,
 } from "@/state/ledger";
-import { sliceMiddleAddr } from "@/util/ss58";
 import { useStateObservable } from "@react-rxjs/core";
-import { ChevronLeft, Loader2, Trash2, Usb } from "lucide-react";
-import { useRef, useState, type FC, type ReactElement } from "react";
-import { toast } from "react-toastify";
+import { ChevronLeft, Trash2, Usb } from "lucide-react";
+import { useEffect, useState, type FC, type ReactElement } from "react";
 import { TotalBalance } from "./AccountBalance";
-import { Input } from "./ui/input";
+import { Checkbox } from "./ui/checkbox";
 
 export const LedgerAccounts: FC<{
   setContent: (element: ReactElement | null) => void;
 }> = ({ setContent }) => {
   const ledgerAccounts = useStateObservable(ledgerAccounts$);
-  const [deviceId, setDeviceId] = useState<number | null>(null);
-  const path = useRef<HTMLInputElement | null>(null);
-
-  const getNextIdx = () => {
-    const existingIdxs = new Set(
-      ledgerAccounts
-        .filter((v) => deviceId == null || v.deviceId == deviceId)
-        .map((v) => v.index)
-    );
-    let idx = 0;
-    while (existingIdxs.has(idx)) idx++;
-    return idx;
-  };
-
-  const [importing, setImporting] = useState(false);
-  const importNext = async () => {
-    let idx: number | null = null;
-    if (path.current?.value) {
-      idx = Number(path.current.value);
-      if (Number.isNaN(idx)) {
-        idx = null;
-      }
+  useEffect(() => {
+    if (ledgerAccounts.length === 0) {
+      setContent(
+        <ImportAccounts
+          onClose={(accounts) =>
+            setContent(
+              accounts.length ? (
+                <LedgerAccounts setContent={setContent} />
+              ) : null
+            )
+          }
+        />
+      );
     }
-
-    setImporting(true);
-    try {
-      idx = idx ?? getNextIdx();
-      const account = await getLedgerAccount(idx);
-      setDeviceId(account.deviceId);
-      if (
-        ledgerAccounts.some(
-          (acc) =>
-            acc.deviceId === account.deviceId && acc.index === account.index
-        )
-      ) {
-        toast.info(
-          `Account ${sliceMiddleAddr(account.address)} is already imported`
-        );
-        return;
-      }
-      setLedgerAccounts([...ledgerAccounts, account]);
-      if (path.current) path.current.value = "";
-    } catch (ex: any) {
-      toast.error(ex.message);
-    } finally {
-      setImporting(false);
-    }
-  };
+  }, [ledgerAccounts, setContent]);
 
   return (
     <div className="space-y-4">
@@ -88,10 +55,7 @@ export const LedgerAccounts: FC<{
                 >
                   <Trash2 />
                 </Button>
-                <AddressIdentity className="flex-none" addr={acc.address} />
-                <span className="text-xs text-muted-foreground flex-1">
-                  ({acc.index})
-                </span>
+                <AddressIdentity addr={acc.address} />
                 <TotalBalance addr={acc.address} />
                 <Button
                   variant="secondary"
@@ -118,13 +82,121 @@ export const LedgerAccounts: FC<{
           <ChevronLeft />
           Back
         </Button>
-        <div className="flex gap-2">
-          <Input ref={path} type="text" placeholder="index (optional)" />
-          <Button type="button" onClick={importNext} disabled={importing}>
-            {importing ? <Loader2 className="animate-spin" /> : <Usb />}
-            Import next account
+        <Button
+          type="button"
+          onClick={() =>
+            setContent(
+              <ImportAccounts
+                onClose={() =>
+                  setContent(<LedgerAccounts setContent={setContent} />)
+                }
+              />
+            )
+          }
+        >
+          <Usb />
+          Import accounts
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const PAGE_SIZE = 5;
+const ImportAccounts: FC<{ onClose: (accounts: LedgerAccount[]) => void }> = ({
+  onClose,
+}) => {
+  const ledgerAccounts = useStateObservable(ledgerAccounts$);
+  const [page, setPage] = useState(0);
+  const [pageAccounts, setPageAccounts] = useState<LedgerAccount[] | null>(
+    null
+  );
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const idxs = new Array(PAGE_SIZE)
+      .fill(0)
+      .map((_, i) => page * PAGE_SIZE + i);
+    setError(null);
+    setPageAccounts(null);
+
+    getLedgerAccounts(idxs).then(
+      (accounts) => {
+        setPageAccounts(accounts);
+      },
+      (ex) => {
+        if (ex instanceof AlreadyInUseError) {
+          console.error(ex);
+          // This happens when fetching too many pages at once. We don't want to show that error
+          return;
+        }
+        setError(ex.message);
+      }
+    );
+  }, [page]);
+
+  return (
+    <div className="space-y-2">
+      {pageAccounts ? (
+        <ul className="space-y-2">
+          {pageAccounts.map((acc) => (
+            <li
+              key={`${acc.address}-${acc.deviceId}-${acc.index}`}
+              className="flex gap-2 items-center"
+            >
+              <div className="text-xs text-muted-foreground">{acc.index}.</div>
+              <Checkbox
+                checked={ledgerAccounts.some(
+                  (v) =>
+                    v.deviceId === acc.deviceId &&
+                    v.index === acc.index &&
+                    v.address === acc.address
+                )}
+                onCheckedChange={(chk) => {
+                  if (chk) {
+                    setLedgerAccounts([...ledgerAccounts, acc]);
+                  } else {
+                    setLedgerAccounts(
+                      ledgerAccounts.filter(
+                        (v) =>
+                          !(
+                            v.deviceId === acc.deviceId &&
+                            v.index === acc.index &&
+                            v.address === acc.address
+                          )
+                      )
+                    );
+                  }
+                }}
+              />
+              <AddressIdentity addr={acc.address} />
+              <TotalBalance addr={acc.address} />
+            </li>
+          ))}
+        </ul>
+      ) : error ? (
+        <div>Error: {error}</div>
+      ) : (
+        <div>Loading…</div>
+      )}
+      <div className="flex items-center justify-between">
+        <Button
+          onClick={() => onClose(ledgerAccounts)}
+          variant="secondary"
+          type="button"
+        >
+          <ChevronLeft />
+          Back
+        </Button>
+        {pageAccounts ? (
+          <Button
+            onClick={() => setPage((p) => p + 1)}
+            variant="secondary"
+            type="button"
+          >
+            Next Page
           </Button>
-        </div>
+        ) : null}
       </div>
     </div>
   );

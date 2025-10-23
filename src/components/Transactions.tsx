@@ -19,16 +19,12 @@ export function trackTransaction(tx$: Observable<TxEvent>) {
     switchMap(({ toast }) => {
       const shared$ = tx$.pipe(shareLatest());
 
-      let id = toast.loading("Broadcasting transaction…", {
+      let id = toast.loading("Signing transaction…", {
         autoClose: false,
       });
       shared$.subscribe({
         next: (res) => {
-          if (res.type === "broadcasted") {
-            toast.update(id, {
-              render: "Signing transaction…",
-            });
-          } else if (res.type === "signed") {
+          if (res.type === "signed") {
             toast.update(id, {
               render: "Sending transaction…",
             });
