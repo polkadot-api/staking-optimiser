@@ -21,7 +21,7 @@ import {
 import type { SS58String } from "polkadot-api";
 import { lazy, type FC } from "react";
 import { Link, useParams } from "react-router-dom";
-import { combineLatest, switchMap } from "rxjs";
+import { combineLatest, merge, switchMap } from "rxjs";
 import { Stat } from "../Pools/PoolDetail";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
@@ -214,3 +214,11 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
     </div>
   );
 };
+
+export const validatorDetailPageSub$ = (address: SS58String) =>
+  merge(
+    validator$(address),
+    validatorPerformance$(address),
+    eraDurationInMs$,
+    activeEraNumber$
+  );

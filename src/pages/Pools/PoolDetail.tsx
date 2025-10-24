@@ -190,9 +190,9 @@ export const PoolDetail = () => {
               </p>
             ) : (
               <div className="space-y-3 pr-1">
-                {pool.nominations.map((validator) => (
+                {pool.nominations.map((validator, i) => (
                   <div
-                    key={validator.address}
+                    key={i}
                     className="flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-background/80 px-3 py-2"
                   >
                     <AddressIdentity addr={validator.address} />
@@ -258,6 +258,8 @@ export const PoolDetail = () => {
     </div>
   );
 };
+
+export const poolDetailSub$ = pool$;
 
 export const Stat: FC<
   PropsWithChildren<{

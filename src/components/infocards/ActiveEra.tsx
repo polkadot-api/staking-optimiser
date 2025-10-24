@@ -32,3 +32,5 @@ export const ActiveEra = () => {
     </Card>
   );
 };
+
+export const activeEraSub$ = activeEra$;

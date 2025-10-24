@@ -10,7 +10,7 @@ import type { AccountStatus } from "@polkadot-api/sdk-staking";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
 import { type FC } from "react";
-import { combineLatest, concat, filter, map, take } from "rxjs";
+import { combineLatest, concat, filter, map, merge, take } from "rxjs";
 import { minBond$ } from "./MinBondingAmounts";
 
 const [bondChange$, setBond] = createSignal<bigint | null>();
@@ -137,3 +137,5 @@ export const BondInput: FC = () => {
     </div>
   );
 };
+
+export const bondInputSub$ = merge(bond$, accountStatus$, minBond$);

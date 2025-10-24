@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { formatPercentage } from "@/util/format";
-import { Subscribe, useStateObservable } from "@react-rxjs/core";
+import { useStateObservable } from "@react-rxjs/core";
 import { Search, Square, SquareCheck, X } from "lucide-react";
 import { useMemo, type FC } from "react";
 import { useMediaQuery } from "react-responsive";
 import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso";
-import { MaParams, SortBy } from "../Validators/Params";
+import { merge } from "rxjs";
+import { MaParams, maParamsSub$, SortBy } from "../Validators/Params";
 import { ValidatorCard, ValidatorRow } from "../Validators/Validator";
 import {
   validatorPrefs$,
@@ -37,9 +38,7 @@ export default function PickValidators() {
 
   return (
     <div className="space-y-4">
-      <Subscribe>
-        <Selection />
-      </Subscribe>
+      <Selection />
       <div className="space-y-4 pb-2 md:space-y-0 md:flex gap-2 justify-stretch">
         <Card title="Data Options" className="basis-xl grow">
           <MaParams />
@@ -54,12 +53,17 @@ export default function PickValidators() {
           </label>
         </Card>
       </div>
-      <Subscribe source$={sortedValidators$}>
-        <ValidatorsDisplay />
-      </Subscribe>
+      <ValidatorsDisplay />
     </div>
   );
 }
+
+export const pickValidatorsSub$ = merge(
+  maParamsSub$,
+  selectedValidators$,
+  validatorsWithPreferences$,
+  sortedValidators$
+);
 
 const Selection = () => {
   const selection = useStateObservable(selectedValidators$);
@@ -94,6 +98,7 @@ const Selection = () => {
 
           return (
             <li
+              key={i}
               className={cn(
                 "border border-muted-foreground/50 rounded-lg p-2 w-xs h-12 flex items-center justify-between",
                 {

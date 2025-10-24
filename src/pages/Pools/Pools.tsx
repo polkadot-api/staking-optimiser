@@ -1,19 +1,25 @@
-import { AccountBalance } from "@/components/AccountBalance";
+import {
+  AccountBalance,
+  accountBalanceSub$,
+} from "@/components/AccountBalance";
 import { Card } from "@/components/Card";
+import { CardPlaceholder } from "@/components/CardPlaceholder";
 import { DialogButton } from "@/components/DialogButton";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
 import { TransactionButton } from "@/components/Transactions";
+import { location$ } from "@/router";
 import { stakingApi$ } from "@/state/chain";
 import { isNominating$ } from "@/state/nominate";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import { NominationPoolsBondExtra } from "@polkadot-api/descriptors";
-import { Subscribe, useStateObservable } from "@react-rxjs/core";
-import { lazy } from "react";
-import { Link, Route, Routes } from "react-router-dom";
+import { liftSuspense, useStateObservable } from "@react-rxjs/core";
+import { lazy, Suspense } from "react";
+import { Link, matchPath, Route, Routes } from "react-router-dom";
+import { defer, map, merge, switchMap } from "rxjs";
 import { ManageBond } from "./ManageBond";
-import { ManageLocks } from "./ManageUnlocks";
-import { PoolDetail } from "./PoolDetail";
-import { CardPlaceholder } from "@/components/CardPlaceholder";
+import { ManageLocks, manageLocksSub$ } from "./ManageUnlocks";
+import { PoolDetail, poolDetailSub$ } from "./PoolDetail";
+import { poolListSub$ } from "./PoolList";
 
 const PoolList = lazy(() => import("./PoolList"));
 
@@ -21,7 +27,7 @@ export const Pools = () => {
   return (
     <div>
       <NavMenu />
-      <Subscribe fallback={<PoolsSkeleton />}>
+      <Suspense fallback={<PoolsSkeleton />}>
         <Routes>
           <Route path=":poolId" Component={PoolDetail} />
           <Route
@@ -34,10 +40,21 @@ export const Pools = () => {
             }
           />
         </Routes>
-      </Subscribe>
+      </Suspense>
     </div>
   );
 };
+
+const routedDetail$ = location$.pipe(
+  map(
+    (location) =>
+      matchPath("/:chainId/pools/:poolId", location.pathname)?.params.poolId
+  ),
+  switchMap((id) => (id ? poolDetailSub$(Number(id)) : []))
+);
+export const poolsSub$ = defer(() =>
+  merge(currentStatusSub$, poolListSub$, routedDetail$)
+);
 
 const PoolsSkeleton = () => (
   <div className="space-y-4">
@@ -104,6 +121,12 @@ const CurrentStatus = () => {
     </Card>
   );
 };
+const currentStatusSub$ = merge(
+  currentNominationPoolStatus$.pipe(liftSuspense()),
+  isNominating$,
+  accountBalanceSub$,
+  manageLocksSub$
+);
 
 export const ClaimRewards = () => {
   const stakingApi = useStateObservable(stakingApi$);

@@ -1,12 +1,19 @@
+import { CardPlaceholder } from "@/components/CardPlaceholder";
 import { ContractableText, createSortByButton } from "@/components/SortBy";
 import { cn } from "@/lib/utils";
-import { Subscribe, useStateObservable } from "@react-rxjs/core";
+import { useStateObservable } from "@react-rxjs/core";
 import { Pin } from "lucide-react";
 import type { SS58String } from "polkadot-api";
-import { useMemo, useState, type FC, type SetStateAction } from "react";
+import {
+  Suspense,
+  useMemo,
+  useState,
+  type FC,
+  type SetStateAction,
+} from "react";
 import { useMediaQuery } from "react-responsive";
 import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso";
-import { Params, SortBy } from "./Params";
+import { maParamsSub$, Params, SortBy } from "./Params";
 import { ValidatorCard, ValidatorRow } from "./Validator";
 import {
   setSortBy,
@@ -16,25 +23,23 @@ import {
   type HistoricValidator,
   type PositionValidator,
 } from "./validatorList.state";
-import { CardPlaceholder } from "@/components/CardPlaceholder";
 
 const SortByButton = createSortByButton(sortBy$, setSortBy);
 
 export default function ValidatorList() {
   return (
     <div className="space-y-4">
-      <Subscribe fallback={<ParamsSkeleton />}>
+      <Suspense fallback={<ParamsSkeleton />}>
         <Params />
-      </Subscribe>
-      <Subscribe
-        fallback={<CardPlaceholder height={500} />}
-        source$={sortedValidators$}
-      >
+      </Suspense>
+      <Suspense fallback={<CardPlaceholder height={500} />}>
         <ValidatorsDisplay />
-      </Subscribe>
+      </Suspense>
     </div>
   );
 }
+
+export const validatorList$ = maParamsSub$;
 
 const ParamsSkeleton = () => (
   <div className="space-y-4 pb-2 md:space-y-0 md:flex gap-2 justify-stretch">

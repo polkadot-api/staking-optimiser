@@ -1,4 +1,5 @@
 import { withChopsticksEnhancer } from "@/lib/chopsticksEnhancer";
+import { location$ } from "@/router";
 import { createIdentitySdk } from "@polkadot-api/sdk-accounts";
 import { createStakingSdk } from "@polkadot-api/sdk-staking";
 import { state, withDefault } from "@react-rxjs/core";
@@ -30,7 +31,6 @@ import {
   type RelayTypedApi,
   type StakingTypedApi,
 } from "./chainConfig";
-import { location$ } from "./location";
 
 export const selectedChain$ = state(
   location$.pipe(

@@ -1,6 +1,8 @@
-import { lazy, Suspense } from "react";
-import { BondInput } from "./BondInput";
 import { CardPlaceholder } from "@/components/CardPlaceholder";
+import { lazy, Suspense } from "react";
+import { merge } from "rxjs";
+import { BondInput, bondInputSub$ } from "./BondInput";
+import { pickValidatorsSub$ } from "./PickValidators";
 
 const PickValidators = lazy(() => import("./PickValidators"));
 
@@ -14,6 +16,8 @@ export const ManageNomination = () => {
     </Suspense>
   );
 };
+
+export const manageNominationSub$ = merge(bondInputSub$, pickValidatorsSub$);
 
 const ManageNominationSkeleton = () => {
   return (

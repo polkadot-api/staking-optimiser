@@ -1,4 +1,7 @@
-import { AccountBalance } from "@/components/AccountBalance";
+import {
+  AccountBalance,
+  accountBalanceSub$,
+} from "@/components/AccountBalance";
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
 import { DialogButton } from "@/components/DialogButton";
@@ -18,10 +21,19 @@ import { roundToDecimalPlaces } from "@/util/format";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { type SS58String } from "polkadot-api";
 import { lazy, Suspense, type FC } from "react";
-import { combineLatest, firstValueFrom, map, switchMap } from "rxjs";
+import {
+  combineLatest,
+  defer,
+  firstValueFrom,
+  ignoreElements,
+  map,
+  merge,
+  switchMap,
+} from "rxjs";
 import { ManageNomination } from "./ManageNomination";
-import { MinBondingAmounts } from "./MinBondingAmounts";
-import { NominateLocks } from "./NominateLocks";
+import { MinBondingAmounts, minBondingAmountsSub$ } from "./MinBondingAmounts";
+import { NominateLocks, nominateLocksSub$ } from "./NominateLocks";
+import { CardPlaceholder } from "@/components/CardPlaceholder";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
 
@@ -29,12 +41,23 @@ export const NominatingContent = () => {
   return (
     <div className="space-y-4">
       <MinBondingAmounts />
-      <StatusCard />
+      <Suspense fallback={<CardPlaceholder height={350} />}>
+        <StatusCard />
+      </Suspense>
       <NominateRewards />
       <SelectedValidators />
     </div>
   );
 };
+
+export const nominatingContentSub$ = defer(() =>
+  merge(
+    minBondingAmountsSub$,
+    statusCardSub$,
+    nominateRewardsSub$,
+    selectedValidatorsSub$
+  )
+);
 
 export const ManageNominationBtn = () => (
   <DialogButton
@@ -78,6 +101,13 @@ const StatusCard = () => {
   );
 };
 
+const statusCardSub$ = merge(
+  currentNominatorBond$,
+  accountStatus$,
+  accountBalanceSub$,
+  nominateLocksSub$
+);
+
 const selectedValidators$ = state(
   combineLatest([selectedAccountAddr$, stakingApi$]).pipe(
     switchMap(([addr, stakingApi]) =>
@@ -104,7 +134,9 @@ const SelectedValidators = () => {
         <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 py-2">
           {validators.map((v) => (
             <li key={v}>
-              <SelectedValidator validator={v} />
+              <Suspense fallback={<SelectedValidatorSkeleton validator={v} />}>
+                <SelectedValidator validator={v} />
+              </Suspense>
             </li>
           ))}
         </ul>
@@ -114,6 +146,18 @@ const SelectedValidators = () => {
     </Card>
   );
 };
+
+const selectedValidatorsSub$ = selectedValidators$.pipe(
+  switchMap((v) =>
+    merge(
+      ...v.map((addr) =>
+        merge(validatorPerformance$(addr), validatorPrefs$(addr))
+      ),
+      activeEraNumber$
+    )
+  ),
+  ignoreElements()
+);
 
 const validatorIsCurrentlyActive$ = state(
   (addr: SS58String) =>
@@ -175,16 +219,28 @@ const SelectedValidator: FC<{
     </div>
   );
 };
+const SelectedValidatorSkeleton: FC<{ validator: SS58String }> = ({
+  validator,
+}) => (
+  <div
+    className="bg-secondary animate-pulse rounded p-2"
+    style={{ height: 255 }}
+  >
+    <AddressIdentity addr={validator} />
+  </div>
+);
 
 export const NominateRewards = () => {
   const rewardHistory = useStateObservable(rewardHistory$);
   const activeEra = useStateObservable(activeEraNumber$);
 
   return (
-    <Card title="Nominate Rewards">
-      <Suspense>
+    <Suspense fallback={<CardPlaceholder />}>
+      <Card title="Nominate Rewards">
         <EraChart data={rewardHistory} activeEra={activeEra} />
-      </Suspense>
-    </Card>
+      </Card>
+    </Suspense>
   );
 };
+
+export const nominateRewardsSub$ = activeEraNumber$;

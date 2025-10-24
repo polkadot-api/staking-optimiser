@@ -66,6 +66,7 @@ export const NominateLocks = () => {
     </div>
   );
 };
+export const nominateLocksSub$ = locks$;
 
 export const slashingSpans$ = state(
   // TODO verify it's actually on relay chain

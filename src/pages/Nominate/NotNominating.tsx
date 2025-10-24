@@ -1,13 +1,15 @@
 import { Card } from "@/components/Card";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
-import { useStateObservable } from "@react-rxjs/core";
+import { liftSuspense, useStateObservable } from "@react-rxjs/core";
 import { Link } from "react-router-dom";
-import { ManageNomination } from "./ManageNomination";
+import { ManageNomination, manageNominationSub$ } from "./ManageNomination";
 import {
   bondableAmount$,
   minBond$,
   MinBondingAmounts,
+  minBondingAmountsSub$,
 } from "./MinBondingAmounts";
+import { merge } from "rxjs";
 
 export const NotNominatingContent = () => {
   const minBond = useStateObservable(minBond$);
@@ -56,3 +58,11 @@ export const NotNominatingContent = () => {
     </div>
   );
 };
+
+export const notNominatingContentSub$ = merge(
+  minBondingAmountsSub$,
+  minBond$,
+  currentNominationPoolStatus$.pipe(liftSuspense()),
+  bondableAmount$,
+  manageNominationSub$
+);

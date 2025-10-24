@@ -23,6 +23,7 @@ export default function TopPools() {
         <tbody>
           {pools.map((pool, idx) => (
             <tr
+              key={pool.id}
               className={cn({
                 "bg-muted": idx % 2 === 0,
                 "bg-destructive/5": pool.state !== "Open",
@@ -54,3 +55,5 @@ export default function TopPools() {
     </div>
   );
 }
+
+export const topPoolsSub$ = sortedPools$;

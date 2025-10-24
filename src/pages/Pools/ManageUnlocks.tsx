@@ -53,6 +53,7 @@ export const ManageLocks = () => {
     </div>
   );
 };
+export const manageLocksSub$ = locks$;
 
 export const UnlockPoolBonds = () => {
   const selectedAccount = useStateObservable(selectedSignerAccount$);

@@ -4,7 +4,7 @@ import { accountStatus$ } from "@/state/account";
 import { stakingApi$ } from "@/state/chain";
 import { activeEra$ } from "@/state/era";
 import { state, useStateObservable } from "@react-rxjs/core";
-import { defer, map, repeat, skip, switchMap } from "rxjs";
+import { defer, map, merge, repeat, skip, switchMap } from "rxjs";
 
 export const minBond$ = state(
   stakingApi$.pipe(
@@ -59,3 +59,9 @@ export const MinBondingAmounts = () => {
     </div>
   );
 };
+
+export const minBondingAmountsSub$ = merge(
+  minBond$,
+  lastMinActiveStake$,
+  bondableAmount$
+);

@@ -1,10 +1,10 @@
+import { relayApi$, stakingApi$ } from "@/state/chain";
 import { activeEra$ } from "@/state/era";
+import { formatPercentage } from "@/util/format";
 import { state, useStateObservable } from "@react-rxjs/core";
+import { combineLatest, switchMap } from "rxjs";
 import { Card } from "../Card";
 import { CircularProgress } from "../CircularProgress";
-import { combineLatest, switchMap } from "rxjs";
-import { relayApi$, stakingApi$ } from "@/state/chain";
-import { formatPercentage } from "@/util/format";
 
 const staked$ = state(
   combineLatest({

@@ -30,6 +30,7 @@ export default function TopValidators() {
 
             return (
               <tr
+                key={validator.address}
                 className={cn({
                   "bg-muted": idx % 2 === 0,
                   "bg-destructive/5": !vPrefs || vPrefs.blocked,

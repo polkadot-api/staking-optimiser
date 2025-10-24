@@ -1,9 +1,15 @@
-import { AccountBalance, accountBalance$ } from "@/components/AccountBalance";
+import {
+  AccountBalance,
+  accountBalance$,
+  accountBalanceSub$,
+} from "@/components/AccountBalance";
 import { Card } from "@/components/Card";
+import { CardPlaceholder } from "@/components/CardPlaceholder";
 import { DialogButton } from "@/components/DialogButton";
 import { openSelectAccount } from "@/components/Header/SelectAccount";
 import {
   ActiveEra,
+  activeEraSub$,
   ActiveNominators,
   ActiveValidators,
   Inflation,
@@ -17,24 +23,28 @@ import { accountStatus$ } from "@/state/account";
 import { activeEra$, eraDurationInMs$ } from "@/state/era";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import { estimatedFuture } from "@/util/date";
-import { Subscribe, useStateObservable } from "@react-rxjs/core";
+import { liftSuspense, useStateObservable } from "@react-rxjs/core";
+import { Suspense } from "react";
 import { Link } from "react-router-dom";
-import { map } from "rxjs";
+import { defer, map, merge, switchMap } from "rxjs";
 import { minBond$ } from "./Nominate/MinBondingAmounts";
-import { ManageNominationBtn, NominateRewards } from "./Nominate/Nominating";
+import {
+  ManageNominationBtn,
+  NominateRewards,
+  nominateRewardsSub$,
+} from "./Nominate/Nominating";
 import { ClaimRewards } from "./Pools";
 import { minPoolJoin$ } from "./Pools/JoinPool";
 import { ManageBond } from "./Pools/ManageBond";
 import { UnlockPoolBonds } from "./Pools/ManageUnlocks";
-import TopPools from "./Pools/TopPools";
+import TopPools, { topPoolsSub$ } from "./Pools/TopPools";
 import TopValidators from "./Validators/TopValidators";
-import { CardPlaceholder } from "@/components/CardPlaceholder";
 
 export const Dashboard = () => {
   return (
     <div>
       <NavMenu />
-      <Subscribe fallback={<DashboardSkeleton />}>
+      <Suspense fallback={<DashboardSkeleton />}>
         <div className="space-y-4">
           <div className="flex justify-center flex-wrap gap-4">
             <ActiveEra />
@@ -47,10 +57,14 @@ export const Dashboard = () => {
           <BalanceContent />
           <NominationContent />
         </div>
-      </Subscribe>
+      </Suspense>
     </div>
   );
 };
+
+export const dashboardSub$ = defer(() =>
+  merge(activeEraSub$, accountBalanceSub$, nominationContentSub$)
+);
 
 const DashboardSkeleton = () => (
   <div className="space-y-4">
@@ -67,9 +81,11 @@ const BalanceContent = () => {
   if (!balance?.total) return null;
 
   return (
-    <Card title="Balance">
-      <AccountBalance />
-    </Card>
+    <Suspense fallback={<CardPlaceholder height={350} />}>
+      <Card title="Balance">
+        <AccountBalance />
+      </Card>
+    </Suspense>
   );
 };
 
@@ -118,6 +134,30 @@ const NominationContent = () => {
       );
   }
 };
+
+const poolStatusSub$ = merge(
+  currentNominationPoolStatus$.pipe(liftSuspense()),
+  activeEra$,
+  eraDurationInMs$
+);
+const unactiveSub$ = merge(
+  accountBalance$,
+  minBond$,
+  minPoolJoin$,
+  topPoolsSub$
+);
+
+const nominationContentSub$ = merge(
+  bondStatus$.pipe(
+    switchMap((status) =>
+      status === "nominating"
+        ? nominateRewardsSub$
+        : status === "pool"
+          ? poolStatusSub$
+          : unactiveSub$
+    )
+  )
+);
 
 const UnactiveActions = () => {
   const balance = useStateObservable(accountBalance$);

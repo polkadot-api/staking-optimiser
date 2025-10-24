@@ -1,9 +1,14 @@
 import { CardPlaceholder } from "@/components/CardPlaceholder";
 import { NavMenu } from "@/components/NavMenu/NavMenu";
-import { Subscribe } from "@react-rxjs/core";
-import { lazy } from "react";
-import { Route, Routes } from "react-router-dom";
-import { ValidatorDetailPage } from "./ValidatorDetail";
+import { location$ } from "@/router";
+import { lazy, Suspense } from "react";
+import { matchPath, Route, Routes } from "react-router-dom";
+import { map, merge, switchMap } from "rxjs";
+import {
+  ValidatorDetailPage,
+  validatorDetailPageSub$,
+} from "./ValidatorDetail";
+import { validatorList$ } from "./ValidatorList";
 
 const ValidatorList = lazy(() => import("./ValidatorList"));
 
@@ -11,19 +16,29 @@ export const Validators = () => {
   return (
     <div className="space-y-4">
       <NavMenu />
-      <Subscribe fallback={<ValidatorsSkeleton />}>
+      <Suspense fallback={<ValidatorsSkeleton />}>
         <Routes>
           <Route path=":address" Component={ValidatorDetailPage} />
           <Route path="*" element={<ValidatorList />} />
         </Routes>
-      </Subscribe>
+      </Suspense>
     </div>
   );
 };
 
+const routedDetail$ = location$.pipe(
+  map(
+    (location) =>
+      matchPath("/:chainId/validators/:address", location.pathname)?.params
+        .address
+  ),
+  switchMap((id) => (id ? validatorDetailPageSub$(id) : []))
+);
+export const validatorsSub$ = merge(validatorList$, routedDetail$);
+
 export const ValidatorsSkeleton = () => (
   <div className="space-y-4">
-    <CardPlaceholder height={100} />
-    <CardPlaceholder height={400} />
+    <CardPlaceholder height={170} />
+    <CardPlaceholder height={500} />
   </div>
 );

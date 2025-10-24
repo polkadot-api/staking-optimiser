@@ -351,7 +351,7 @@ export const accountStatus$ = state(
     switchMap(([sdk, addr]) => {
       if (!addr) return [null];
 
-      return sdk.getAccountStatus$(addr).pipe(startWith(null));
+      return sdk.getAccountStatus$(addr);
     })
   )
 );

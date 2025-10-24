@@ -7,8 +7,10 @@ import { formatPercentage } from "@/util/format";
 import { useStateObservable } from "@react-rxjs/core";
 import { Search } from "lucide-react";
 import type { FC } from "react";
+import { Link } from "react-router-dom";
 import { TableVirtuoso, type ItemProps } from "react-virtuoso";
-import { MaParams } from "../Validators/Params";
+import { merge } from "rxjs";
+import { MaParams, maParamsSub$ } from "../Validators/Params";
 import {
   search$,
   setSearch,
@@ -17,7 +19,6 @@ import {
   sortedPools$,
   type NominationPool,
 } from "./poolList.state";
-import { Link } from "react-router-dom";
 
 const SortByButton = createSortByButton(sortBy$, setSortBy);
 
@@ -37,6 +38,8 @@ export default function PoolList() {
     </div>
   );
 }
+
+export const poolListSub$ = merge(maParamsSub$, sortedPools$);
 
 const SearchCard = () => {
   const search = useStateObservable(search$);

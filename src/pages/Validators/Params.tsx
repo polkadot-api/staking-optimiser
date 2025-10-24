@@ -24,6 +24,7 @@ import {
   type HistoricValidator,
 } from "./validatorList.state";
 import { Card } from "@/components/Card";
+import { merge } from "rxjs";
 
 export const Params = () => {
   return (
@@ -132,6 +133,7 @@ export const MaParams = () => {
     </div>
   );
 };
+export const maParamsSub$ = merge(activeEraNumber$, selectedEra$);
 
 const sortOpitons: Partial<Record<keyof HistoricValidator, string>> = {
   nominatorApy: "Nominator APY",
