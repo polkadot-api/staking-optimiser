@@ -16,21 +16,32 @@ import {
   type HistoricValidator,
   type PositionValidator,
 } from "./validatorList.state";
+import { CardPlaceholder } from "@/components/CardPlaceholder";
 
 const SortByButton = createSortByButton(sortBy$, setSortBy);
 
 export default function ValidatorList() {
   return (
     <div className="space-y-4">
-      <Subscribe fallback="Loading…">
+      <Subscribe fallback={<ParamsSkeleton />}>
         <Params />
       </Subscribe>
-      <Subscribe fallback="Loading…" source$={sortedValidators$}>
+      <Subscribe
+        fallback={<CardPlaceholder height={500} />}
+        source$={sortedValidators$}
+      >
         <ValidatorsDisplay />
       </Subscribe>
     </div>
   );
 }
+
+const ParamsSkeleton = () => (
+  <div className="space-y-4 pb-2 md:space-y-0 md:flex gap-2 justify-stretch">
+    <CardPlaceholder height={170} />
+    <CardPlaceholder height={170} />
+  </div>
+);
 
 const ValidatorsDisplay = () => {
   const supportsTable = useMediaQuery({

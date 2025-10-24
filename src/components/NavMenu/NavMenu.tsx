@@ -1,6 +1,6 @@
-import type { FC, PropsWithChildren } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GitFork, Home, ShieldCheck, Star } from "lucide-react";
+import { type FC, type PropsWithChildren } from "react";
 import {
   matchPath,
   useLocation,

@@ -10,6 +10,7 @@ import { Button } from "./ui/button";
 import { selectedSignerAccount$ } from "@/state/account";
 import { map } from "rxjs";
 import { Eye } from "lucide-react";
+import { CardPlaceholder } from "./CardPlaceholder";
 
 const dialogModule = import("@/components/ui/dialog");
 
@@ -82,7 +83,7 @@ export const DialogButton = codeSplit(
             <div className="pt-4" />
           )}
           <DialogBody id="dialog-content">
-            <Subscribe fallback={null}>
+            <Subscribe fallback={<CardPlaceholder />}>
               {content({ isOpen: open, close: () => setOpen(false) })}
             </Subscribe>
           </DialogBody>

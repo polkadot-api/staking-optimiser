@@ -40,23 +40,21 @@ export default function PickValidators() {
       <Subscribe>
         <Selection />
       </Subscribe>
-      <Subscribe fallback="Loading…">
-        <div className="space-y-4 pb-2 md:space-y-0 md:flex gap-2 justify-stretch">
-          <Card title="Data Options" className="basis-xl grow">
-            <MaParams />
-          </Card>
-          <Card title="Search" className="basis-lg">
-            <label className="flex items-center gap-2">
-              <Search />
-              <Input
-                value={search}
-                onChange={(evt) => setSearch(evt.target.value)}
-              />
-            </label>
-          </Card>
-        </div>
-      </Subscribe>
-      <Subscribe fallback="Loading…" source$={sortedValidators$}>
+      <div className="space-y-4 pb-2 md:space-y-0 md:flex gap-2 justify-stretch">
+        <Card title="Data Options" className="basis-xl grow">
+          <MaParams />
+        </Card>
+        <Card title="Search" className="basis-lg">
+          <label className="flex items-center gap-2">
+            <Search />
+            <Input
+              value={search}
+              onChange={(evt) => setSearch(evt.target.value)}
+            />
+          </label>
+        </Card>
+      </div>
+      <Subscribe source$={sortedValidators$}>
         <ValidatorsDisplay />
       </Subscribe>
     </div>

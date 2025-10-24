@@ -20,8 +20,8 @@ importers:
         specifier: file:.papi/descriptors
         version: file:.papi/descriptors(polkadot-api@1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))
       '@polkadot-api/ledger-signer':
-        specifier: ^0.2.11
-        version: 0.2.11(@ledgerhq/hw-transport@6.31.12)
+        specifier: ^0.2.12
+        version: 0.2.12(@ledgerhq/hw-transport@6.31.12)
       '@polkadot-api/react-components':
         specifier: 0.2.0
         version: 0.2.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -134,6 +134,9 @@ importers:
       '@eslint/js':
         specifier: ^9.38.0
         version: 9.38.0
+      '@ledgerhq/hw-transport':
+        specifier: ^6.31.12
+        version: 6.31.12
       '@tailwindcss/vite':
         specifier: ^4.1.15
         version: 4.1.15(vite@7.1.11(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2))
@@ -622,8 +625,8 @@ packages:
   '@polkadot-api/known-chains@0.9.12':
     resolution: {integrity: sha512-oycXOmGiAORh+1+Qgd5frwtEN4r50Wc66diauhSl5JYC/6CJFXIpH1hf0i7MZ9+b7EoDFgBVeLhOYTLDmP9MhA==}
 
-  '@polkadot-api/ledger-signer@0.2.11':
-    resolution: {integrity: sha512-cqjDbr14rH0EV+3fHAf/u7I8sKVQAl7z5+BPACMyarBvvJFy7UBxn9Audw1prfIORkTHDwxbblma0WmuNaH5vg==}
+  '@polkadot-api/ledger-signer@0.2.12':
+    resolution: {integrity: sha512-WybPM7FSRDZZ1KX2NxQdBV7n4ov4TRxMWJ2p34BYnhiFvkBJShNiSm+ngY6ZMGaL2WLNTO8gsWxT5tXXw2tTnA==}
     peerDependencies:
       '@ledgerhq/hw-transport': '6'
 
@@ -3337,7 +3340,7 @@ snapshots:
 
   '@polkadot-api/known-chains@0.9.12': {}
 
-  '@polkadot-api/ledger-signer@0.2.11(@ledgerhq/hw-transport@6.31.12)':
+  '@polkadot-api/ledger-signer@0.2.12(@ledgerhq/hw-transport@6.31.12)':
     dependencies:
       '@ledgerhq/hw-transport': 6.31.12
       '@polkadot-api/merkleize-metadata': 1.1.26

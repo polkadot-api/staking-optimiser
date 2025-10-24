@@ -73,6 +73,18 @@ const VaultTxContent: FC<{
   );
 };
 
+const uint8ToB64 = (value: Uint8Array) => {
+  if ("toBase64" in value) {
+    return (value as any).toBase64() as string;
+  }
+
+  let binary = "";
+  for (let i = 0; i < value.length; i++) {
+    binary += String.fromCharCode(value[i]);
+  }
+  return window.btoa(binary);
+};
+
 const VaultTx: FC<{
   tx: Uint8Array<ArrayBufferLike> | null;
 }> = ({ tx }) => {
@@ -89,7 +101,7 @@ const VaultTx: FC<{
         scale: 4,
       });
 
-      setImgSrc(`data:image/gif;base64,${encoded.toBase64()}`);
+      setImgSrc(`data:image/gif;base64,${uint8ToB64(encoded)}`);
     };
     drawFrame(frames[0]);
 

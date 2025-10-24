@@ -13,6 +13,7 @@ import { Link, Route, Routes } from "react-router-dom";
 import { ManageBond } from "./ManageBond";
 import { ManageLocks } from "./ManageUnlocks";
 import { PoolDetail } from "./PoolDetail";
+import { CardPlaceholder } from "@/components/CardPlaceholder";
 
 const PoolList = lazy(() => import("./PoolList"));
 
@@ -20,7 +21,7 @@ export const Pools = () => {
   return (
     <div>
       <NavMenu />
-      <Subscribe fallback="Loading…">
+      <Subscribe fallback={<PoolsSkeleton />}>
         <Routes>
           <Route path=":poolId" Component={PoolDetail} />
           <Route
@@ -37,6 +38,14 @@ export const Pools = () => {
     </div>
   );
 };
+
+const PoolsSkeleton = () => (
+  <div className="space-y-4">
+    <CardPlaceholder height={100} />
+    <CardPlaceholder height={180} />
+    <CardPlaceholder height={600} />
+  </div>
+);
 
 const CurrentStatus = () => {
   const currentPool = useStateObservable(currentNominationPoolStatus$);

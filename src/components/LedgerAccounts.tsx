@@ -2,16 +2,22 @@ import { AddressIdentity } from "@/components/AddressIdentity";
 import { Button } from "@/components/ui/button";
 import { setAccountSource } from "@/state/account";
 import {
-  AlreadyInUseError,
-  getLedgerAccounts,
+  getLedgerAccounts$,
   ledgerAccounts$,
   setLedgerAccounts,
   type LedgerAccount,
 } from "@/state/ledger";
-import { useStateObservable } from "@react-rxjs/core";
+import { createState } from "@/util/rxjs";
+import {
+  useStateObservable,
+  withDefault,
+  type DefaultedStateObservable,
+} from "@react-rxjs/core";
 import { ChevronLeft, Trash2, Usb } from "lucide-react";
-import { useEffect, useState, type FC, type ReactElement } from "react";
+import { useEffect, type FC, type ReactElement } from "react";
+import { catchError, concatMap, map, startWith, switchMap, timer } from "rxjs";
 import { TotalBalance } from "./AccountBalance";
+import { CardPlaceholder } from "./CardPlaceholder";
 import { Checkbox } from "./ui/checkbox";
 
 export const LedgerAccounts: FC<{
@@ -103,81 +109,102 @@ export const LedgerAccounts: FC<{
 };
 
 const PAGE_SIZE = 5;
+
+const [page$, setPage] = createState(0);
+type PageAccounts = {
+  accounts: Array<LedgerAccount | null>;
+  error: string | null;
+};
+const pageAccounts$: DefaultedStateObservable<PageAccounts> = page$.pipeState(
+  map((page) =>
+    new Array(PAGE_SIZE).fill(0).map((_, i) => page * PAGE_SIZE + i)
+  ),
+  concatMap((idxs) => {
+    const value: PageAccounts = {
+      accounts: idxs.map(() => null),
+      error: null,
+    };
+
+    return timer(200).pipe(
+      switchMap(() => getLedgerAccounts$(idxs)),
+      map((account, i) => {
+        value.accounts[i] = account;
+
+        return { ...value };
+      }),
+      startWith({ ...value }),
+      catchError((ex) => [
+        {
+          ...value,
+          error: ex.message,
+        },
+      ])
+    );
+  }),
+  withDefault({
+    accounts: new Array(PAGE_SIZE).fill(null),
+    error: null,
+  })
+);
+
 const ImportAccounts: FC<{ onClose: (accounts: LedgerAccount[]) => void }> = ({
   onClose,
 }) => {
   const ledgerAccounts = useStateObservable(ledgerAccounts$);
-  const [page, setPage] = useState(0);
-  const [pageAccounts, setPageAccounts] = useState<LedgerAccount[] | null>(
-    null
-  );
-  const [error, setError] = useState<string | null>(null);
+  const page = useStateObservable(page$);
+  const { accounts, error } = useStateObservable(pageAccounts$);
 
-  useEffect(() => {
-    const idxs = new Array(PAGE_SIZE)
-      .fill(0)
-      .map((_, i) => page * PAGE_SIZE + i);
-    setError(null);
-    setPageAccounts(null);
-
-    getLedgerAccounts(idxs).then(
-      (accounts) => {
-        setPageAccounts(accounts);
-      },
-      (ex) => {
-        if (ex instanceof AlreadyInUseError) {
-          console.error(ex);
-          // This happens when fetching too many pages at once. We don't want to show that error
-          return;
-        }
-        setError(ex.message);
-      }
-    );
-  }, [page]);
+  const allLoading = accounts.every((v) => v == null);
+  const allLoaded = accounts.every((v) => v != null);
 
   return (
     <div className="space-y-2">
-      {pageAccounts ? (
+      {error ? (
+        <div>Error: {error}</div>
+      ) : allLoading ? (
+        <CardPlaceholder height={152} />
+      ) : (
         <ul className="space-y-2">
-          {pageAccounts.map((acc) => (
-            <li
-              key={`${acc.address}-${acc.deviceId}-${acc.index}`}
-              className="flex gap-2 items-center"
-            >
-              <div className="text-xs text-muted-foreground">{acc.index}.</div>
-              <Checkbox
-                checked={ledgerAccounts.some(
-                  (v) =>
-                    v.deviceId === acc.deviceId &&
-                    v.index === acc.index &&
-                    v.address === acc.address
-                )}
-                onCheckedChange={(chk) => {
-                  if (chk) {
-                    setLedgerAccounts([...ledgerAccounts, acc]);
-                  } else {
-                    setLedgerAccounts(
-                      ledgerAccounts.filter(
-                        (v) =>
-                          !(
-                            v.deviceId === acc.deviceId &&
-                            v.index === acc.index &&
-                            v.address === acc.address
+          {accounts.map((acc, i) => (
+            <li key={i} className="flex gap-2 items-center">
+              {acc ? (
+                <>
+                  <div className="text-xs text-muted-foreground tabular-nums">
+                    {acc.index}.
+                  </div>
+                  <Checkbox
+                    checked={ledgerAccounts.some(
+                      (v) =>
+                        v.deviceId === acc.deviceId &&
+                        v.index === acc.index &&
+                        v.address === acc.address
+                    )}
+                    onCheckedChange={(chk) => {
+                      if (chk) {
+                        setLedgerAccounts([...ledgerAccounts, acc]);
+                      } else {
+                        setLedgerAccounts(
+                          ledgerAccounts.filter(
+                            (v) =>
+                              !(
+                                v.deviceId === acc.deviceId &&
+                                v.index === acc.index &&
+                                v.address === acc.address
+                              )
                           )
-                      )
-                    );
-                  }
-                }}
-              />
-              <AddressIdentity addr={acc.address} />
-              <TotalBalance addr={acc.address} />
+                        );
+                      }
+                    }}
+                  />
+                  <AddressIdentity addr={acc.address} />
+                  <TotalBalance addr={acc.address} />
+                </>
+              ) : (
+                <div className="bg-muted w-full rounded shadow animate-pulse h-6" />
+              )}
             </li>
           ))}
         </ul>
-      ) : error ? (
-        <div>Error: {error}</div>
-      ) : (
-        <div>Loading…</div>
       )}
       <div className="flex items-center justify-between">
         <Button
@@ -188,9 +215,9 @@ const ImportAccounts: FC<{ onClose: (accounts: LedgerAccount[]) => void }> = ({
           <ChevronLeft />
           Back
         </Button>
-        {pageAccounts ? (
+        {allLoaded ? (
           <Button
-            onClick={() => setPage((p) => p + 1)}
+            onClick={() => setPage(page + 1)}
             variant="secondary"
             type="button"
           >

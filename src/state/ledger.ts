@@ -1,6 +1,18 @@
 import { createLocalStorageState } from "@/util/rxjs";
+import type Transport from "@ledgerhq/hw-transport";
 import { AccountId, type PolkadotSigner, type SS58String } from "polkadot-api";
-import { firstValueFrom, switchMap } from "rxjs";
+import {
+  catchError,
+  combineLatest,
+  concatMap,
+  defer,
+  finalize,
+  firstValueFrom,
+  from,
+  Observable,
+  switchMap,
+  take,
+} from "rxjs";
 import { selectedChain$, stakingApi$ } from "./chain";
 import { tokenDecimalsByChain, tokenSymbolByChain } from "./chainConfig";
 
@@ -12,6 +24,7 @@ export class AlreadyInUseError extends Error {
 
 let usingLedger = false;
 async function initializeLedgerSigner() {
+  // return new Promise(() => {});
   const bufferModule = await import("buffer");
   globalThis.Buffer = bufferModule.Buffer;
 
@@ -24,7 +37,14 @@ async function initializeLedgerSigner() {
   if (usingLedger) throw new AlreadyInUseError();
   usingLedger = true;
 
-  const transport = await TransportWebHID.create();
+  let transport: Transport;
+  try {
+    transport = await TransportWebHID.create();
+  } catch (ex) {
+    usingLedger = false;
+    throw ex;
+  }
+
   const close = () => {
     usingLedger = false;
     transport.close();
@@ -49,28 +69,39 @@ export const [ledgerAccounts$, setLedgerAccounts] = createLocalStorageState(
   [] as LedgerAccount[]
 );
 
-export const getLedgerAccounts = async (
+export const getLedgerAccounts$ = (
   idxs: Array<number>
-): Promise<Array<LedgerAccount>> => {
-  const { ledgerSigner, close } = await initializeLedgerSigner();
-  try {
-    const [deviceId, publicKeys, ss58Format] = await Promise.all([
-      ledgerSigner.deviceId(),
-      Promise.all(idxs.map((idx) => ledgerSigner.getPubkey(idx))),
-      firstValueFrom(
-        stakingApi$.pipe(switchMap((v) => v.constants.System.SS58Prefix()))
-      ),
-    ]);
-
-    return publicKeys.map((publicKey, i) => ({
-      address: AccountId(ss58Format).dec(publicKey),
-      deviceId,
-      index: idxs[i],
-    }));
-  } finally {
-    close();
-  }
-};
+): Observable<LedgerAccount> =>
+  defer(initializeLedgerSigner).pipe(
+    switchMap((ledger) =>
+      combineLatest({
+        ledger: [ledger],
+        deviceId: ledger.ledgerSigner.deviceId(),
+        ss58Format: stakingApi$.pipe(
+          switchMap((v) => v.constants.System.SS58Prefix()),
+          take(1)
+        ),
+      }).pipe(
+        catchError((ex) => {
+          ledger.close();
+          throw ex;
+        })
+      )
+    ),
+    switchMap(({ ledger, deviceId, ss58Format }) =>
+      from(idxs).pipe(
+        concatMap(async (idx) => {
+          const pk = await ledger.ledgerSigner.getPubkey(idx);
+          return {
+            address: AccountId(ss58Format).dec(pk),
+            deviceId,
+            index: idx,
+          };
+        }),
+        finalize(() => ledger.close())
+      )
+    )
+  );
 
 export const createLedgerSigner = (account: LedgerAccount): PolkadotSigner => {
   const publicKey = AccountId().enc(account.address);

@@ -28,12 +28,13 @@ import { ManageBond } from "./Pools/ManageBond";
 import { UnlockPoolBonds } from "./Pools/ManageUnlocks";
 import TopPools from "./Pools/TopPools";
 import TopValidators from "./Validators/TopValidators";
+import { CardPlaceholder } from "@/components/CardPlaceholder";
 
 export const Dashboard = () => {
   return (
     <div>
       <NavMenu />
-      <Subscribe fallback="Loading…">
+      <Subscribe fallback={<DashboardSkeleton />}>
         <div className="space-y-4">
           <div className="flex justify-center flex-wrap gap-4">
             <ActiveEra />
@@ -50,6 +51,15 @@ export const Dashboard = () => {
     </div>
   );
 };
+
+const DashboardSkeleton = () => (
+  <div className="space-y-4">
+    <CardPlaceholder height={100} />
+    <CardPlaceholder height={400} />
+    <CardPlaceholder height={100} />
+    <CardPlaceholder height={400} />
+  </div>
+);
 
 const BalanceContent = () => {
   const balance = useStateObservable(accountBalance$);
