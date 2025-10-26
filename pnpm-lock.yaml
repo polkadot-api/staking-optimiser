@@ -95,8 +95,8 @@ importers:
         specifier: ^1.20.0
         version: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       polkahub:
-        specifier: 0.1.0-local.5
-        version: 0.1.0-local.5(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)(typescript@5.9.3)(zod@3.25.76)
+        specifier: 0.1.0-local.15
+        version: 0.1.0-local.15(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rxjs@7.8.2)(typescript@5.9.3)(zod@3.25.76)
       qr:
         specifier: 0.6.0-local.1
         version: 0.6.0-local.1
@@ -727,65 +727,71 @@ packages:
   '@polkadot-api/ws-provider@0.7.0':
     resolution: {integrity: sha512-x/ulbwhvWlCyqxwtEfpVqPYArIuoo3g+defPcpZX5iJ1E6/+SYsGChDmgzM5Zbb0wDJMEn+p4us5P1Ll127cUA==}
 
-  '@polkahub/context@0.1.0-local.0':
-    resolution: {integrity: sha512-V2haisgTLOLfyyyEwyYdtaE00VZc8ElVYFrbwmszzjADYxypx9/izG3336G+HY2oznWfGkd6YPgXtS2IfhwOcQ==}
+  '@polkahub/context@0.1.0-local.4':
+    resolution: {integrity: sha512-/14J1bvxXoaZ1/QHxrGxV8zMzEbhdBziCvwygdOYnekRS9vRW9xZtev+lJlrYTeqdrgYHsytYT8OnOkzLKg+qw==}
     peerDependencies:
       '@types/react': ^19.2.2
       react: ^19.2.0
 
-  '@polkahub/context@0.1.0-local.2':
-    resolution: {integrity: sha512-myqRYg2jVOBAA5uMII69g8/UfV0SLbCu5usbHlqWOHUjw7QsolnCnsoreFcOeLH0FVamlPwCHKQXkLpL415qDA==}
+  '@polkahub/ledger@0.1.0-local.1':
+    resolution: {integrity: sha512-0uDTToxOWaLs6ZZKuVSIVNlPx5t/wt/KG00NRPmla0wFOY2w7kHu69INu/KBMmn9CVibwLD15xH29erYmyKLvg==}
     peerDependencies:
       '@types/react': ^19.2.2
       react: ^19.2.0
 
-  '@polkahub/ledger@0.1.0-local.0':
-    resolution: {integrity: sha512-P7JC0Wgz77MJTVMFj/DHaZJzlyOBJEMeRynaU2Q9HIqOmZAXuMWyQfXHVGFdahwisSNPDk2mh0xdj7VGihnEMw==}
+  '@polkahub/multisig@0.1.0-local.1':
+    resolution: {integrity: sha512-GnOhL4tUTrVvQ/C5HbuV5WHMYbGV3C9NDDhFomUsiB4WfRbrbKLVcy96c4mCf7RWnHRUL1XQ520uWMn67mFrrg==}
     peerDependencies:
       '@types/react': ^19.2.2
       react: ^19.2.0
 
-  '@polkahub/multisig@0.1.0-local.0':
-    resolution: {integrity: sha512-Ta+ZPC76djA1SBLfMmvn/ULCZUEF4glgry5OqhkVqIPHX75aVAlfCYf/9SCGiTBNW3U2O8FAxhkjkRLJaqhBrg==}
+  '@polkahub/pjs-wallet@0.1.0-local.6':
+    resolution: {integrity: sha512-XKXY177qDRiWruMvQAINxz4XP7SrQRY5wO9QYalCqjuu/WraZxF90BRcY1yXwzkLhfegkT4Sx8WksrY6zjrsXQ==}
     peerDependencies:
       '@types/react': ^19.2.2
       react: ^19.2.0
 
-  '@polkahub/pjs-wallet@0.1.0-local.0':
-    resolution: {integrity: sha512-56ASZPobdjp73NuTQ21lHIWOt7BkP3hdkPG8qoSGHug8LfVmS+409FZO/ecvSXm1fstWpZMcyko308pZ0cT45w==}
+  '@polkahub/plugin@0.1.0-local.1':
+    resolution: {integrity: sha512-2/h67AWBGKINa7jJhk3bN7vW0ztic2OdUdxENAnVl2afa0qHrrUVMROOlFtEnlykR2kCwpinLc50RGATrXH3Zw==}
+
+  '@polkahub/proxy@0.1.0-local.1':
+    resolution: {integrity: sha512-1yknNd4pqnVMZLghq+SWusoUWo1UfzF4DtdJxolYSbgsY/tP2ad0S9wngf7uVJX7n1r1ZOT2THDReAF85uG8LA==}
     peerDependencies:
       '@types/react': ^19.2.2
       react: ^19.2.0
 
-  '@polkahub/plugin@0.1.0-local.0':
-    resolution: {integrity: sha512-gxRUsc55LHyMJGy5KPcDcBo7WLrmxZKJ5Kboz6OexSookfzBgHI2mxw/pEubYz9fEUwq+B58tIRL5IZuVmJA0Q==}
-
-  '@polkahub/proxy@0.1.0-local.0':
-    resolution: {integrity: sha512-hWSRveAC+WqHsGCNNYwhd4nEjwIifMq+FUAJses6m0Wym4mrbvKw+47yzjFHFvbce6OuBnjnhswWG5zmErvgbA==}
+  '@polkahub/read-only@0.1.0-local.1':
+    resolution: {integrity: sha512-Rrve9BhibJK7DaG2psOFBUGv4IUZQEElIIx3xDUVUL0uw/Ykl/r+tnJvtBe9kisOhxr8/VSNQI2HYwmG7g2XLQ==}
     peerDependencies:
       '@types/react': ^19.2.2
       react: ^19.2.0
 
-  '@polkahub/read-only@0.1.0-local.0':
-    resolution: {integrity: sha512-lIKIScvmbowHT9N1Wzx9j+V23OQaHN4lH2PRWaL5g0LAu6+LG7XWhScVerPgFRTQFO57WZ5LEacGakEI5aQW0g==}
+  '@polkahub/select-account@0.1.0-local.7':
+    resolution: {integrity: sha512-i1LmQ0WOweW6QcCnk6isImvXVFAVZ8aojH2Rpx0HyvaDNn0ZRM/hr1R6Kc6YAqjvHkOedrOsuaKCAAyBCZKu2g==}
     peerDependencies:
       '@types/react': ^19.2.2
       react: ^19.2.0
 
-  '@polkahub/select-account@0.1.0-local.0':
-    resolution: {integrity: sha512-GfpLU5FA9Fq2jX2pYzgkymvfhd+pZ0eGpWQItRu8YpIkfiq1cBxtJ4Z17cbJh1J8dkvOADyvpj3X52IZ5p9RYg==}
+  '@polkahub/ui-components@0.1.0-local.2':
+    resolution: {integrity: sha512-D8j5J9rrcGKPwRVjPBnaWi8AoMMNftKjBuwsl1Qj4cfhwkyq81Kf2FXu3AdihS3wugbU1GGfoxhXysYHGLJtYg==}
     peerDependencies:
       '@types/react': ^19.2.2
       react: ^19.2.0
 
-  '@polkahub/vault@0.1.0-local.0':
-    resolution: {integrity: sha512-0xFDVRHb7JJ/szn6LxYCuPMx4ClxSxMOdd0x+TEWYaYW4P7iYQo6IGRjQY1QqS/UQEG7AqJkzWcLwQ8IxR8C6A==}
+  '@polkahub/ui-components@0.1.0-local.3':
+    resolution: {integrity: sha512-jueDCfat5/NWeYEffGN6BxDGNa5daFN1yChiGwQ12KfsE+jW6/QxADYXvHlaXPC2TFfTS3SDOuLCaqZtLDsokg==}
     peerDependencies:
       '@types/react': ^19.2.2
       react: ^19.2.0
 
-  '@polkahub/wallet-connect@0.1.0-local.0':
-    resolution: {integrity: sha512-EhCZZZxCw0sdJploGRZvy/0HAv2Zrf/f6z0RFGgKTD21qHlJAp9syc9KzRFjr+zt4t+mrV+3BYESSgz0GmjctA==}
+  '@polkahub/vault@0.1.0-local.1':
+    resolution: {integrity: sha512-6+rLt9SGHGJOHamLHSZ4sGhqJu+t82qTEVi4TURrCVTuy9MD5Qo13XCe6hVLy5BjaWzAI09R0iG6+SxBgb+V8A==}
+    peerDependencies:
+      '@types/react': ^19.2.2
+      react: ^19.2.0
+
+  '@polkahub/wallet-connect@0.1.0-local.1':
+    resolution: {integrity: sha512-DroyJ6vQVxMyysNAGF8N9/pEMwFKOjyTsd8h8/+gFJbaO1Hm7zILtJDqjJlHyZx657BkK6u6rFLlrSpUyaS/Aw==}
     peerDependencies:
       '@types/react': ^19.2.2
       react: ^19.2.0
@@ -2696,8 +2702,11 @@ packages:
     peerDependencies:
       rxjs: '>=7.8.0'
 
-  polkahub@0.1.0-local.5:
-    resolution: {integrity: sha512-lTbzoxezaOLKisnmFsR4SfWEx3MFdihV6Fbup7JV1tSENJrF0ymZEkoO00Sb+89OkAoxt05ChN8hAyEe1Bbe7Q==}
+  polkahub@0.1.0-local.15:
+    resolution: {integrity: sha512-aYYyVuH0CwRDd18Xu0LwOOafYre77j0lxIlOKPafcXPQemLprmK8uLEYfHC0oc9KY5yAXmoH05lghD4LBATO0g==}
+    peerDependencies:
+      '@types/react': ^19.2.2
+      react: ^19.2.0
 
   postcss-load-config@6.0.1:
     resolution: {integrity: sha512-oPtTM4oerL+UXmx+93ytZVN82RrlY/wPUV8IeDxFrzIjXOLF1pN+EmKPLbubvKHT2HC20xXsCAH2Z+CKV6Oz/g==}
@@ -4057,11 +4066,12 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@polkahub/context@0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
+  '@polkahub/context@0.1.0-local.4(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
     dependencies:
-      '@polkahub/plugin': 0.1.0-local.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/plugin': 0.1.0-local.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
+      '@rx-state/core': 0.1.4(rxjs@7.8.2)
       '@types/react': 19.2.2
       polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       react: 19.2.0
@@ -4077,31 +4087,11 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  '@polkahub/context@0.1.0-local.2(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
-    dependencies:
-      '@polkahub/plugin': 0.1.0-local.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
-      '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
-      '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
-      '@types/react': 19.2.2
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
-      react: 19.2.0
-      rxjs: 7.8.2
-    transitivePeerDependencies:
-      - '@microsoft/api-extractor'
-      - '@swc/core'
-      - bufferutil
-      - jiti
-      - postcss
-      - supports-color
-      - tsx
-      - utf-8-validate
-      - yaml
-
-  '@polkahub/ledger@0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
+  '@polkahub/ledger@0.1.0-local.1(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
     dependencies:
       '@ledgerhq/hw-transport': 6.31.12
       '@polkadot-api/ledger-signer': 0.2.12(@ledgerhq/hw-transport@6.31.12)
-      '@polkahub/plugin': 0.1.0-local.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/plugin': 0.1.0-local.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@types/react': 19.2.2
@@ -4119,11 +4109,11 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  '@polkahub/multisig@0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
+  '@polkahub/multisig@0.1.0-local.1(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
     dependencies:
       '@polkadot-api/meta-signers': 0.1.16
       '@polkadot-api/substrate-bindings': 0.16.4
-      '@polkahub/plugin': 0.1.0-local.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/plugin': 0.1.0-local.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@types/react': 19.2.2
@@ -4141,28 +4131,33 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  '@polkahub/pjs-wallet@0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
+  '@polkahub/pjs-wallet@0.1.0-local.6(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@polkadot-api/pjs-signer': 0.6.16
-      '@polkahub/plugin': 0.1.0-local.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/context': 0.1.0-local.4(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/plugin': 0.1.0-local.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/ui-components': 0.1.0-local.3(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@types/react': 19.2.2
+      lucide-react: 0.548.0(react@19.2.0)
       polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       react: 19.2.0
       rxjs: 7.8.2
     transitivePeerDependencies:
       - '@microsoft/api-extractor'
       - '@swc/core'
+      - '@types/react-dom'
       - bufferutil
       - jiti
       - postcss
+      - react-dom
       - supports-color
       - tsx
       - utf-8-validate
       - yaml
 
-  '@polkahub/plugin@0.1.0-local.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
+  '@polkahub/plugin@0.1.0-local.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
     dependencies:
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@rx-state/core': 0.1.4(rxjs@7.8.2)
@@ -4181,10 +4176,10 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  '@polkahub/proxy@0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
+  '@polkahub/proxy@0.1.0-local.1(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
     dependencies:
       '@polkadot-api/meta-signers': 0.1.16
-      '@polkahub/plugin': 0.1.0-local.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/plugin': 0.1.0-local.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@types/react': 19.2.2
@@ -4202,10 +4197,10 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  '@polkahub/read-only@0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
+  '@polkahub/read-only@0.1.0-local.1(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
     dependencies:
       '@polkadot-api/substrate-bindings': 0.16.4
-      '@polkahub/plugin': 0.1.0-local.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/plugin': 0.1.0-local.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@types/react': 19.2.2
@@ -4223,31 +4218,70 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  '@polkahub/select-account@0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
+  '@polkahub/select-account@0.1.0-local.7(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
-      '@polkahub/context': 0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
-      '@polkahub/plugin': 0.1.0-local.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkadot-api/react-components': 0.3.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkahub/context': 0.1.0-local.4(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/plugin': 0.1.0-local.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/ui-components': 0.1.0-local.2(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
+      '@rx-state/core': 0.1.4(rxjs@7.8.2)
       '@types/react': 19.2.2
+      lucide-react: 0.548.0(react@19.2.0)
       react: 19.2.0
       rxjs: 7.8.2
     transitivePeerDependencies:
       - '@microsoft/api-extractor'
       - '@swc/core'
+      - '@types/react-dom'
       - bufferutil
       - jiti
       - postcss
+      - react-dom
       - supports-color
       - tsx
       - utf-8-validate
       - yaml
 
-  '@polkahub/vault@0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
+  '@polkahub/ui-components@0.1.0-local.2(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+    dependencies:
+      '@radix-ui/react-dialog': 1.1.15(patch_hash=04004a71c066a96f7c89f5a0e11eaf5f88fcd0f093be5fed4fbbe37ae1c2b1fd)(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@radix-ui/react-popover': 1.1.15(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@radix-ui/react-slot': 1.2.3(@types/react@19.2.2)(react@19.2.0)
+      '@types/react': 19.2.2
+      class-variance-authority: 0.7.1
+      clsx: 2.1.1
+      cmdk: 1.1.1(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      lucide-react: 0.548.0(react@19.2.0)
+      react: 19.2.0
+      tailwind-merge: 3.3.1
+    transitivePeerDependencies:
+      - '@types/react-dom'
+      - react-dom
+
+  '@polkahub/ui-components@0.1.0-local.3(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+    dependencies:
+      '@radix-ui/react-dialog': 1.1.15(patch_hash=04004a71c066a96f7c89f5a0e11eaf5f88fcd0f093be5fed4fbbe37ae1c2b1fd)(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@radix-ui/react-popover': 1.1.15(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@radix-ui/react-slot': 1.2.3(@types/react@19.2.2)(react@19.2.0)
+      '@types/react': 19.2.2
+      class-variance-authority: 0.7.1
+      clsx: 2.1.1
+      cmdk: 1.1.1(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      lucide-react: 0.548.0(react@19.2.0)
+      react: 19.2.0
+      tailwind-merge: 3.3.1
+    transitivePeerDependencies:
+      - '@types/react-dom'
+      - react-dom
+
+  '@polkahub/vault@0.1.0-local.1(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
     dependencies:
       '@polkadot-api/signers-common': 0.1.17
       '@polkadot-api/substrate-bindings': 0.16.4
-      '@polkahub/plugin': 0.1.0-local.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/plugin': 0.1.0-local.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@types/react': 19.2.2
@@ -4265,10 +4299,10 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  '@polkahub/wallet-connect@0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)(typescript@5.9.3)(zod@3.25.76)':
+  '@polkahub/wallet-connect@0.1.0-local.1(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)(typescript@5.9.3)(zod@3.25.76)':
     dependencies:
       '@polkadot-api/substrate-bindings': 0.16.4
-      '@polkahub/plugin': 0.1.0-local.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/plugin': 0.1.0-local.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@reown/appkit': 1.8.11(@types/react@19.2.2)(react@19.2.0)(typescript@5.9.3)(zod@3.25.76)
@@ -6663,18 +6697,23 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  polkahub@0.1.0-local.5(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)(typescript@5.9.3)(zod@3.25.76):
+  polkahub@0.1.0-local.15(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rxjs@7.8.2)(typescript@5.9.3)(zod@3.25.76):
     dependencies:
-      '@polkahub/context': 0.1.0-local.2(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
-      '@polkahub/ledger': 0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
-      '@polkahub/multisig': 0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
-      '@polkahub/pjs-wallet': 0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
-      '@polkahub/plugin': 0.1.0-local.0(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
-      '@polkahub/proxy': 0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
-      '@polkahub/read-only': 0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
-      '@polkahub/select-account': 0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
-      '@polkahub/vault': 0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
-      '@polkahub/wallet-connect': 0.1.0-local.0(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)(typescript@5.9.3)(zod@3.25.76)
+      '@polkahub/context': 0.1.0-local.4(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/ledger': 0.1.0-local.1(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/multisig': 0.1.0-local.1(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/pjs-wallet': 0.1.0-local.6(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@polkahub/plugin': 0.1.0-local.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/proxy': 0.1.0-local.1(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/read-only': 0.1.0-local.1(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/select-account': 0.1.0-local.7(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@polkahub/ui-components': 0.1.0-local.3(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@polkahub/vault': 0.1.0-local.1(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
+      '@polkahub/wallet-connect': 0.1.0-local.1(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)(typescript@5.9.3)(zod@3.25.76)
+      '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
+      '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
+      '@types/react': 19.2.2
+      react: 19.2.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -6688,9 +6727,8 @@ snapshots:
       - '@netlify/blobs'
       - '@planetscale/database'
       - '@react-native-async-storage/async-storage'
-      - '@react-rxjs/core'
       - '@swc/core'
-      - '@types/react'
+      - '@types/react-dom'
       - '@upstash/redis'
       - '@vercel/blob'
       - '@vercel/functions'
@@ -6702,7 +6740,8 @@ snapshots:
       - ioredis
       - jiti
       - postcss
-      - react
+      - react-dom
+      - rxjs
       - supports-color
       - tsx
       - typescript
