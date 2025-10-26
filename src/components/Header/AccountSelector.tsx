@@ -12,104 +12,42 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  connectedExtensionsAccounts$,
-  selectedAccount$,
-  selectedAccountAddr$,
-  setAccountSource,
-} from "@/state/account";
-import { ledgerAccounts$ } from "@/state/ledger";
-import { readOnlyAddresses$ } from "@/state/readonly";
-import { vaultAccounts$ } from "@/state/vault";
+import { selectedAccountAddr$ } from "@/state/account";
+import { plugins$, usePolkaHubContext, useSelectedAccount } from "polkahub";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { ChevronsUpDown, X } from "lucide-react";
 import { useState, type FC } from "react";
-import { combineLatest, map } from "rxjs";
+import { combineLatest, map, switchMap } from "rxjs";
 import { twMerge } from "tailwind-merge";
 import { AddressIdentity } from "../AddressIdentity";
-
-type SelectableAccount = {
-  address: string;
-  name?: string;
-  onSelect: () => void;
-};
 
 const groupLabels: Record<string, string> = {
   readOnly: "Read Only",
   vault: "Vault",
 };
 
-const availableAccountGroups$ = state(
-  combineLatest({
-    readOnly: readOnlyAddresses$.pipe(
-      map((v) =>
-        v.map(
-          (address): SelectableAccount => ({
-            address,
-            onSelect: () =>
-              setAccountSource({
-                type: "address",
-                value: address,
-              }),
-          })
+const availableAccountGroups$ = state((id: string) =>
+  plugins$(id).pipe(
+    switchMap((plugins) =>
+      combineLatest(
+        plugins.map(
+          (p) =>
+            p.accountGroups$ ??
+            p.accounts$.pipe(
+              map((accounts) => ({ [groupLabels[p.id] ?? p.id]: accounts }))
+            )
         )
       )
     ),
-    extensions: connectedExtensionsAccounts$.pipe(
-      map((extensions) =>
-        extensions.map(({ id, accounts }): [string, SelectableAccount[]] => [
-          id,
-          accounts.map((account) => ({
-            address: account.address,
-            name: account.name,
-            onSelect: () =>
-              setAccountSource({
-                type: "extension",
-                value: {
-                  id,
-                  address: account.address,
-                },
-              }),
-          })),
-        ])
-      )
-    ),
-    vault: vaultAccounts$.pipe(
-      map((v) =>
-        v.map(
-          (acc): SelectableAccount => ({
-            address: acc.address,
-            onSelect: () =>
-              setAccountSource({
-                type: "vault",
-                value: acc,
-              }),
-          })
-        )
-      )
-    ),
-    ledger: ledgerAccounts$.pipe(
-      map((v) =>
-        v.map(
-          (acc): SelectableAccount => ({
-            address: acc.address,
-            onSelect: () =>
-              setAccountSource({
-                type: "ledger",
-                value: acc,
-              }),
-          })
-        )
-      )
-    ),
-  }).pipe(
-    map(({ extensions, ...rest }) => {
-      return [...extensions, ...Object.entries(rest)]
-        .filter(([, accounts]) => accounts.length > 0)
-        .map(([id, accounts]) => ({
-          name: groupLabels[id] ?? id,
-          accounts,
-        }));
+    map((extGroups) => {
+      return extGroups.flatMap((groups) =>
+        Object.entries(groups)
+          .filter(([, accounts]) => accounts.length > 0)
+          .map(([name, accounts]) => ({
+            name,
+            accounts,
+          }))
+      );
     })
   )
 );
@@ -119,11 +57,9 @@ export const AccountSelector: FC<{
 }> = ({ className }) => {
   const [open, setOpen] = useState(false);
   const address = useStateObservable(selectedAccountAddr$);
-  const account = useStateObservable(selectedAccount$);
-  const groups = useStateObservable(availableAccountGroups$);
-
-  const hintedName =
-    account?.type === "extension" ? account.value.name : undefined;
+  const ctx = usePolkaHubContext();
+  const [account, setAccount] = useSelectedAccount();
+  const groups = useStateObservable(availableAccountGroups$(ctx.id));
 
   if (!groups.length && !account) return null;
 
@@ -144,7 +80,7 @@ export const AccountSelector: FC<{
               {address != null ? (
                 <AddressIdentity
                   addr={address}
-                  name={hintedName}
+                  name={account?.name}
                   copyable={false}
                 />
               ) : (
@@ -154,10 +90,7 @@ export const AccountSelector: FC<{
             </Button>
           </PopoverTrigger>
           {account ? (
-            <button
-              className="cursor-pointer"
-              onClick={() => setAccountSource(null)}
-            >
+            <button className="cursor-pointer" onClick={() => setAccount(null)}>
               <X className="text-muted-foreground" size={16} />
             </button>
           ) : null}
@@ -186,7 +119,7 @@ export const AccountSelector: FC<{
                       name={account.name}
                       group={group.name}
                       onSelect={() => {
-                        account.onSelect();
+                        setAccount(account);
                         setOpen(false);
                       }}
                     />

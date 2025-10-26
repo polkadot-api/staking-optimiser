@@ -1,9 +1,7 @@
 import {
-  activeTx$,
   binaryToString,
-  cancelTx,
   createFrames,
-  setSignature,
+  polkadotVaultProvider,
   stringToBinary,
 } from "@/state/vault";
 import { codeSplit } from "@/util/codeSplit";
@@ -21,12 +19,12 @@ export const VaultTxModal = codeSplit(
   dialogModule,
   () => null,
   ({ payload }) => {
-    const activeTx = useStateObservable(activeTx$);
+    const activeTx = useStateObservable(polkadotVaultProvider.activeTx$);
     const { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } =
       payload;
 
     return (
-      <Dialog open={!!activeTx} onOpenChange={cancelTx}>
+      <Dialog open={!!activeTx} onOpenChange={polkadotVaultProvider.cancelTx}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Vault Transaction</DialogTitle>
@@ -46,7 +44,8 @@ const VaultTxContent: FC<{
   const [mode, setMode] = useState<"tx" | "sig">("tx");
 
   const onRead = useCallback(
-    (res: string) => setSignature(Binary.fromHex(res).asBytes()),
+    (res: string) =>
+      polkadotVaultProvider.setSignature(Binary.fromHex(res).asBytes()),
     []
   );
 

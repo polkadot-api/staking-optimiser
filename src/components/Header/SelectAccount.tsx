@@ -1,11 +1,14 @@
-import { selectedAccount$ } from "@/state/account";
+import { cn } from "@/lib/utils";
+import { selectedAccountPlugin } from "@/state/account";
 import { identity$ } from "@/state/identity";
+import { codeSplit } from "@/util/codeSplit";
 import { withSubscribe } from "@/util/rxjs";
 import { sliceMiddleAddr } from "@/util/ss58";
 import { PolkadotIdenticon } from "@polkadot-api/react-components";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { createSignal } from "@react-rxjs/utils";
-import { AccountId, type SS58String } from "polkadot-api";
+import { AccountId } from "polkadot-api";
+import { useSelectedAccount } from "polkahub";
 import {
   forwardRef,
   useState,
@@ -14,33 +17,28 @@ import {
 } from "react";
 import { map, switchMap } from "rxjs";
 import { Button } from "../ui/button";
-import { codeSplit } from "@/util/codeSplit";
-import { cn } from "@/lib/utils";
 
 const [openChange$, setOpen] = createSignal<boolean>();
 export const openSelectAccount = () => setOpen(true);
 const open$ = state(openChange$, false);
 
-const selectedAccountName$ = selectedAccount$.pipeState(
+const selectedAccountName$ = selectedAccountPlugin.selectedAccount$.pipeState(
   switchMap((v) => {
     if (!v) return [null];
 
-    if (v.type === "extension") {
+    if (v.name) {
       return [
         {
-          name: v.value.name || null,
-          address: v.value.address,
+          name: v.name || null,
+          address: v.address,
         },
       ];
     }
 
-    const address: SS58String =
-      v.type === "address" ? v.value : v.value.address;
-
-    return identity$(address).pipe(
+    return identity$(v.address).pipe(
       map((id) => ({
         name: id ? id.value + (id.subId ? `/${id.subId}` : "") : null,
-        address,
+        address: v.address,
       }))
     );
   })
@@ -52,7 +50,7 @@ const Trigger = forwardRef<
     loading?: boolean;
   }
 >(({ loading, ...props }, ref) => {
-  const selectedAccount = useStateObservable(selectedAccount$);
+  const [selectedAccount] = useSelectedAccount();
   const accountName = useStateObservable(selectedAccountName$);
 
   if (!selectedAccount || !accountName)
@@ -62,12 +60,7 @@ const Trigger = forwardRef<
       </Button>
     );
 
-  const publicKey =
-    selectedAccount.type === "address"
-      ? AccountId().enc(selectedAccount.value)
-      : selectedAccount.type === "vault" || selectedAccount.type === "ledger"
-        ? AccountId().enc(selectedAccount.value.address)
-        : selectedAccount.value.polkadotSigner.publicKey;
+  const publicKey = AccountId().enc(selectedAccount.address);
 
   return (
     <Button

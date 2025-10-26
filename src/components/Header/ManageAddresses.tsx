@@ -1,13 +1,21 @@
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { setAccountSource } from "@/state/account";
-import { readOnlyAddresses$, setAddresses } from "@/state/readonly";
-import { useStateObservable } from "@react-rxjs/core";
+import { selectedAccountPlugin } from "@/state/account";
+import { state, useStateObservable } from "@react-rxjs/core";
 import { Trash2 } from "lucide-react";
 import { getSs58AddressInfo } from "polkadot-api";
+import { createReadOnlyProvider } from "polkahub";
 import { useState, type FC } from "react";
+import { map } from "rxjs";
 import { TotalBalance } from "../AccountBalance";
+
+export const readOnlyProvider = createReadOnlyProvider();
+
+const readOnlyAddresses$ = state(
+  readOnlyProvider.accounts$.pipe(map((v) => v.map((v) => v.address))),
+  []
+);
 
 export const ManageAddresses: FC<{
   onClose: () => void;
@@ -29,15 +37,10 @@ export const ManageAddresses: FC<{
         onSubmit={(evt) => {
           evt.preventDefault();
           if (!isAddrValid) return;
-          setAddresses([
-            ...readOnlyAddresses.filter((v) => v !== addressInput),
-            addressInput,
-          ]);
+          const added = readOnlyProvider.addAccount(addressInput);
+
+          selectedAccountPlugin.setAccount(added);
           setAddressInput("");
-          setAccountSource({
-            type: "address",
-            value: addressInput,
-          });
         }}
       >
         <h3 className="font-medium text-muted-foreground">
@@ -62,9 +65,7 @@ export const ManageAddresses: FC<{
                   variant="outline"
                   className="text-destructive"
                   type="button"
-                  onClick={() =>
-                    setAddresses(readOnlyAddresses.filter((v) => addr !== v))
-                  }
+                  onClick={() => readOnlyProvider.removeAccount(addr)}
                 >
                   <Trash2 />
                 </Button>
@@ -73,10 +74,9 @@ export const ManageAddresses: FC<{
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    setAccountSource({
-                      type: "address",
-                      value: addr,
-                    });
+                    selectedAccountPlugin.setAccount(
+                      readOnlyProvider.toAccount(addr)
+                    );
                   }}
                 >
                   Select

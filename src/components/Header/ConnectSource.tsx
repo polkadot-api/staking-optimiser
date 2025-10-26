@@ -1,9 +1,5 @@
 import { cn } from "@/lib/utils";
-import {
-  availableExtensions$,
-  connectedExtensions$,
-  setConnectedExtensions,
-} from "@/state/account";
+import { pjsWalletProvider } from "@/state/account";
 import { useStateObservable } from "@react-rxjs/core";
 import { CircleQuestionMark, Eye } from "lucide-react";
 import type { FC, MouseEvent, PropsWithChildren, ReactElement } from "react";
@@ -34,7 +30,9 @@ const knownExtensions: Record<string, { name: string; logo: string }> = {
 export const ConnectSource: FC<{
   setContent: (element: ReactElement | null) => void;
 }> = ({ setContent }) => {
-  const availableExtensions = useStateObservable(availableExtensions$).sort(
+  const availableExtensions = useStateObservable(
+    pjsWalletProvider.availableExtensions$
+  ).sort(
     (a, b) => (b in knownExtensions ? 1 : 0) - (a in knownExtensions ? 1 : 0)
   );
 
@@ -106,7 +104,9 @@ const ExtensionButton: FC<{
   id: string;
 }> = ({ id }) => {
   const knownExtension = knownExtensions[id];
-  const connectedExtensions = useStateObservable(connectedExtensions$);
+  const connectedExtensions = useStateObservable(
+    pjsWalletProvider.connectedExtensions$
+  );
   const isSelected = connectedExtensions.includes(id);
 
   return (
@@ -114,7 +114,7 @@ const ExtensionButton: FC<{
       isSelected={isSelected}
       label={knownExtension?.name ?? id}
       onClick={() =>
-        setConnectedExtensions(
+        pjsWalletProvider.setConnectedExtensions(
           isSelected
             ? connectedExtensions.filter((v) => v !== id)
             : [...connectedExtensions, id]

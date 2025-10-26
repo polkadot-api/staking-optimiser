@@ -1,13 +1,14 @@
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Button } from "@/components/ui/button";
-import { setAccountSource } from "@/state/account";
-import {
-  getLedgerAccounts$,
-  ledgerAccounts$,
-  setLedgerAccounts,
-  type LedgerAccount,
-} from "@/state/ledger";
+import { selectedAccountPlugin } from "@/state/account";
+import { selectedChain$, stakingApi$ } from "@/state/chain";
+import { tokenDecimalsByChain, tokenSymbolByChain } from "@/state/chainConfig";
 import { createState } from "@/util/rxjs";
+import {
+  createLedgerProvider,
+  type LedgerAccount,
+  type LedgerAccountInfo,
+} from "polkahub";
 import {
   useStateObservable,
   withDefault,
@@ -15,15 +16,50 @@ import {
 } from "@react-rxjs/core";
 import { ChevronLeft, Trash2, Usb } from "lucide-react";
 import { useEffect, type FC, type ReactElement } from "react";
-import { catchError, concatMap, map, startWith, switchMap, timer } from "rxjs";
+import {
+  catchError,
+  combineLatest,
+  concatMap,
+  firstValueFrom,
+  map,
+  startWith,
+  switchMap,
+  take,
+  timer,
+} from "rxjs";
 import { TotalBalance } from "./AccountBalance";
 import { CardPlaceholder } from "./CardPlaceholder";
 import { Checkbox } from "./ui/checkbox";
 
+export const ledgerAccountProvider = createLedgerProvider(
+  async () => {
+    const module = await import("@ledgerhq/hw-transport-webhid");
+    return module.default.create();
+  },
+  () =>
+    firstValueFrom(
+      combineLatest({
+        chain: selectedChain$,
+        // ledger: [ledger],
+        // deviceId: ledger.ledgerSigner.deviceId(),
+        ss58Format: stakingApi$.pipe(
+          switchMap((v) => v.constants.System.SS58Prefix()),
+          take(1)
+        ),
+      }).pipe(
+        map(({ chain, ss58Format }) => ({
+          decimals: tokenDecimalsByChain[chain],
+          tokenSymbol: tokenSymbolByChain[chain],
+          ss58Format,
+        }))
+      )
+    )
+);
+
 export const LedgerAccounts: FC<{
   setContent: (element: ReactElement | null) => void;
 }> = ({ setContent }) => {
-  const ledgerAccounts = useStateObservable(ledgerAccounts$);
+  const ledgerAccounts = useStateObservable(ledgerAccountProvider.accounts$);
   useEffect(() => {
     if (ledgerAccounts.length === 0) {
       setContent(
@@ -55,9 +91,7 @@ export const LedgerAccounts: FC<{
                   variant="outline"
                   className="text-destructive"
                   type="button"
-                  onClick={() =>
-                    setLedgerAccounts(ledgerAccounts.filter((v) => acc !== v))
-                  }
+                  onClick={() => ledgerAccountProvider.removeAccount(acc)}
                 >
                   <Trash2 />
                 </Button>
@@ -66,10 +100,7 @@ export const LedgerAccounts: FC<{
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    setAccountSource({
-                      type: "ledger",
-                      value: acc,
-                    });
+                    selectedAccountPlugin.setAccount(acc);
                   }}
                 >
                   Select
@@ -112,7 +143,7 @@ const PAGE_SIZE = 5;
 
 const [page$, setPage] = createState(0);
 type PageAccounts = {
-  accounts: Array<LedgerAccount | null>;
+  accounts: Array<LedgerAccountInfo | null>;
   error: string | null;
 };
 const pageAccounts$: DefaultedStateObservable<PageAccounts> = page$.pipeState(
@@ -126,7 +157,7 @@ const pageAccounts$: DefaultedStateObservable<PageAccounts> = page$.pipeState(
     };
 
     return timer(200).pipe(
-      switchMap(() => getLedgerAccounts$(idxs)),
+      switchMap(() => ledgerAccountProvider.getLedgerAccounts$(idxs)),
       map((account, i) => {
         value.accounts[i] = account;
 
@@ -150,7 +181,7 @@ const pageAccounts$: DefaultedStateObservable<PageAccounts> = page$.pipeState(
 const ImportAccounts: FC<{ onClose: (accounts: LedgerAccount[]) => void }> = ({
   onClose,
 }) => {
-  const ledgerAccounts = useStateObservable(ledgerAccounts$);
+  const ledgerAccounts = useStateObservable(ledgerAccountProvider.accounts$);
   const page = useStateObservable(page$);
   const { accounts, error } = useStateObservable(pageAccounts$);
 
@@ -181,18 +212,9 @@ const ImportAccounts: FC<{ onClose: (accounts: LedgerAccount[]) => void }> = ({
                     )}
                     onCheckedChange={(chk) => {
                       if (chk) {
-                        setLedgerAccounts([...ledgerAccounts, acc]);
+                        ledgerAccountProvider.addAccount(acc);
                       } else {
-                        setLedgerAccounts(
-                          ledgerAccounts.filter(
-                            (v) =>
-                              !(
-                                v.deviceId === acc.deviceId &&
-                                v.index === acc.index &&
-                                v.address === acc.address
-                              )
-                          )
-                        );
+                        ledgerAccountProvider.removeAccount(acc);
                       }
                     }}
                   />

@@ -1,24 +1,18 @@
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Button } from "@/components/ui/button";
-import { setAccountSource } from "@/state/account";
-import {
-  setVaultAccounts,
-  vaultAccounts$,
-  type VaultAccount,
-} from "@/state/vault";
+import { selectedAccountPlugin } from "@/state/account";
+import { polkadotVaultProvider } from "@/state/vault";
 import { useStateObservable } from "@react-rxjs/core";
-import { createSignal } from "@react-rxjs/utils";
 import { Camera, ChevronLeft, Trash2 } from "lucide-react";
 import { getSs58AddressInfo } from "polkadot-api";
 import { useCallback, useEffect, type FC, type ReactElement } from "react";
-import { withLatestFrom } from "rxjs";
 import { TotalBalance } from "../AccountBalance";
 import { QrCamera } from "./QrCamera";
 
 export const VaultAccounts: FC<{
   setContent: (element: ReactElement | null) => void;
 }> = ({ setContent }) => {
-  const vaultAccounts = useStateObservable(vaultAccounts$);
+  const vaultAccounts = useStateObservable(polkadotVaultProvider.accounts$);
 
   useEffect(() => {
     if (vaultAccounts.length === 0) {
@@ -48,9 +42,7 @@ export const VaultAccounts: FC<{
                   variant="outline"
                   className="text-destructive"
                   type="button"
-                  onClick={() =>
-                    setVaultAccounts(vaultAccounts.filter((v) => acc !== v))
-                  }
+                  onClick={() => polkadotVaultProvider.removeAccount(acc)}
                 >
                   <Trash2 />
                 </Button>
@@ -59,10 +51,8 @@ export const VaultAccounts: FC<{
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    setAccountSource({
-                      type: "vault",
-                      value: acc,
-                    });
+                    // Easier with hook?
+                    selectedAccountPlugin.setAccount(acc);
                   }}
                 >
                   Select
@@ -104,18 +94,6 @@ export const VaultAccounts: FC<{
   );
 };
 
-const [scannedAccount$, scannedAccount] = createSignal<VaultAccount>();
-scannedAccount$
-  .pipe(withLatestFrom(vaultAccounts$))
-  .subscribe(([account, oldAccounts]) => {
-    const accountKey = `${account.address}:${account.genesis}`;
-    if (
-      oldAccounts.some((acc) => `${acc.address}:${acc.genesis}` === accountKey)
-    )
-      return;
-    setVaultAccounts([...oldAccounts, account]);
-  });
-
 const ScanAccount: FC<{ onScanned: () => void; onClose: () => void }> = ({
   onScanned,
   onClose,
@@ -140,7 +118,7 @@ const ScanAccount: FC<{ onScanned: () => void; onClose: () => void }> = ({
             throw new Error("Invalid QR");
           }
 
-          scannedAccount({
+          polkadotVaultProvider.addAccount({
             address,
             genesis,
           });
