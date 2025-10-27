@@ -3,14 +3,17 @@ import { NavMenu } from "@/components/NavMenu/NavMenu";
 import { location$ } from "@/router";
 import { lazy, Suspense } from "react";
 import { matchPath, Route, Routes } from "react-router-dom";
-import { map, merge, switchMap } from "rxjs";
+import { map, switchMap } from "rxjs";
 import {
   ValidatorDetailPage,
   validatorDetailPageSub$,
 } from "./ValidatorDetail";
-import { validatorList$ } from "./ValidatorList";
 
-const ValidatorList = lazy(() => import("./ValidatorList"));
+const ValidatorList = lazy(async () => {
+  const module = await import("./ValidatorList");
+  module.validatorList$.subscribe();
+  return module;
+});
 
 export const Validators = () => {
   return (
@@ -34,7 +37,7 @@ const routedDetail$ = location$.pipe(
   ),
   switchMap((id) => (id ? validatorDetailPageSub$(id) : []))
 );
-export const validatorsSub$ = merge(validatorList$, routedDetail$);
+export const validatorsSub$ = routedDetail$;
 
 export const ValidatorsSkeleton = () => (
   <div className="space-y-4">

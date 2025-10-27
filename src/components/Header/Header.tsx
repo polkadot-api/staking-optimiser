@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { ChainSelector } from "./ChainSelector";
 import { SelectAccount } from "./SelectAccount";
-import { USE_CHOPSTICKS } from "@/state/chainConfig";
 import { ChopsticksController } from "../ChopsticksController";
 
 export const Header = () => (
@@ -13,7 +12,11 @@ export const Header = () => (
         </Link>
       </div>
       <SelectAccount />
-      {USE_CHOPSTICKS ? <ChopsticksController /> : <ChainSelector />}
+      {import.meta.env.VITE_WITH_CHOPSTICKS ? (
+        <ChopsticksController />
+      ) : (
+        <ChainSelector />
+      )}
     </div>
   </div>
 );

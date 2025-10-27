@@ -2,9 +2,12 @@ import { CardPlaceholder } from "@/components/CardPlaceholder";
 import { lazy, Suspense } from "react";
 import { merge } from "rxjs";
 import { BondInput, bondInputSub$ } from "./BondInput";
-import { pickValidatorsSub$ } from "./PickValidators";
 
-const PickValidators = lazy(() => import("./PickValidators"));
+const PickValidators = lazy(async () => {
+  const module = await import("./PickValidators");
+  module.pickValidatorsSub$.subscribe();
+  return module;
+});
 
 export const ManageNomination = () => {
   return (
@@ -17,7 +20,7 @@ export const ManageNomination = () => {
   );
 };
 
-export const manageNominationSub$ = merge(bondInputSub$, pickValidatorsSub$);
+export const manageNominationSub$ = merge(bondInputSub$);
 
 const ManageNominationSkeleton = () => {
   return (

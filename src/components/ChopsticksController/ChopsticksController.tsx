@@ -1,51 +1,62 @@
-import { useRef, type FormEvent } from "react";
-import { ReactSVG } from "react-svg";
+import { clients$, tokenDecimals$ } from "@/state/chain";
+import { activeEra$, refreshEra$ } from "@/state/era";
+import { codeSplit } from "@/util/codeSplit";
+import { dot } from "@polkadot-api/descriptors";
+import { u64 } from "@polkadot-api/substrate-bindings";
+import { getTypedCodecs, type HexString } from "polkadot-api";
+import { toHex } from "polkadot-api/utils";
+import { lazy, useRef, type FormEvent } from "react";
+import { combineLatest, firstValueFrom, map, skip } from "rxjs";
 import { Button } from "../ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
 import { Input } from "../ui/input";
 import logo from "./chopsticks.svg";
 import { useControllerAction } from "./controllerAction";
 import { ControllerStatusIndicator } from "./ControllerStatusIndicator";
-import { combineLatest, firstValueFrom, map, skip } from "rxjs";
-import { clients$, tokenDecimals$ } from "@/state/chain";
-import { getTypedCodecs, type HexString } from "polkadot-api";
-import { u64 } from "@polkadot-api/substrate-bindings";
-import { toHex } from "polkadot-api/utils";
-import { activeEra$, refreshEra$ } from "@/state/era";
-import { dot } from "@polkadot-api/descriptors";
 
-export const ChopsticksController = () => {
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <ReactSVG
-            src={logo}
-            beforeInjection={(svg) => {
-              svg.setAttribute("width", String(24));
-              svg.setAttribute("height", String(24));
-            }}
-          />
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Chopsticks operations</DialogTitle>
-        </DialogHeader>
-        <div className="p-4 space-y-4">
-          <SkipEras />
-          <ResetBalance />
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
+// TODO  For some reason, even though this file is getting tree-shaked, all of its imports are still being bundled in. It's annoying.
+
+const ReactSVG = lazy(() =>
+  import("react-svg").then(({ ReactSVG }) => ({ default: ReactSVG }))
+);
+
+export const ChopsticksController = codeSplit(
+  import("../ui/dialog"),
+  () => null,
+  ({
+    payload: {
+      Dialog,
+      DialogContent,
+      DialogHeader,
+      DialogTitle,
+      DialogTrigger,
+    },
+  }) => {
+    return (
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline">
+            <ReactSVG
+              src={logo}
+              beforeInjection={(svg) => {
+                svg.setAttribute("width", String(24));
+                svg.setAttribute("height", String(24));
+              }}
+            />
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Chopsticks operations</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 space-y-4">
+            <SkipEras />
+            <ResetBalance />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+);
 
 const stakingCodecs = await getTypedCodecs(dot);
 let hasPreinitialized = sessionStorage.getItem("preinit-chopsticks") === "true";

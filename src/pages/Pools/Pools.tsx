@@ -19,9 +19,12 @@ import { defer, map, merge, switchMap } from "rxjs";
 import { ManageBond } from "./ManageBond";
 import { ManageLocks, manageLocksSub$ } from "./ManageUnlocks";
 import { PoolDetail, poolDetailSub$ } from "./PoolDetail";
-import { poolListSub$ } from "./PoolList";
 
-const PoolList = lazy(() => import("./PoolList"));
+const PoolList = lazy(async () => {
+  const module = await import("./PoolList");
+  module.poolListSub$.subscribe();
+  return module;
+});
 
 export const Pools = () => {
   return (
@@ -52,9 +55,7 @@ const routedDetail$ = location$.pipe(
   ),
   switchMap((id) => (id ? poolDetailSub$(Number(id)) : []))
 );
-export const poolsSub$ = defer(() =>
-  merge(currentStatusSub$, poolListSub$, routedDetail$)
-);
+export const poolsSub$ = defer(() => merge(currentStatusSub$, routedDetail$));
 
 const PoolsSkeleton = () => (
   <div className="space-y-4">
