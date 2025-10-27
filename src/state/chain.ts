@@ -80,6 +80,7 @@ const createClients = (chain: KnownChains) => {
     const useChopsticks = USE_CHOPSTICKS && type === "staking";
     const chainType: ChainType =
       type === "staking" ? (useChopsticks ? "assetHub" : stakingType) : type;
+    if (clients[chainType]) return clients[chainType];
 
     const url = useChopsticks
       ? ["ws://localhost:8132"]
@@ -92,12 +93,13 @@ const createClients = (chain: KnownChains) => {
       rpcProvider = withPolkadotSdkCompat(rpcProvider);
     }
 
-    return (clients[chainType] ??= createClient(
+    clients[chainType] = createClient(
       withLogsRecorder(
         (...v) => (logsEnabled ? console.debug(chainType, ...v) : null),
         rpcProvider
       )
-    ));
+    );
+    return clients[chainType];
   };
 
   const relayClient = getRpcClient("relay");

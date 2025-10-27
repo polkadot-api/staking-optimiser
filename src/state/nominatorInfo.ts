@@ -7,7 +7,16 @@ import {
   Vector,
 } from "@polkadot-api/substrate-bindings";
 import { AccountId, type SS58String } from "polkadot-api";
-import { defer, filter, firstValueFrom, fromEvent, map, switchMap } from "rxjs";
+import {
+  defer,
+  filter,
+  firstValueFrom,
+  fromEvent,
+  map,
+  merge,
+  switchMap,
+  take,
+} from "rxjs";
 import { selectedChain$, stakingApi$ } from "./chain";
 import { indexerUrl } from "./chainConfig";
 import {
@@ -30,12 +39,33 @@ export interface NominatorRequest {
   };
 }
 
+let activated = false;
+function activateWorker() {
+  if (activated) return;
+  activated = true;
+
+  merge(
+    message$.pipe(
+      filter((v) => v.type === "ready"),
+      switchMap(() => selectedChain$),
+      take(1)
+    ),
+    selectedChain$
+  ).subscribe((value) =>
+    worker.postMessage({
+      type: "setChain",
+      value,
+    } satisfies Request)
+  );
+}
+
 let workerReqId = 0;
 const throughWorker = <T>(msg: NominatorRequest) =>
   firstValueFrom(
     defer(() => {
-      const id = workerReqId++;
+      activateWorker();
 
+      const id = workerReqId++;
       worker.postMessage({
         type: msg.type,
         value: {
@@ -49,18 +79,6 @@ const throughWorker = <T>(msg: NominatorRequest) =>
         map((v) => v.value!.result as T)
       );
     })
-  );
-
-message$
-  .pipe(
-    filter((v) => v.type === "ready"),
-    switchMap(() => selectedChain$)
-  )
-  .subscribe((value) =>
-    worker.postMessage({
-      type: "setChain",
-      value,
-    } satisfies Request)
   );
 
 const getIndexerCodec = (ss58Format: number) => {
@@ -134,8 +152,11 @@ const registerFail = () => {
   }
 };
 
-export const requestNominator = <T>(msg: NominatorRequest) =>
-  indexerFailed
+export const requestNominator = <T>(
+  msg: NominatorRequest,
+  worker?: boolean
+) => {
+  return indexerFailed || worker
     ? throughWorker<T>(msg)
     : throughIndexer<T>(msg)
         .then((r) => {
@@ -148,3 +169,4 @@ export const requestNominator = <T>(msg: NominatorRequest) =>
           registerFail();
           return throughWorker<T>(msg);
         });
+};

@@ -131,13 +131,16 @@ export const currentNominatorStatus$ = state(
     activeEraNumber$,
   ]).pipe(
     switchMap(([nominator, activeEra]) =>
-      requestNominator<NominatorValidatorsResult>({
-        type: "getNominatorActiveValidators",
-        value: {
-          address: nominator,
-          era: activeEra,
+      requestNominator<NominatorValidatorsResult>(
+        {
+          type: "getNominatorActiveValidators",
+          value: {
+            address: nominator,
+            era: activeEra,
+          },
         },
-      })
+        true
+      )
     )
   )
 );
