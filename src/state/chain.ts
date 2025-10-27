@@ -67,6 +67,8 @@ const shuffleArray = <T>(array: T[]): T[] =>
     .sort((a, b) => a.p - b.p)
     .map(({ v }) => v);
 
+const logsEnabled =
+  import.meta.env.DEV || localStorage.getItem("rpc-logs") === "true";
 const createClients = (chain: KnownChains) => {
   const clients: Partial<Record<ChainType, PolkadotClient>> = {};
 
@@ -91,7 +93,10 @@ const createClients = (chain: KnownChains) => {
     }
 
     return (clients[chainType] ??= createClient(
-      withLogsRecorder((...v) => console.debug(chainType, ...v), rpcProvider)
+      withLogsRecorder(
+        (...v) => (logsEnabled ? console.debug(chainType, ...v) : null),
+        rpcProvider
+      )
     ));
   };
 

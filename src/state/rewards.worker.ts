@@ -63,6 +63,7 @@ const shuffleArray = <T>(array: T[]): T[] =>
     .sort((a, b) => a.p - b.p)
     .map(({ v }) => v);
 
+let logsEnabled = import.meta.env.DEV;
 const createSdk = (chain: KnownChains) => {
   const rpcs = rpcsByChain[chain];
   const stakingType = stakingTypeByChain[chain];
@@ -82,7 +83,11 @@ const createSdk = (chain: KnownChains) => {
     }
 
     return createClient(
-      withLogsRecorder((...v) => console.debug(chainType, ...v), rpcProvider)
+      withLogsRecorder(
+        (...v) =>
+          logsEnabled ? console.debug(`worker-${chainType}`, ...v) : null,
+        rpcProvider
+      )
     );
   };
 
