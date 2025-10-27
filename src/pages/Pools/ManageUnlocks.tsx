@@ -6,7 +6,7 @@ import { activeEra$, eraDurationInMs$ } from "@/state/era";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import { estimatedFuture } from "@/util/date";
 import { MultiAddress } from "@polkadot-api/descriptors";
-import { state, useStateObservable } from "@react-rxjs/core";
+import { liftSuspense, state, useStateObservable } from "@react-rxjs/core";
 import { combineLatest, filter, firstValueFrom, map } from "rxjs";
 import { slashingSpans$ } from "../Nominate/NominateLocks";
 
@@ -53,7 +53,7 @@ export const ManageLocks = () => {
     </div>
   );
 };
-export const manageLocksSub$ = locks$;
+export const manageLocksSub$ = locks$.pipe(liftSuspense());
 
 export const UnlockPoolBonds = () => {
   const selectedAccount = useStateObservable(selectedSignerAccount$);
