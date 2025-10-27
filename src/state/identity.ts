@@ -1,6 +1,6 @@
 import { state } from "@react-rxjs/core";
 import { type SS58String } from "polkadot-api";
-import { map, startWith, switchMap, tap } from "rxjs";
+import { firstValueFrom, map, startWith, switchMap, tap } from "rxjs";
 import { identitySdk$ } from "./chain";
 
 const CACHE_KEY = "identity-cache";
@@ -33,3 +33,6 @@ export const identity$ = state((address: SS58String) => {
     startWith(defaultValue)
   );
 }, null);
+
+export const getAddressIdentity = (address: SS58String) =>
+  firstValueFrom(identity$(address));

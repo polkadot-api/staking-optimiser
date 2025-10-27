@@ -6,7 +6,6 @@ import {
 import { Card } from "@/components/Card";
 import { CardPlaceholder } from "@/components/CardPlaceholder";
 import { DialogButton } from "@/components/DialogButton";
-import { openSelectAccount } from "@/components/Header/SelectAccount";
 import {
   ActiveEra,
   activeEraSub$,
@@ -24,6 +23,7 @@ import { activeEra$, eraDurationInMs$ } from "@/state/era";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import { estimatedFuture } from "@/util/date";
 import { liftSuspense, useStateObservable } from "@react-rxjs/core";
+import { openSelectAccount } from "polkahub";
 import { Suspense } from "react";
 import { Link } from "react-router-dom";
 import { defer, map, merge, switchMap } from "rxjs";
