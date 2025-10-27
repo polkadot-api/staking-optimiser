@@ -1,7 +1,6 @@
-import { cn } from "@/lib/utils";
+import { SourceButton } from "@polkahub/ui-components";
 import { ManageLedger, ManageReadOnly, ManageVault } from "polkahub";
-import { type FC, type MouseEvent, type PropsWithChildren } from "react";
-import { Button } from "../ui/button";
+import { type FC } from "react";
 
 export const ConnectSource: FC = () => {
   return (
@@ -22,25 +21,3 @@ export const ConnectSource: FC = () => {
     </div>
   );
 };
-
-const SourceButton: FC<
-  PropsWithChildren<{
-    label: string;
-    isSelected?: boolean;
-    className?: string;
-    onClick?: (evt: MouseEvent) => void;
-    disabled?: boolean;
-  }>
-> = ({ label, isSelected, onClick, className, children, disabled }) => (
-  <Button
-    variant="outline"
-    className={cn("h-auto min-w-40", isSelected ? "bg-accent" : "")}
-    onClick={onClick}
-    disabled={disabled}
-  >
-    {children}
-    <div className="text-left">
-      <span className={cn("font-bold", className)}>{label}</span>
-    </div>
-  </Button>
-);
