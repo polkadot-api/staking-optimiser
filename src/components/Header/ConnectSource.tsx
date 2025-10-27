@@ -1,54 +1,16 @@
 import { cn } from "@/lib/utils";
-import { Eye } from "lucide-react";
-import { ModalContext } from "polkahub";
-import {
-  useContext,
-  type FC,
-  type MouseEvent,
-  type PropsWithChildren,
-} from "react";
-import { LedgerAccounts } from "../LedgerAccounts";
+import { ManageLedger, ManageReadOnly, ManageVault } from "polkahub";
+import { type FC, type MouseEvent, type PropsWithChildren } from "react";
 import { Button } from "../ui/button";
-import { VaultAccounts } from "../vault/VaultAccounts";
-import { ManageAddresses } from "./ManageAddresses";
 
 export const ConnectSource: FC = () => {
-  const { setContent } = useContext(ModalContext)!;
-
   return (
     <div>
       <h3>Manage Connections</h3>
       <div className="flex gap-2 flex-wrap items-center justify-center">
-        <SourceButton
-          label="Address"
-          onClick={() =>
-            setContent(<ManageAddresses onClose={() => setContent(null)} />)
-          }
-        >
-          <div>
-            <Eye className="size-10" />
-          </div>
-        </SourceButton>
-        <SourceButton
-          label="Ledger"
-          onClick={() => setContent(<LedgerAccounts setContent={setContent} />)}
-        >
-          <img
-            src={import.meta.env.BASE_URL + "ledger.webp"}
-            alt="Ledger"
-            className="h-10 rounded"
-          />
-        </SourceButton>
-        <SourceButton
-          label="Vault"
-          onClick={() => setContent(<VaultAccounts setContent={setContent} />)}
-        >
-          <img
-            src={import.meta.env.BASE_URL + "vault.webp"}
-            alt="Vault"
-            className="h-10 rounded"
-          />
-        </SourceButton>
+        <ManageReadOnly />
+        <ManageLedger />
+        <ManageVault />
         <SourceButton label="Wallet Connect" disabled>
           <img
             src={import.meta.env.BASE_URL + "walletConnect.svg"}

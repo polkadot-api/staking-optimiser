@@ -41,7 +41,7 @@
     "cmdk": "^1.1.1",
     "lucide-react": "^0.548.0",
     "polkadot-api": "^1.20.0",
-    "polkahub": "0.1.0-local.15",
+    "polkahub": "0.1.0-local.24",
     "qr": "0.6.0-local.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

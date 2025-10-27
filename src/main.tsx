@@ -3,33 +3,34 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Navigate, Route, Routes } from "react-router-dom";
 import App, { appSub$ } from "./App.tsx";
-import { readOnlyProvider } from "./components/Header/ManageAddresses.tsx";
-import { ledgerAccountProvider } from "./components/LedgerAccounts.tsx";
+import { getAddressTotalBalance } from "./components/AccountBalance.tsx";
 import { Transactions } from "./components/Transactions.tsx";
-import { VaultTxModal } from "./components/vault/index.ts";
 import "./index.css";
 import { Router } from "./router.tsx";
-import { pjsWalletProvider, selectedAccountPlugin } from "./state/account.ts";
-import { polkadotVaultProvider } from "./state/vault.ts";
+import { accountProviderPlugins } from "./state/account.ts";
+import { getAddressIdentity } from "./state/identity.ts";
+import { codeSplit } from "./util/codeSplit.tsx";
 
-const plugins = [
-  selectedAccountPlugin,
-  pjsWalletProvider,
-  polkadotVaultProvider,
-  ledgerAccountProvider,
-  readOnlyProvider,
-];
+const LazyVaultModal = codeSplit(
+  import("polkahub").then(({ VaultTxModal }) => ({ VaultTxModal })),
+  () => null,
+  ({ payload: { VaultTxModal } }) => <VaultTxModal />
+);
 
 appSub$.subscribe();
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <PolkaHubProvider plugins={plugins}>
+    <PolkaHubProvider
+      plugins={accountProviderPlugins}
+      getBalance={getAddressTotalBalance}
+      getIdentity={getAddressIdentity}
+    >
       <Router>
         <Routes>
           <Route path="/:chain/*" element={<App />} />
           <Route path="/" element={<Navigate to="/polkadot" replace />} />
         </Routes>
-        <VaultTxModal />
+        <LazyVaultModal />
         <Transactions />
       </Router>
     </PolkaHubProvider>

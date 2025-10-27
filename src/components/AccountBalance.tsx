@@ -1,18 +1,39 @@
 import { cn } from "@/lib/utils";
 import { accountStatus$ } from "@/state/account";
-import { stakingSdk$ } from "@/state/chain";
+import { stakingApi$, stakingSdk$, tokenProps$ } from "@/state/chain";
 import { state, useStateObservable } from "@react-rxjs/core";
 import type { SS58String } from "polkadot-api";
 import { lazy, type FC } from "react";
-import { map, merge, switchMap } from "rxjs";
+import {
+  combineLatest,
+  filter,
+  firstValueFrom,
+  map,
+  merge,
+  switchMap,
+} from "rxjs";
 import { TextHintTooltip } from "./HintTooltip";
 import { TokenValue } from "./TokenValue";
+import { formatToken } from "@polkadot-api/react-components";
 
 const SectorChart = lazy(() => import("@/components/SectorChart"));
 
 export const accountBalance$ = accountStatus$.pipeState(
   map((v) => v?.balance ?? null)
 );
+
+export const getAddressTotalBalance = (addr: SS58String) =>
+  firstValueFrom(
+    combineLatest([
+      stakingApi$.pipe(
+        switchMap((api) => api.query.System.Account.getValue(addr)),
+        map((v) => v.data.free + v.data.reserved)
+      ),
+      tokenProps$.pipe(filter((v) => v != null)),
+    ]).pipe(
+      map(([balance, props]) => (balance ? formatToken(balance, props) : null))
+    )
+  );
 
 const bondedStatus$ = accountStatus$.pipeState(
   map((v) => {
