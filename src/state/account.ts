@@ -9,12 +9,18 @@ import {
 } from "polkahub";
 import { combineLatest, firstValueFrom, map, switchMap, take } from "rxjs";
 import { selectedChain$, stakingApi$, stakingSdk$ } from "./chain";
-import { tokenDecimalsByChain, tokenSymbolByChain } from "./chainConfig";
+import {
+  tokenDecimalsByChain,
+  tokenSymbolByChain,
+  USE_CHOPSTICKS,
+} from "./chainConfig";
 
 const selectedAccountPlugin = createSelectedAccountPlugin();
 const pjsWalletProvider = createPjsWalletProvider();
 const polkadotVaultProvider = createPolkadotVaultProvider();
-const readOnlyProvider = createReadOnlyProvider();
+const readOnlyProvider = createReadOnlyProvider({
+  fakeSigner: USE_CHOPSTICKS,
+});
 const ledgerAccountProvider = createLedgerProvider(
   async () => {
     const module = await import("@ledgerhq/hw-transport-webhid");

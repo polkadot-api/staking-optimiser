@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { tokenProps$ } from "@/state/chain";
 import { amountToParts } from "@/util/format";
+import type { TokenProperties } from "@polkadot-api/react-components";
 import { useStateObservable } from "@react-rxjs/core";
 import type { FC } from "react";
 
@@ -18,6 +19,29 @@ export const significantDigitsDecimals =
 export const fixedDecimals = (decimals: number) => () => decimals;
 export const allDecimals = () => (_: bigint, tokenDecimals: number) =>
   tokenDecimals;
+
+export function formatToken(
+  value: bigint,
+  tokenProps: TokenProperties,
+  decimalsFn: (
+    integerPart: bigint,
+    tokenDecimals: number
+  ) => number = significantDigitsDecimals(3, 2)
+) {
+  const { decimals: tokenDecimals, symbol } = tokenProps;
+
+  const { integer, fraction } = amountToParts(value, tokenDecimals);
+
+  const decimals = decimalsFn(value, tokenDecimals);
+  const decimalPart =
+    decimals > 0
+      ? `${decimalPoint}${fraction
+          .slice(0, decimals)
+          .replace(/0+$/, "")
+          .padEnd(decimals, "0")}`
+      : null;
+  return Number(integer).toLocaleString() + (decimalPart || "") + " " + symbol;
+}
 
 export const TokenValue: FC<{
   value: bigint;

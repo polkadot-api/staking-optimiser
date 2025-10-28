@@ -4,6 +4,7 @@ import {
 } from "@/components/AccountBalance";
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
+import { CardPlaceholder } from "@/components/CardPlaceholder";
 import { DialogButton } from "@/components/DialogButton";
 import { TransactionButton } from "@/components/Transactions";
 import { PERBILL } from "@/constants";
@@ -33,22 +34,19 @@ import {
 import { ManageNomination } from "./ManageNomination";
 import { MinBondingAmounts, minBondingAmountsSub$ } from "./MinBondingAmounts";
 import { NominateLocks, nominateLocksSub$ } from "./NominateLocks";
-import { CardPlaceholder } from "@/components/CardPlaceholder";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
 
-export const NominatingContent = () => {
-  return (
-    <div className="space-y-4">
-      <MinBondingAmounts />
-      <Suspense fallback={<CardPlaceholder height={350} />}>
-        <StatusCard />
-      </Suspense>
-      <NominateRewards />
-      <SelectedValidators />
-    </div>
-  );
-};
+export const NominatingContent = () => (
+  <div className="space-y-4">
+    <MinBondingAmounts />
+    <Suspense fallback={<CardPlaceholder height={350} />}>
+      <StatusCard />
+    </Suspense>
+    <NominateRewards />
+    <SelectedValidators />
+  </div>
+);
 
 export const nominatingContentSub$ = defer(() =>
   merge(

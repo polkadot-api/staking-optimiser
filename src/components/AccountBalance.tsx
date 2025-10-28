@@ -13,8 +13,7 @@ import {
   switchMap,
 } from "rxjs";
 import { TextHintTooltip } from "./HintTooltip";
-import { TokenValue } from "./TokenValue";
-import { formatToken } from "@polkadot-api/react-components";
+import { formatToken, TokenValue } from "./TokenValue";
 
 const SectorChart = lazy(() => import("@/components/SectorChart"));
 

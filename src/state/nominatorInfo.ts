@@ -6,20 +6,32 @@ import {
   Tuple,
   Vector,
 } from "@polkadot-api/substrate-bindings";
+import { shareLatest } from "@react-rxjs/core";
 import { AccountId, type SS58String } from "polkadot-api";
 import {
+  catchError,
+  concat,
   defer,
   filter,
+  finalize,
   firstValueFrom,
+  from,
   fromEvent,
+  iif,
   map,
   merge,
+  mergeMap,
+  Observable,
+  Subject,
   switchMap,
   take,
+  withLatestFrom,
 } from "rxjs";
 import { selectedChain$, stakingApi$ } from "./chain";
 import { indexerUrl } from "./chainConfig";
+import { activeEraNumber$ } from "./era";
 import {
+  type NominatorRewardsResult,
   type NominatorValidatorsResult,
   type Request,
   type Response,
@@ -39,6 +51,29 @@ export interface NominatorRequest {
   };
 }
 
+export const getNominatorRewards = (address: SS58String, eras: number[]) =>
+  iif(
+    () => indexerFailed,
+    sendToWorker<NominatorRewardsResult>(
+      "getNominatorRewards",
+      address,
+      from(eras)
+    ),
+    getNominatorRewardsThroughIndexer(address, eras)
+  );
+
+export const getNominatorValidators = (address: SS58String, eras: number[]) =>
+  iif(
+    () => indexerFailed,
+    sendToWorker<NominatorValidatorsResult>(
+      "getNominatorActiveValidators",
+      address,
+      from(eras)
+    ),
+    getNominatorValidatorsThroughIndexer(address, eras)
+  );
+
+/// worker
 let activated = false;
 function activateWorker() {
   if (activated) return;
@@ -61,79 +96,47 @@ function activateWorker() {
 
 let workerReqId = 0;
 const throughWorker = <T>(msg: NominatorRequest) =>
-  firstValueFrom(
-    defer(() => {
-      activateWorker();
+  defer(() => {
+    activateWorker();
 
-      const id = workerReqId++;
-      worker.postMessage({
-        type: msg.type,
-        value: {
-          ...msg.value,
-          id,
-        },
-      } satisfies Request);
+    const id = workerReqId++;
+    worker.postMessage({
+      type: msg.type,
+      value: {
+        ...msg.value,
+        id,
+      },
+    } satisfies Request);
 
-      return message$.pipe(
-        filter((v) => v.type === "result" && v.value.id === id),
-        map((v) => v.value!.result as T)
-      );
-    })
-  );
-
-const getIndexerCodec = (ss58Format: number) => {
-  const nomRewardCodec = Struct({
-    reward: compactBn,
-    bond: compactBn,
-    commission: compactBn,
+    return message$.pipe(
+      filter((v) => v.type === "result" && v.value.id === id),
+      map((v) => v.value!.result as T)
+    );
   });
 
-  const byValidator = enhanceCodec(
-    Vector(Tuple(AccountId(ss58Format), nomRewardCodec)),
-    Object.entries as (
-      x: Record<SS58String, CodecType<typeof nomRewardCodec>>
-    ) => Array<[SS58String, CodecType<typeof nomRewardCodec>]>,
-    Object.fromEntries
+const sendToWorker = <T>(
+  type: NominatorRequest["type"],
+  address: SS58String,
+  eras: Observable<number>
+) =>
+  eras.pipe(
+    mergeMap(
+      (era) =>
+        throughWorker<T>({
+          type,
+          value: { address, era },
+        }).pipe(
+          map((result) => ({ era, result })),
+          catchError((ex) => {
+            console.error(ex);
+            return [{ era, result: null }];
+          })
+        ),
+      3
+    )
   );
 
-  const [, nominatorsRewardDec] = Struct({
-    total: compactBn,
-    totalCommission: compactBn,
-    activeBond: compactBn,
-    byValidator,
-  });
-
-  return nominatorsRewardDec;
-};
-
-const throughIndexer = async <T>(msg: NominatorRequest) => {
-  const chain = await firstValueFrom(selectedChain$);
-  const api = await firstValueFrom(stakingApi$);
-  const ss58Format = await api.constants.System.SS58Prefix();
-
-  const response = await fetch(
-    `${indexerUrl[chain]}/${msg.value.era}/${msg.value.address}`
-  );
-
-  if (response.status >= 400) {
-    throw new Error(response.statusText);
-  }
-  const payload = await response.bytes();
-
-  const codec = getIndexerCodec(ss58Format);
-  const decoded = codec(payload);
-  if (msg.type === "getNominatorActiveValidators") {
-    const validators: NominatorValidatorsResult = Object.entries(
-      decoded.byValidator
-    ).map(([validator, { bond }]) => ({
-      validator,
-      activeBond: bond,
-    }));
-    return validators as T;
-  }
-  return decoded as T;
-};
-
+/// indexer
 let indexerFailed = false;
 let successes = 0;
 let fails = 0;
@@ -152,21 +155,128 @@ const registerFail = () => {
   }
 };
 
-export const requestNominator = <T>(
-  msg: NominatorRequest,
-  worker?: boolean
-) => {
-  return indexerFailed || worker
-    ? throughWorker<T>(msg)
-    : throughIndexer<T>(msg)
-        .then((r) => {
-          registerSuccess();
-          return r;
-        })
-        .catch((err) => {
-          console.error(err);
-          console.log("failed at", msg);
-          registerFail();
-          return throughWorker<T>(msg);
-        });
+const indexerCodec$ = stakingApi$.pipe(
+  switchMap((api) => api.constants.System.SS58Prefix()),
+  map((ss58Format: number) => {
+    const nomRewardCodec = Struct({
+      reward: compactBn,
+      bond: compactBn,
+      commission: compactBn,
+    });
+
+    const byValidator = enhanceCodec(
+      Vector(Tuple(AccountId(ss58Format), nomRewardCodec)),
+      Object.entries as (
+        x: Record<SS58String, CodecType<typeof nomRewardCodec>>
+      ) => Array<[SS58String, CodecType<typeof nomRewardCodec>]>,
+      Object.fromEntries
+    );
+
+    const [, nominatorsRewardDec] = Struct({
+      total: compactBn,
+      totalCommission: compactBn,
+      activeBond: compactBn,
+      byValidator,
+    });
+
+    return nominatorsRewardDec;
+  }),
+  shareLatest()
+);
+
+const fetchCache = new Map<string, Promise<Uint8Array | null>>();
+const getIndexerNominatorFile = (address: SS58String, era: number) => {
+  const key = `${address}-${era}`;
+  if (!fetchCache.has(key)) {
+    fetchCache.set(
+      key,
+      firstValueFrom(
+        selectedChain$.pipe(
+          switchMap((chain) => fetch(`${indexerUrl[chain]}/${era}/${address}`)),
+          switchMap((response) => {
+            if (response.status >= 400) throw new Error(response.statusText);
+            return response.bytes();
+          }),
+          catchError(() => [null])
+        )
+      )
+    );
+  }
+  return fetchCache.get(key)!;
 };
+
+const getNominatorRewardsThroughIndexer = (
+  address: SS58String,
+  eras: number[]
+): Observable<{
+  era: number;
+  result: NominatorRewardsResult | null;
+}> =>
+  activeEraNumber$.pipe(
+    take(1),
+    switchMap((activeEra) => {
+      const aboveActiveEra = eras.filter((e) => e >= activeEra);
+      const belowActiveEra = eras.filter((e) => e < activeEra);
+
+      const failedEras$ = new Subject<number>();
+      const workerEras$ = concat(from(aboveActiveEra), failedEras$);
+
+      const worker$ = sendToWorker<NominatorRewardsResult>(
+        "getNominatorRewards",
+        address,
+        workerEras$
+      );
+      const indexer$ = merge(
+        ...belowActiveEra.map((era) =>
+          getIndexerNominatorFile(address, era).then((result) => ({
+            era,
+            result,
+          }))
+        )
+      ).pipe(
+        filter((v) => {
+          if (!v.result) {
+            failedEras$.next(v.era);
+            registerFail();
+            return false;
+          }
+          registerSuccess();
+          return true;
+        }),
+        withLatestFrom(indexerCodec$),
+        map(([{ era, result }, codec]) => ({
+          era,
+          result: codec(result!),
+        })),
+        finalize(() => {
+          failedEras$.complete();
+        })
+      );
+
+      return merge(worker$, indexer$);
+    })
+  );
+
+const getNominatorValidatorsThroughIndexer = (
+  address: SS58String,
+  eras: number[]
+) =>
+  getNominatorRewardsThroughIndexer(address, eras).pipe(
+    map(
+      ({
+        era,
+        result,
+      }): {
+        era: number;
+        result: NominatorValidatorsResult | null;
+      } => ({
+        era,
+        result: result
+          ? Object.entries(result.byValidator).map(([validator, { bond }]) => ({
+              validator,
+              activeBond: bond,
+            }))
+          : null,
+      })
+    )
+  );

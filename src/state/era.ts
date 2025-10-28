@@ -2,11 +2,8 @@ import { relayApi$, stakingApi$ } from "@/state/chain";
 import { state } from "@react-rxjs/core";
 import {
   combineLatest,
-  concat,
   defer,
   distinctUntilChanged,
-  filter,
-  from,
   map,
   merge,
   repeat,
@@ -108,34 +105,17 @@ export const currentEra$ = state(
   null
 );
 
-/**
- * Observable that emits all eras, starting from the last completed one backwards
- * but then emitting new eras as they happen.
- */
 export const allEras$ = (pastAmount = Number.POSITIVE_INFINITY) =>
-  stakingApi$
-    .pipe(
-      switchMap((stakingApi) => stakingApi.constants.Staking.HistoryDepth())
-    )
-    .pipe(
-      switchMap((historyDepth) =>
-        activeEraNumber$.pipe(
-          take(1),
-          map((era) => ({
-            era,
-            historyDepth: Math.min(pastAmount, historyDepth),
-          }))
+  stakingApi$.pipe(
+    switchMap((stakingApi) => stakingApi.constants.Staking.HistoryDepth()),
+    switchMap((historyDepth) => {
+      const cappedDepth = Math.min(pastAmount, historyDepth);
+      return activeEraNumber$.pipe(
+        map((era, i) =>
+          i === 0
+            ? new Array(cappedDepth - 1).fill(0).map((_, i) => era - i - 1)
+            : [era - 1]
         )
-      ),
-      switchMap(({ era: startEra, historyDepth }) =>
-        concat(
-          from(
-            new Array(historyDepth - 1).fill(0).map((_, i) => startEra - i - 1)
-          ),
-          activeEraNumber$.pipe(
-            filter((newEra) => newEra > startEra),
-            map((v) => v - 1)
-          )
-        )
-      )
-    );
+      );
+    })
+  );
