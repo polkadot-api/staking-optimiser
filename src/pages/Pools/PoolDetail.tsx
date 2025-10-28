@@ -23,9 +23,9 @@ import {
   type ReactNode,
 } from "react";
 import { Link, useParams } from "react-router-dom";
-import { combineLatest, map, switchMap } from "rxjs";
+import { combineLatest, map, merge, switchMap } from "rxjs";
 import { aggregatedValidators$ } from "../Validators/validatorList.state";
-import { JoinPool } from "./JoinPool";
+import { JoinPool, joinPoolSub$ } from "./JoinPool";
 
 const pool$ = state((id: number) =>
   combineLatest([
@@ -259,7 +259,7 @@ export const PoolDetail = () => {
   );
 };
 
-export const poolDetailSub$ = pool$;
+export const poolDetailSub$ = (id: number) => merge(pool$(id), joinPoolSub$);
 
 export const Stat: FC<
   PropsWithChildren<{

@@ -10,7 +10,7 @@ import { stakingApi$, stakingSdk$, tokenDecimals$ } from "@/state/chain";
 import { formatPercentage } from "@/util/format";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { useState, type FC } from "react";
-import { firstValueFrom, switchMap } from "rxjs";
+import { firstValueFrom, merge, switchMap } from "rxjs";
 
 export const minPoolJoin$ = stakingApi$.pipeState(
   switchMap((api) => api.query.NominationPools.MinJoinBond.getValue())
@@ -66,6 +66,12 @@ export const JoinPool: FC<{ poolId: number }> = ({ poolId }) => {
     </Card>
   );
 };
+
+export const joinPoolSub$ = merge(
+  accountStatus$,
+  selectedSignerAccount$,
+  minPoolJoin$
+);
 
 const pool$ = state((id: number) =>
   stakingSdk$.pipe(switchMap((sdk) => sdk.getNominationPool$(id)))

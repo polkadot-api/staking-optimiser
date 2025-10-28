@@ -12,7 +12,7 @@ import { selectedChain$, stakingApi$, stakingSdk$ } from "./chain";
 import { tokenDecimalsByChain, tokenSymbolByChain } from "./chainConfig";
 
 const selectedAccountPlugin = createSelectedAccountPlugin();
-const pjsWalletProvider = createPjsWalletProvider({});
+const pjsWalletProvider = createPjsWalletProvider();
 const polkadotVaultProvider = createPolkadotVaultProvider();
 const readOnlyProvider = createReadOnlyProvider();
 const ledgerAccountProvider = createLedgerProvider(

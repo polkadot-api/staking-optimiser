@@ -3,12 +3,14 @@ import { withSubscribe } from "@/util/rxjs";
 import { PolkaHubModalTrigger } from "polkahub";
 
 const payload = Promise.all([
-  import("polkahub"),
   import("./ConnectSource"),
-  import("polkahub").then(({ SelectAccountField, ManagePjsWallets }) => ({
-    SelectAccountField,
-    ManagePjsWallets,
-  })),
+  import("polkahub").then(
+    ({ PolkaHubModal, SelectAccountField, ManagePjsWallets }) => ({
+      PolkaHubModal,
+      SelectAccountField,
+      ManagePjsWallets,
+    })
+  ),
 ]);
 export const SelectAccount = withSubscribe(
   codeSplit(
@@ -16,9 +18,8 @@ export const SelectAccount = withSubscribe(
     () => <PolkaHubModalTrigger />,
     ({ payload }) => {
       const [
-        { PolkaHubModal },
         { ConnectSource },
-        { SelectAccountField, ManagePjsWallets },
+        { PolkaHubModal, SelectAccountField, ManagePjsWallets },
       ] = payload;
 
       return (
