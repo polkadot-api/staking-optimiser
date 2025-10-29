@@ -133,7 +133,7 @@ const FastUnstake = () => {
     <div className="space-y-2 text-sm text-muted-foreground">
       <p>
         In case you haven't been actively nominating for the past unbonding
-        period eras, you might be eligible to Fast Unstaking. In that case,
+        period eras, you might be eligible for Fast Unstaking. In that case,
         paying a deposit of{" "}
         {fastDeposit ? <TokenValue value={fastDeposit} /> : "…"}, you can get in
         a fast queue that will unlock your tokens earlier (estimated{" "}

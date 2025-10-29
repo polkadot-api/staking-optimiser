@@ -18,7 +18,6 @@ import {
   firstValueFrom,
   from,
   fromEvent,
-  iif,
   map,
   merge,
   mergeMap,
@@ -52,26 +51,11 @@ export interface NominatorRequest {
 }
 
 export const getNominatorRewards = (address: SS58String, eras: number[]) =>
-  iif(
-    () => indexerFailed,
-    sendToWorker<NominatorRewardsResult>(
-      "getNominatorRewards",
-      address,
-      from(eras)
-    ),
-    getNominatorRewardsThroughIndexer(address, eras)
-  );
+  // already falls back to worker if the era isn't indexed
+  getNominatorRewardsThroughIndexer(address, eras);
 
 export const getNominatorValidators = (address: SS58String, eras: number[]) =>
-  iif(
-    () => indexerFailed,
-    sendToWorker<NominatorValidatorsResult>(
-      "getNominatorActiveValidators",
-      address,
-      from(eras)
-    ),
-    getNominatorValidatorsThroughIndexer(address, eras)
-  );
+  getNominatorValidatorsThroughIndexer(address, eras);
 
 /// worker
 let activated = false;
@@ -138,24 +122,6 @@ const sendToWorker = <T>(
   );
 
 /// indexer
-let indexerFailed = false;
-let successes = 0;
-let fails = 0;
-const registerSuccess = () => {
-  successes++;
-};
-const registerFail = () => {
-  fails++;
-  if (!indexerFailed && fails > successes + 10) {
-    indexerFailed = true;
-    setTimeout(() => {
-      indexerFailed = false;
-      successes = 0;
-      fails = 0;
-    }, 60_000);
-  }
-};
-
 const indexerCodec$ = stakingApi$.pipe(
   switchMap((api) => api.constants.System.SS58Prefix()),
   map((ss58Format: number) => {
@@ -206,6 +172,26 @@ const getIndexerNominatorFile = (address: SS58String, era: number) => {
   return fetchCache.get(key)!;
 };
 
+const eraIndexedCache = new Map<number, Promise<boolean>>();
+const isEraIndexed = (era: number) => {
+  if (!eraIndexedCache.has(era)) {
+    eraIndexedCache.set(
+      era,
+      firstValueFrom(
+        selectedChain$.pipe(
+          switchMap((chain) => fetch(`${indexerUrl[chain]}/${era}/done`)),
+          switchMap((response) => {
+            if (response.status >= 400) throw new Error(response.statusText);
+            return [true];
+          }),
+          catchError(() => [false])
+        )
+      )
+    );
+  }
+  return eraIndexedCache.get(era)!;
+};
+
 const getNominatorRewardsThroughIndexer = (
   address: SS58String,
   eras: number[]
@@ -229,25 +215,23 @@ const getNominatorRewardsThroughIndexer = (
       );
       const indexer$ = merge(
         ...belowActiveEra.map((era) =>
-          getIndexerNominatorFile(address, era).then((result) => ({
-            era,
-            result,
-          }))
+          from(isEraIndexed(era)).pipe(
+            switchMap((isIndexed) => {
+              if (!isIndexed) {
+                failedEras$.next(era);
+                return [];
+              }
+              return getIndexerNominatorFile(address, era);
+            }),
+            map((result) => ({ era, result: result ? codec(result) : null })),
+            catchError((ex) => {
+              console.error(ex);
+              failedEras$.next(era);
+              return [];
+            })
+          )
         )
       ).pipe(
-        filter((v) => {
-          if (!v.result) {
-            failedEras$.next(v.era);
-            registerFail();
-            return false;
-          }
-          registerSuccess();
-          return true;
-        }),
-        map(({ era, result }) => ({
-          era,
-          result: codec(result!),
-        })),
         finalize(() => {
           failedEras$.complete();
         })
