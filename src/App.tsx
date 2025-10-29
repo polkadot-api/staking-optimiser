@@ -9,6 +9,7 @@ import { Pools, poolsSub$ } from "./pages/Pools";
 import { Validators, validatorsSub$ } from "./pages/Validators";
 import { location$ } from "./router";
 import { selectedSignerAccount$ } from "./state/account";
+import { empyricalStakingBlockDuration$ } from "./state/era";
 
 function App() {
   return (
@@ -49,6 +50,10 @@ const routeSub$ = location$.pipe(
   distinctUntilChanged(),
   switchMap((v) => (v ? subs$[v] : null) ?? [])
 );
-export const appSub$ = merge(routeSub$, selectedSignerAccount$);
+export const appSub$ = merge(
+  routeSub$,
+  selectedSignerAccount$,
+  empyricalStakingBlockDuration$
+);
 
 export default App;

@@ -18,4 +18,5 @@ export const whitelist: (DotWhitelistEntry | DotPplWhitelistEntry)[] = [
   "api.Inflation.experimental_inflation_prediction_info",
   "tx.Utility.batch_all",
   "query.Balances.TotalIssuance",
+  "query.Timestamp.Now",
 ];

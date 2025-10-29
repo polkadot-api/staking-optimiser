@@ -1,15 +1,18 @@
-import { relayApi$, stakingApi$ } from "@/state/chain";
+import { clients$, relayApi$, stakingApi$ } from "@/state/chain";
 import { state, withDefault } from "@react-rxjs/core";
 import {
   combineLatest,
   defer,
   distinctUntilChanged,
+  exhaustMap,
   map,
   merge,
   repeat,
+  scan,
   Subject,
   switchMap,
   take,
+  takeWhile,
   timer,
 } from "rxjs";
 
@@ -123,3 +126,41 @@ export const allEras$ = (pastAmount = Number.POSITIVE_INFINITY) =>
       );
     })
   );
+
+export const empyricalStakingBlockDuration$ = clients$.pipeState(
+  map((clients) => [clients.stakingClient, clients.stakingApi] as const),
+  switchMap(([client, api]) =>
+    client.finalizedBlock$.pipe(
+      exhaustMap((block) =>
+        api.query.Timestamp.Now.getValue({
+          at: block.hash,
+        }).then((timestamp) => ({ number: block.number, timestamp }))
+      ),
+      scan(
+        (acc, v) => {
+          if (!acc)
+            return {
+              first: v,
+              last: v,
+            };
+          return {
+            ...acc,
+            last: v,
+          };
+        },
+        null as {
+          first: { number: number; timestamp: bigint };
+          last: { number: number; timestamp: bigint };
+        } | null
+      ),
+      takeWhile((v) => !v || v.first.number + 100 > v.last.number, true),
+      map((v) =>
+        v && v.first.number !== v.last.number
+          ? Number(v.last.timestamp - v.first.timestamp) /
+            (v.last.number - v.first.number)
+          : 6000
+      )
+    )
+  ),
+  withDefault(6000)
+);

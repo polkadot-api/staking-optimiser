@@ -2,9 +2,14 @@ import { TokenValue } from "@/components/TokenValue";
 import { TransactionButton } from "@/components/Transactions";
 import { selectedAccountAddr$ } from "@/state/account";
 import { stakingApi$, stakingSdk$ } from "@/state/chain";
-import { activeEraNumber$, unbondDurationInDays$ } from "@/state/era";
+import {
+  activeEraNumber$,
+  empyricalStakingBlockDuration$,
+  unbondDurationInDays$,
+} from "@/state/era";
 import { getNominatorRewards } from "@/state/nominatorInfo";
 import type { NominatorRewardsResult } from "@/state/rewards.worker";
+import { estimatedFuture } from "@/util/date";
 import { formatPercentage } from "@/util/format";
 import type { Dot } from "@polkadot-api/descriptors";
 import { useStateObservable, withDefault } from "@react-rxjs/core";
@@ -17,6 +22,7 @@ import {
   map,
   switchMap,
   takeWhile,
+  withLatestFrom,
 } from "rxjs";
 
 const fastUnstakeApi$ = stakingApi$.pipeState(
@@ -104,7 +110,7 @@ const fastDeposit$ = fastUnstakeApi$.pipeState(
   withDefault(null)
 );
 
-const estimatedUnlockBlocks$ = fastUnstakeApi$.pipeState(
+const estimatedUnlockTime$ = fastUnstakeApi$.pipeState(
   filter((v) => v != null),
   switchMap((api) =>
     combineLatest([
@@ -120,6 +126,8 @@ const estimatedUnlockBlocks$ = fastUnstakeApi$.pipeState(
       (head ? erasPerAddr - head.checked.length : 0);
     return Math.ceil(totalErasToCheck / erasPerBlock);
   }),
+  withLatestFrom(empyricalStakingBlockDuration$),
+  map(([blocks, msPerBlock]) => msPerBlock * blocks),
   withDefault(null)
 );
 
@@ -127,7 +135,7 @@ const FastUnstake = () => {
   const fastUnstakeApi = useStateObservable(fastUnstakeApi$)!;
   const eligibility = useStateObservable(fastElegibility$);
   const fastDeposit = useStateObservable(fastDeposit$);
-  const estimatedBlocks = useStateObservable(estimatedUnlockBlocks$);
+  const estimatedTime = useStateObservable(estimatedUnlockTime$);
 
   return (
     <div className="space-y-2 text-sm text-muted-foreground">
@@ -136,8 +144,11 @@ const FastUnstake = () => {
         period eras, you might be eligible for Fast Unstaking. In that case,
         paying a deposit of{" "}
         {fastDeposit ? <TokenValue value={fastDeposit} /> : "…"}, you can get in
-        a fast queue that will unlock your tokens earlier (estimated{" "}
-        {estimatedBlocks ?? "…"} blocks).
+        a queue that will unlock your tokens faster (estimated{" "}
+        {estimatedTime
+          ? estimatedFuture(new Date(Date.now() + estimatedTime), false)
+          : "…"}
+        ).
       </p>
       {eligibility.isEligible ? (
         <TransactionButton
