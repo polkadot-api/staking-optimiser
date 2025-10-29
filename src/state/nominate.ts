@@ -163,13 +163,13 @@ export const validatorPerformance$ = state((addr: SS58String) => {
         map(({ era, result }) => ({
           era,
           isActive: result?.find((v) => v.validator === addr) != null || false,
-        }))
+        })),
+        accumulateChart()
       )
-    ),
-    accumulateChart()
+    )
   );
-  const rewardChart$ = stakingSdk$.pipe(
-    switchMap((stakingSdk) =>
+  const rewardChart$ = combineLatest([stakingSdk$, eraDurationInMs$]).pipe(
+    switchMap(([stakingSdk, eraDuration]) =>
       allEras$(REWARD_HISTORY_DEPTH).pipe(
         mergeAll(),
         mergeMap(
@@ -179,8 +179,7 @@ export const validatorPerformance$ = state((addr: SS58String) => {
           }),
           3
         ),
-        withLatestFrom(eraDurationInMs$),
-        map(([{ era, rewards }, eraDuration]) => ({
+        map(({ era, rewards }) => ({
           era,
           apy: rewards
             ? getEraApy(

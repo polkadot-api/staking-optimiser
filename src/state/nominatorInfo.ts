@@ -10,6 +10,7 @@ import { shareLatest } from "@react-rxjs/core";
 import { AccountId, type SS58String } from "polkadot-api";
 import {
   catchError,
+  combineLatest,
   concat,
   defer,
   filter,
@@ -25,7 +26,6 @@ import {
   Subject,
   switchMap,
   take,
-  withLatestFrom,
 } from "rxjs";
 import { selectedChain$, stakingApi$ } from "./chain";
 import { indexerUrl } from "./chainConfig";
@@ -213,9 +213,9 @@ const getNominatorRewardsThroughIndexer = (
   era: number;
   result: NominatorRewardsResult | null;
 }> =>
-  activeEraNumber$.pipe(
+  combineLatest([activeEraNumber$, indexerCodec$]).pipe(
     take(1),
-    switchMap((activeEra) => {
+    switchMap(([activeEra, codec]) => {
       const aboveActiveEra = eras.filter((e) => e >= activeEra);
       const belowActiveEra = eras.filter((e) => e < activeEra);
 
@@ -244,8 +244,7 @@ const getNominatorRewardsThroughIndexer = (
           registerSuccess();
           return true;
         }),
-        withLatestFrom(indexerCodec$),
-        map(([{ era, result }, codec]) => ({
+        map(({ era, result }) => ({
           era,
           result: codec(result!),
         })),

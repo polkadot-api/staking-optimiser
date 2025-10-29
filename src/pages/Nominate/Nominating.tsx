@@ -83,6 +83,7 @@ const StatusCard = () => {
           <DialogButton
             title="Stop nominating"
             content={({ close }) => <StopNominating close={close} />}
+            needsSigner
           >
             Stop nominating
           </DialogButton>
