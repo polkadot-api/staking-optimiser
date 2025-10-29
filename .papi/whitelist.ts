@@ -6,6 +6,7 @@ import {
 export const whitelist: (DotWhitelistEntry | DotPplWhitelistEntry)[] = [
   "query.System.Account",
   "*.Staking",
+  "*.FastUnstake",
   "*.VoterList",
   "*.NominationPools",
   "*.DelegatedStaking",

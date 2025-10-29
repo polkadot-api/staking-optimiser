@@ -110,7 +110,8 @@ const throughWorker = <T>(msg: NominatorRequest) =>
 
     return message$.pipe(
       filter((v) => v.type === "result" && v.value.id === id),
-      map((v) => v.value!.result as T)
+      map((v) => v.value!.result as T),
+      take(1)
     );
   });
 

@@ -1,5 +1,5 @@
 import { relayApi$, stakingApi$ } from "@/state/chain";
-import { state } from "@react-rxjs/core";
+import { state, withDefault } from "@react-rxjs/core";
 import {
   combineLatest,
   defer,
@@ -33,7 +33,7 @@ export const eraDurationInMs$ = state(
   )
 );
 
-export const unbondDurationInMs$ = state(
+const unbondDurationInMs$ = state(
   combineLatest([
     eraDurationInMs$,
     stakingApi$.pipe(
@@ -42,6 +42,10 @@ export const unbondDurationInMs$ = state(
   ]).pipe(
     map(([eraDuration, bondingDuration]) => eraDuration * bondingDuration)
   )
+);
+export const unbondDurationInDays$ = unbondDurationInMs$.pipeState(
+  map((v) => Math.round(v / (1000 * 60 * 60 * 24)).toString()),
+  withDefault("…")
 );
 
 export function getEraApy(

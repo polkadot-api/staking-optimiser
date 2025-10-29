@@ -6,11 +6,10 @@ import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
 import { CardPlaceholder } from "@/components/CardPlaceholder";
 import { DialogButton } from "@/components/DialogButton";
-import { TransactionButton } from "@/components/Transactions";
 import { PERBILL } from "@/constants";
 import { cn } from "@/lib/utils";
 import { accountStatus$, selectedAccountAddr$ } from "@/state/account";
-import { stakingApi$, stakingSdk$ } from "@/state/chain";
+import { stakingApi$ } from "@/state/chain";
 import { activeEraNumber$ } from "@/state/era";
 import {
   currentNominatorBond$,
@@ -25,7 +24,6 @@ import { lazy, Suspense, type FC } from "react";
 import {
   combineLatest,
   defer,
-  firstValueFrom,
   ignoreElements,
   map,
   merge,
@@ -34,6 +32,7 @@ import {
 import { ManageNomination } from "./ManageNomination";
 import { MinBondingAmounts, minBondingAmountsSub$ } from "./MinBondingAmounts";
 import { NominateLocks, nominateLocksSub$ } from "./NominateLocks";
+import { StopNominating } from "./StopNominating";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
 
@@ -72,15 +71,6 @@ const StatusCard = () => {
   const currentBond = useStateObservable(currentNominatorBond$);
   const status = useStateObservable(accountStatus$);
 
-  const stopNominating = async () => {
-    const [nominator, sdk] = await firstValueFrom(
-      combineLatest([selectedAccountAddr$, stakingSdk$])
-    );
-    if (!nominator) return null;
-
-    return sdk.stopNomination(nominator);
-  };
-
   return (
     <Card title="Status">
       <div className="flex flex-wrap gap-2 items-start">
@@ -90,9 +80,12 @@ const StatusCard = () => {
       <div className="mt-4 space-x-2">
         <ManageNominationBtn />
         {status?.nomination.currentBond ? (
-          <TransactionButton createTx={stopNominating}>
+          <DialogButton
+            title="Stop nominating"
+            content={({ close }) => <StopNominating close={close} />}
+          >
             Stop nominating
-          </TransactionButton>
+          </DialogButton>
         ) : null}
       </div>
     </Card>

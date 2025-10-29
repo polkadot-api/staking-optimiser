@@ -16,27 +16,22 @@ import {
 import {
   currentEra$,
   eraDurationInMs$,
-  unbondDurationInMs$,
+  unbondDurationInDays$,
 } from "@/state/era";
 import { currentNominationPoolStatus$ } from "@/state/nominationPool";
 import {
   MultiAddress,
   NominationPoolsBondExtra,
 } from "@polkadot-api/descriptors";
-import { state, useStateObservable, withDefault } from "@react-rxjs/core";
+import { state, useStateObservable } from "@react-rxjs/core";
 import { useState, type FC } from "react";
-import { firstValueFrom, map, switchMap } from "rxjs";
+import { firstValueFrom, switchMap } from "rxjs";
 import { format } from "timeago.js";
 
 const minBond$ = state(
   stakingApi$.pipe(
     switchMap((api) => api.query.NominationPools.MinJoinBond.getValue())
   )
-);
-
-const unbondDurationInDays$ = unbondDurationInMs$.pipeState(
-  map((v) => Math.round(v / (1000 * 60 * 60 * 24)).toString()),
-  withDefault("…")
 );
 
 export const ManageBond: FC<{ close?: () => void }> = ({ close }) => {
