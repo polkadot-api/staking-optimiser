@@ -154,6 +154,38 @@ export const rpcsByChain: Record<
   },
 };
 
+const grabChainSpec = (module: Promise<{ chainSpec: string }>) =>
+  module.then((m) => m.chainSpec);
+export const chainSpecsByChain: Record<
+  KnownChains,
+  Record<ChainType, () => Promise<string>>
+> = {
+  polkadot: {
+    relay: () => grabChainSpec(import("polkadot-api/chains/polkadot")),
+    people: () => grabChainSpec(import("polkadot-api/chains/polkadot_people")),
+    assetHub: () =>
+      grabChainSpec(import("polkadot-api/chains/polkadot_asset_hub")),
+  },
+  kusama: {
+    relay: () => grabChainSpec(import("polkadot-api/chains/ksmcc3")),
+    people: () => grabChainSpec(import("polkadot-api/chains/ksmcc3_people")),
+    assetHub: () =>
+      grabChainSpec(import("polkadot-api/chains/ksmcc3_asset_hub")),
+  },
+  westend: {
+    relay: () => grabChainSpec(import("polkadot-api/chains/westend2")),
+    people: () => grabChainSpec(import("polkadot-api/chains/westend2_people")),
+    assetHub: () =>
+      grabChainSpec(import("polkadot-api/chains/westend2_asset_hub")),
+  },
+  paseo: {
+    relay: () => grabChainSpec(import("polkadot-api/chains/paseo")),
+    people: () => grabChainSpec(import("polkadot-api/chains/paseo_people")),
+    assetHub: () =>
+      grabChainSpec(import("polkadot-api/chains/paseo_asset_hub")),
+  },
+};
+
 export const stakingTypeByChain: Record<KnownChains, ChainType> = {
   polkadot: "relay",
   kusama: "assetHub",

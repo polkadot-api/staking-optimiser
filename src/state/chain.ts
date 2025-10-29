@@ -1,14 +1,19 @@
 import { withChopsticksEnhancer } from "@/lib/chopsticksEnhancer";
 import { location$ } from "@/router";
+import { createLocalStorageState } from "@/util/rxjs";
 import { createIdentitySdk } from "@polkadot-api/sdk-accounts";
 import { createStakingSdk } from "@polkadot-api/sdk-staking";
 import { state, withDefault } from "@react-rxjs/core";
 import { createClient, type PolkadotClient } from "polkadot-api";
 import { withLogsRecorder } from "polkadot-api/logs-provider";
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat";
+import { getSmProvider } from "polkadot-api/sm-provider";
+import type { Client as Smoldot } from "polkadot-api/smoldot";
+import SmWorker from "polkadot-api/smoldot/worker?worker";
 import { getWsProvider, type JsonRpcProvider } from "polkadot-api/ws-provider";
 import { matchPath } from "react-router-dom";
 import {
+  combineLatest,
   concat,
   distinctUntilChanged,
   filter,
@@ -19,6 +24,7 @@ import {
   switchMap,
 } from "rxjs";
 import {
+  chainSpecsByChain,
   descriptorsByChain,
   rpcsByChain,
   stakingTypeByChain,
@@ -31,6 +37,13 @@ import {
   type RelayTypedApi,
   type StakingTypedApi,
 } from "./chainConfig";
+
+let smoldot: Promise<Smoldot> | null = null;
+
+export const [useSmoldot$, setUseSmoldot] = createLocalStorageState(
+  "use-smoldot",
+  false
+);
 
 export const selectedChain$ = state(
   location$.pipe(
@@ -69,7 +82,7 @@ const shuffleArray = <T>(array: T[]): T[] =>
 
 const logsEnabled =
   import.meta.env.DEV || localStorage.getItem("rpc-logs") === "true";
-const createClients = (chain: KnownChains) => {
+const createClients = (chain: KnownChains, useSmoldoge: boolean) => {
   const clients: Partial<Record<ChainType, PolkadotClient>> = {};
 
   const rpcs = rpcsByChain[chain];
@@ -77,20 +90,51 @@ const createClients = (chain: KnownChains) => {
   const descriptors = descriptorsByChain[chain];
 
   const getRpcClient = (type: "relay" | "staking" | "people") => {
-    const useChopsticks = USE_CHOPSTICKS && type === "staking";
-    const chainType: ChainType =
-      type === "staking" ? (useChopsticks ? "assetHub" : stakingType) : type;
+    if (USE_CHOPSTICKS && type === "staking") {
+      if (!clients.assetHub) {
+        const rpcProvider = withChopsticksEnhancer(
+          getWsProvider("ws://localhost:8132")
+        );
+        clients.assetHub = createClient(
+          withLogsRecorder(
+            (...v) => (logsEnabled ? console.debug(chainType, ...v) : null),
+            rpcProvider
+          )
+        );
+      }
+      return clients.assetHub;
+    }
+
+    const chainType: ChainType = type === "staking" ? stakingType : type;
     if (clients[chainType]) return clients[chainType];
 
-    const url = useChopsticks
-      ? ["ws://localhost:8132"]
-      : shuffleArray(Object.values(rpcs[chainType]));
+    let rpcProvider: JsonRpcProvider;
+    if (useSmoldoge) {
+      if (!smoldot) {
+        smoldot = import("polkadot-api/smoldot/from-worker").then((module) =>
+          module.startFromWorker(new SmWorker())
+        );
+      }
 
-    let rpcProvider: JsonRpcProvider = getWsProvider(url);
-    if (useChopsticks) {
-      rpcProvider = withChopsticksEnhancer(rpcProvider);
+      const chainSpecs = [chainSpecsByChain[chain][chainType]()];
+      if (chainType !== "relay") {
+        chainSpecs.unshift(chainSpecsByChain[chain].relay());
+      }
+      rpcProvider = getSmProvider(
+        Promise.all([smoldot, ...chainSpecs]).then(
+          async ([smoldot, relaySpec, paraSpec]) => {
+            const relayChain = await smoldot.addChain({ chainSpec: relaySpec });
+            if (!paraSpec) return relayChain;
+            return smoldot.addChain({
+              chainSpec: paraSpec,
+              potentialRelayChains: [relayChain],
+            });
+          }
+        )
+      );
     } else {
-      rpcProvider = withPolkadotSdkCompat(rpcProvider);
+      const urls = shuffleArray(Object.values(rpcs[chainType]));
+      rpcProvider = withPolkadotSdkCompat(getWsProvider(urls));
     }
 
     clients[chainType] = createClient(
@@ -133,9 +177,9 @@ const createClients = (chain: KnownChains) => {
 };
 
 export const clients$ = state(
-  selectedChain$.pipe(
-    switchMap((chain) => {
-      const [clients, teardown] = createClients(chain);
+  combineLatest([selectedChain$, useSmoldot$]).pipe(
+    switchMap(([chain, useSmoldot]) => {
+      const [clients, teardown] = createClients(chain, useSmoldot);
 
       return concat([clients], NEVER).pipe(
         finalize(() => setTimeout(teardown, 100))
