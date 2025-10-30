@@ -1,7 +1,7 @@
 import { PERBILL } from "@/constants";
 import type { ValidatorRewards as SdkValidatorRewards } from "@polkadot-api/sdk-staking";
 import { state } from "@react-rxjs/core";
-import { map, switchMap } from "rxjs";
+import { catchError, map, switchMap } from "rxjs";
 import { stakingApi$, stakingSdk$ } from "./chain";
 import { eraDurationInMs$, getEraApy } from "./era";
 
@@ -44,6 +44,11 @@ export const validatorsEra$ = state((era: number) =>
           )
         )
       )
-    )
+    ),
+    catchError((ex) => {
+      // TODO Might happen when switching chain dot->ksm while in the dashboard
+      console.error(ex);
+      return [[]];
+    })
   )
 );

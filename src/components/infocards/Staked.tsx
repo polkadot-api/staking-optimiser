@@ -1,4 +1,4 @@
-import { relayApi$, stakingApi$ } from "@/state/chain";
+import { stakingApi$ } from "@/state/chain";
 import { activeEra$ } from "@/state/era";
 import { formatPercentage } from "@/util/format";
 import { state, useStateObservable } from "@react-rxjs/core";
@@ -8,7 +8,7 @@ import { CircularProgress } from "../CircularProgress";
 
 const staked$ = state(
   combineLatest({
-    issuance: relayApi$.pipe(
+    issuance: stakingApi$.pipe(
       switchMap((v) => v.query.Balances.TotalIssuance.getValue())
     ),
     staked: combineLatest([stakingApi$, activeEra$]).pipe(
