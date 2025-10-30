@@ -1,5 +1,5 @@
-import { state } from "@react-rxjs/core";
-import type { PolkadotSigner, SS58String } from "polkadot-api";
+import { shareLatest, state } from "@react-rxjs/core";
+import { AccountId, type PolkadotSigner, type SS58String } from "polkadot-api";
 import {
   createLedgerProvider,
   createPjsWalletProvider,
@@ -7,13 +7,18 @@ import {
   createReadOnlyProvider,
   createSelectedAccountPlugin,
 } from "polkahub";
-import { combineLatest, firstValueFrom, map, switchMap, take } from "rxjs";
+import { combineLatest, firstValueFrom, map, switchMap } from "rxjs";
 import { selectedChain$, stakingApi$, stakingSdk$ } from "./chain";
 import {
   tokenDecimalsByChain,
   tokenSymbolByChain,
   USE_CHOPSTICKS,
 } from "./chainConfig";
+
+const ss58Format$ = stakingApi$.pipe(
+  switchMap((v) => v.constants.System.SS58Prefix()),
+  shareLatest()
+);
 
 const selectedAccountPlugin = createSelectedAccountPlugin();
 const pjsWalletProvider = createPjsWalletProvider();
@@ -30,12 +35,7 @@ const ledgerAccountProvider = createLedgerProvider(
     firstValueFrom(
       combineLatest({
         chain: selectedChain$,
-        // ledger: [ledger],
-        // deviceId: ledger.ledgerSigner.deviceId(),
-        ss58Format: stakingApi$.pipe(
-          switchMap((v) => v.constants.System.SS58Prefix()),
-          take(1)
-        ),
+        ss58Format: ss58Format$,
       }).pipe(
         map(({ chain, ss58Format }) => ({
           decimals: tokenDecimalsByChain[chain],
@@ -54,26 +54,40 @@ export const accountProviderPlugins = [
   ledgerAccountProvider,
 ];
 
+const formattedAccount$ = state(
+  combineLatest([
+    selectedAccountPlugin.selectedAccount$,
+    ss58Format$.pipe(map((format) => AccountId(format))),
+  ]).pipe(
+    map(([selectedAccount, codec]) =>
+      selectedAccount
+        ? {
+            ...selectedAccount,
+            address: codec.dec(codec.enc(selectedAccount.address)),
+          }
+        : null
+    )
+  )
+);
+
 export type SignerAccount = {
   address: SS58String;
   polkadotSigner: PolkadotSigner;
 };
-export const selectedSignerAccount$ =
-  selectedAccountPlugin.selectedAccount$.pipeState(
-    map((v): SignerAccount | null => {
-      if (!v?.signer) return null;
+export const selectedSignerAccount$ = formattedAccount$.pipeState(
+  map((v): SignerAccount | null => {
+    if (!v?.signer) return null;
 
-      return {
-        address: v.address,
-        polkadotSigner: v.signer,
-      };
-    })
-  );
+    return {
+      address: v.address,
+      polkadotSigner: v.signer,
+    };
+  })
+);
 
-export const selectedAccountAddr$ =
-  selectedAccountPlugin.selectedAccount$.pipeState(
-    map((v): SS58String | null => v?.address ?? null)
-  );
+export const selectedAccountAddr$ = formattedAccount$.pipeState(
+  map((v): SS58String | null => v?.address ?? null)
+);
 
 export const accountStatus$ = state(
   combineLatest([stakingSdk$, selectedAccountAddr$]).pipe(
