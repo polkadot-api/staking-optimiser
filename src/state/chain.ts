@@ -97,7 +97,7 @@ const createClients = (chain: KnownChains, useSmoldoge: boolean) => {
         );
         clients.assetHub = createClient(
           withLogsRecorder(
-            (...v) => (logsEnabled ? console.debug(chainType, ...v) : null),
+            (...v) => (logsEnabled ? console.debug(stakingType, ...v) : null),
             rpcProvider
           )
         );
