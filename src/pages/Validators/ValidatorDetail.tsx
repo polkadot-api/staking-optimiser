@@ -5,8 +5,9 @@ import { HISTORY_DEPTH } from "@/constants";
 import { cn } from "@/lib/utils";
 import { stakingSdk$ } from "@/state/chain";
 import { activeEraNumber$, eraDurationInMs$, getEraApy } from "@/state/era";
-import { validatorPerformance$ } from "@/state/nominate";
+import { validatorPerformance$ } from "@/state/validators";
 import { formatPercentage } from "@/util/format";
+import { CardPlaceholder } from "@polkahub/ui-components";
 import { state, useStateObservable } from "@react-rxjs/core";
 import {
   ArrowLeft,
@@ -19,9 +20,9 @@ import {
   Users,
 } from "lucide-react";
 import type { SS58String } from "polkadot-api";
-import { lazy, type FC } from "react";
+import { lazy, Suspense, type FC } from "react";
 import { Link, useParams } from "react-router-dom";
-import { combineLatest, merge, switchMap } from "rxjs";
+import { combineLatest, map, merge, switchMap } from "rxjs";
 import { Stat } from "../Pools/PoolDetail";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
@@ -40,9 +41,32 @@ const validator$ = state((address: SS58String) =>
   )
 );
 
+const apyInfo$ = state(
+  (address: SS58String) =>
+    validatorPerformance$(address).pipe(
+      map((performance) => {
+        if (performance.length === 0) return null;
+
+        const average =
+          performance.reduce((acc, v) => acc + (v.apy ?? 0), 0) /
+          performance.length;
+        const max = performance.reduce(
+          (acc, v) => Math.max(acc, v.apy ?? 0),
+          0
+        );
+        const min = performance.reduce(
+          (acc, v) => Math.min(acc, v.apy ?? 0),
+          Number.POSITIVE_INFINITY
+        );
+        return { average, max, min };
+      })
+    ),
+  null
+);
+
 const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
   const validator = useStateObservable(validator$(address));
-  const performance = useStateObservable(validatorPerformance$(address));
+  const apyInfo = useStateObservable(apyInfo$(address));
   const eraDuration = useStateObservable(eraDurationInMs$);
   const activeEra = useStateObservable(activeEraNumber$);
 
@@ -53,20 +77,6 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
     validator.activeBond,
     eraDuration
   );
-
-  const averageNominatorApy =
-    performance.reduce((acc, v) => acc + (v.apy ?? 0), 0) / HISTORY_DEPTH;
-  const maxNominatorApy = performance.reduce(
-    (acc, v) => Math.max(acc, v.apy ?? 0),
-    0
-  );
-  const minNominatorApy =
-    performance.length === 0
-      ? 0
-      : performance.reduce(
-          (acc, v) => Math.min(acc, v.apy ?? 0),
-          Number.POSITIVE_INFINITY
-        );
 
   const validatorStakePct =
     Number(validator.selfStake) / Number(validator.activeBond);
@@ -193,26 +203,39 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Average nominator APY</dt>
               <dd className="text-right font-medium text-foreground">
-                {formatPercentage(averageNominatorApy / 100)}
+                {apyInfo ? formatPercentage(apyInfo.average / 100) : "…"}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">
                 APY range (last {HISTORY_DEPTH} eras)
               </dt>
-              <dd className="text-right font-medium text-foreground">{`${formatPercentage(
-                minNominatorApy / 100
-              )} - ${formatPercentage(maxNominatorApy / 100)}`}</dd>
+              <dd className="text-right font-medium text-foreground">
+                {apyInfo
+                  ? `${formatPercentage(
+                      apyInfo.min / 100
+                    )} - ${formatPercentage(apyInfo.max / 100)}`
+                  : "…"}
+              </dd>
             </div>
           </dl>
         </Card>
       </div>
 
-      <Card title="Performance history" className="space-y-4">
-        <EraChart data={performance} activeEra={activeEra} />
-      </Card>
+      <Suspense fallback={<CardPlaceholder />}>
+        <Card title="Performance history" className="space-y-4">
+          <PerformanceChart addr={address} />
+        </Card>
+      </Suspense>
     </div>
   );
+};
+
+const PerformanceChart: FC<{ addr: SS58String }> = ({ addr }) => {
+  const activeEra = useStateObservable(activeEraNumber$);
+  const performance = useStateObservable(validatorPerformance$(addr));
+
+  return <EraChart data={performance} activeEra={activeEra} />;
 };
 
 export const validatorDetailPageSub$ = (address: SS58String) =>

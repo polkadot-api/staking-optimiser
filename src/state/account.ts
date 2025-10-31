@@ -45,7 +45,7 @@ const ledgerAccountProvider = createLedgerProvider(
       )
     )
 );
-export const walletConnectProvider = new Promise((resolve) =>
+const walletConnectProvider = new Promise((resolve) =>
   setTimeout(resolve, 5000)
 )
   .then(() => import("polkahub"))

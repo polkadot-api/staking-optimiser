@@ -8,15 +8,12 @@ import {
   debounceTime,
   filter,
   map,
-  mergeAll,
   mergeMap,
-  pipe,
-  scan,
   switchMap,
   withLatestFrom,
-  type OperatorFunction,
 } from "rxjs";
-import { selectedChain$, stakingSdk$, tokenDecimals$ } from "./chain";
+import { selectedChain$, tokenDecimals$ } from "./chain";
+import { accumulateChart } from "./chart";
 import { activeEraNumber$, allEras$, eraDurationInMs$, getEraApy } from "./era";
 import { getNominatorRewards, getNominatorValidators } from "./nominatorInfo";
 
@@ -67,48 +64,6 @@ export const lastReward$ = state(
   )
 );
 
-const accumulateChart = <T extends { era: number }>(): OperatorFunction<
-  T | null,
-  T[]
-> =>
-  pipe(
-    withLatestFrom(activeEraNumber$),
-    scan(
-      (
-        acc: {
-          start: number;
-          result: T[];
-        },
-        [value, era]
-      ) => {
-        if (!value) {
-          return acc;
-        }
-
-        if (!acc.result.length) {
-          acc.start = era;
-          const idx = acc.start - 1 - value.era;
-          acc.result[idx] = value;
-          return acc;
-        }
-
-        if (era != acc.start) {
-          // Era has changed, shift result
-          return {
-            start: era,
-            result: [value, ...acc.result],
-          };
-        }
-        const idx = acc.start - 1 - value.era;
-        acc.result[idx] = value;
-
-        return acc;
-      },
-      { start: 0, result: [] }
-    ),
-    map((v) => v.result)
-  );
-
 export const rewardHistory$ = state(
   combineLatest([
     selectedAccountAddr$,
@@ -152,8 +107,8 @@ export const currentNominatorStatus$ = state(
   )
 );
 
-export const validatorPerformance$ = state((addr: SS58String) => {
-  const activeChart$ = combineLatest([
+export const validatorActive$ = state((addr: SS58String) =>
+  combineLatest([
     selectedAccountAddr$.pipe(filter((v) => v != null)),
     selectedChain$,
   ]).pipe(
@@ -167,41 +122,5 @@ export const validatorPerformance$ = state((addr: SS58String) => {
         accumulateChart()
       )
     )
-  );
-  const rewardChart$ = combineLatest([stakingSdk$, eraDurationInMs$]).pipe(
-    switchMap(([stakingSdk, eraDuration]) =>
-      allEras$(REWARD_HISTORY_DEPTH).pipe(
-        mergeAll(),
-        mergeMap(
-          async (era) => ({
-            era,
-            rewards: await stakingSdk.getValidatorRewards(addr, era),
-          }),
-          3
-        ),
-        map(({ era, rewards }) => ({
-          era,
-          apy: rewards
-            ? getEraApy(
-                rewards.nominatorsShare,
-                rewards.activeBond,
-                eraDuration
-              ) * 100
-            : null,
-        })),
-        accumulateChart()
-      )
-    )
-  );
-
-  return combineLatest([activeChart$, rewardChart$]).pipe(
-    debounceTime(200),
-    map(([activeChart, rewardChart]) =>
-      activeChart.map((active, i) => ({
-        ...active,
-        apy: rewardChart[i]?.apy ?? null,
-      }))
-    ),
-    map((v) => v.filter(() => true))
-  );
-});
+  )
+);

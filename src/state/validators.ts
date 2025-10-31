@@ -1,9 +1,18 @@
-import { PERBILL } from "@/constants";
+import { HISTORY_DEPTH, PERBILL } from "@/constants";
 import type { ValidatorRewards as SdkValidatorRewards } from "@polkadot-api/sdk-staking";
 import { state } from "@react-rxjs/core";
-import { catchError, map, switchMap } from "rxjs";
+import type { SS58String } from "polkadot-api";
+import {
+  catchError,
+  combineLatest,
+  map,
+  mergeAll,
+  mergeMap,
+  switchMap,
+} from "rxjs";
 import { stakingApi$, stakingSdk$ } from "./chain";
-import { eraDurationInMs$, getEraApy } from "./era";
+import { accumulateChart } from "./chart";
+import { allEras$, eraDurationInMs$, getEraApy } from "./era";
 
 export const registeredValidators$ = state(
   stakingApi$.pipe(
@@ -50,5 +59,33 @@ export const validatorsEra$ = state((era: number) =>
       console.error(ex);
       return [[]];
     })
+  )
+);
+
+export const validatorPerformance$ = state((addr: SS58String) =>
+  combineLatest([stakingSdk$, eraDurationInMs$]).pipe(
+    switchMap(([stakingSdk, eraDuration]) =>
+      allEras$(HISTORY_DEPTH).pipe(
+        mergeAll(),
+        mergeMap(
+          async (era) => ({
+            era,
+            rewards: await stakingSdk.getValidatorRewards(addr, era),
+          }),
+          3
+        ),
+        map(({ era, rewards }) => ({
+          era,
+          apy: rewards
+            ? getEraApy(
+                rewards.nominatorsShare,
+                rewards.activeBond,
+                eraDuration
+              ) * 100
+            : null,
+        })),
+        accumulateChart()
+      )
+    )
   )
 );

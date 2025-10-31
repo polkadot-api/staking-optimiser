@@ -15,7 +15,7 @@ import {
   currentNominatorBond$,
   currentNominatorStatus$,
   rewardHistory$,
-  validatorPerformance$,
+  validatorActive$,
 } from "@/state/nominate";
 import { roundToDecimalPlaces } from "@/util/format";
 import { state, useStateObservable } from "@react-rxjs/core";
@@ -23,6 +23,7 @@ import { type SS58String } from "polkadot-api";
 import { lazy, Suspense, type FC } from "react";
 import {
   combineLatest,
+  debounceTime,
   defer,
   ignoreElements,
   map,
@@ -33,6 +34,8 @@ import { ManageNomination } from "./ManageNomination";
 import { MinBondingAmounts, minBondingAmountsSub$ } from "./MinBondingAmounts";
 import { NominateLocks, nominateLocksSub$ } from "./NominateLocks";
 import { StopNominating } from "./StopNominating";
+import { validatorPerformance$ } from "@/state/validators";
+import { Link } from "react-router-dom";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
 
@@ -139,11 +142,24 @@ const SelectedValidators = () => {
   );
 };
 
+const validatorRewardHistory$ = state((addr: SS58String) =>
+  combineLatest([validatorActive$(addr), validatorPerformance$(addr)]).pipe(
+    debounceTime(200),
+    map(([activeChart, performanceChart]) =>
+      activeChart.map((active, i) => ({
+        ...active,
+        apy: performanceChart[i]?.apy ?? null,
+      }))
+    ),
+    map((v) => v.filter(() => true))
+  )
+);
+
 const selectedValidatorsSub$ = selectedValidators$.pipe(
   switchMap((v) =>
     merge(
       ...v.map((addr) =>
-        merge(validatorPerformance$(addr), validatorPrefs$(addr))
+        merge(validatorRewardHistory$(addr), validatorPrefs$(addr))
       ),
       activeEraNumber$
     )
@@ -162,7 +178,7 @@ const validatorIsCurrentlyActive$ = state(
 const SelectedValidator: FC<{
   validator: SS58String;
 }> = ({ validator }) => {
-  const rewardHistory = useStateObservable(validatorPerformance$(validator));
+  const rewardHistory = useStateObservable(validatorRewardHistory$(validator));
   const isActive = useStateObservable(validatorIsCurrentlyActive$(validator));
   const prefs = useStateObservable(validatorPrefs$(validator));
   const activeEra = useStateObservable(activeEraNumber$);
@@ -184,7 +200,9 @@ const SelectedValidator: FC<{
       })}
     >
       <div className="flex items-center justify-between">
-        <AddressIdentity addr={validator} />
+        <Link to={`../validators/${validator}`}>
+          <AddressIdentity addr={validator} copyable={false} />
+        </Link>
         {averageApy || prefs.commission ? (
           <div className="text-muted-foreground text-sm">
             {averageApy ? (

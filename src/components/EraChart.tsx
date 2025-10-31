@@ -56,18 +56,23 @@ export default function EraChart({
         <YAxis width={data[0]?.rewards ? 55 : 40} />
         <Tooltip
           labelFormatter={(label, payload) => {
-            if (payload[0]?.value == null) {
-              return label;
-            }
+            const eraPayload = payload.find((p) => p.name === "era");
+            const apyPayload = payload.find((p) => p.name === "apy");
+            const rewardsPayload = payload.find((p) => p.name === "rewards");
 
-            const formattedValue = payload[0].value.toLocaleString();
+            if (!eraPayload?.value) return label;
 
-            const content =
-              payload[0].name === "rewards"
-                ? `${formattedValue} ${tokenProps?.symbol}`
-                : `${formattedValue}% APY`;
+            const era = eraPayload.value.toLocaleString();
+            const isActive = eraPayload.payload?.active;
 
-            return `Era ${label}: ${content}${payload[0].payload?.active ? " (Active)" : ""}`;
+            if (apyPayload?.value == null && rewardsPayload?.value == null)
+              return `Era ${era}`;
+
+            const content = rewardsPayload?.value
+              ? `${rewardsPayload.value.toLocaleString()} ${tokenProps?.symbol}`
+              : `${apyPayload?.value?.toLocaleString()}%`;
+
+            return `Era ${era}: ${content}${isActive ? " (Active)" : ""}`;
           }}
         />
         <Area

@@ -195,7 +195,9 @@ export const PoolDetail = () => {
                     key={i}
                     className="flex items-start justify-between gap-3 rounded-lg border border-border/60 bg-background/80 px-3 py-2"
                   >
-                    <AddressIdentity addr={validator.address} />
+                    <Link to={`../../validators/${validator.address}`}>
+                      <AddressIdentity addr={validator.address} />
+                    </Link>
                     <div>
                       <span className="text-foreground/60">APY:</span>{" "}
                       {formatPercentage(validator.nominatorApy)}
