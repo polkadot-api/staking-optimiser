@@ -42,7 +42,7 @@ const routeSub$ = location$.pipe(
   map((v) => {
     const pathRes = pathRegex.exec(v.pathname);
     if (!pathRes) {
-      console.error("path not found", v.pathname);
+      // console.error("path not found", v.pathname);
       return null;
     }
     return pathRes[1];

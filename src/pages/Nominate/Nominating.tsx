@@ -201,7 +201,7 @@ const SelectedValidator: FC<{
     >
       <div className="flex items-center justify-between">
         <Link to={`../validators/${validator}`}>
-          <AddressIdentity addr={validator} copyable={false} />
+          <AddressIdentity addr={validator} />
         </Link>
         {averageApy || prefs.commission ? (
           <div className="text-muted-foreground text-sm">

@@ -22,7 +22,7 @@ import {
 import type { SS58String } from "polkadot-api";
 import { lazy, Suspense, type FC } from "react";
 import { Link, useParams } from "react-router-dom";
-import { combineLatest, map, merge, switchMap } from "rxjs";
+import { combineLatest, debounceTime, map, merge, switchMap } from "rxjs";
 import { Stat } from "../Pools/PoolDetail";
 
 const EraChart = lazy(() => import("@/components/EraChart"));
@@ -231,9 +231,16 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
   );
 };
 
+const performanceChart$ = state((addr: SS58String) =>
+  validatorPerformance$(addr).pipe(
+    debounceTime(200),
+    map((values) => values.filter((v) => v != null))
+  )
+);
+
 const PerformanceChart: FC<{ addr: SS58String }> = ({ addr }) => {
   const activeEra = useStateObservable(activeEraNumber$);
-  const performance = useStateObservable(validatorPerformance$(addr));
+  const performance = useStateObservable(performanceChart$(addr));
 
   return <EraChart data={performance} activeEra={activeEra} />;
 };
@@ -241,7 +248,7 @@ const PerformanceChart: FC<{ addr: SS58String }> = ({ addr }) => {
 export const validatorDetailPageSub$ = (address: SS58String) =>
   merge(
     validator$(address),
-    validatorPerformance$(address),
+    performanceChart$(address),
     eraDurationInMs$,
     activeEraNumber$
   );

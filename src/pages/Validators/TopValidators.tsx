@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { formatPercentage } from "@/util/format";
 import { useStateObservable } from "@react-rxjs/core";
 import { sortedValidators$, validatorPrefs$ } from "./validatorList.state";
+import { Link } from "react-router-dom";
 
 export default function TopValidators() {
   const validators = useStateObservable(sortedValidators$).slice(0, 10);
@@ -39,7 +40,9 @@ export default function TopValidators() {
                 })}
               >
                 <td>
-                  <AddressIdentity addr={validator.address} />
+                  <Link to={`../validators/${validator.address}`}>
+                    <AddressIdentity addr={validator.address} />
+                  </Link>
                 </td>
                 <td
                   className={cn("text-right font-bold", {
