@@ -45,6 +45,20 @@ const ledgerAccountProvider = createLedgerProvider(
       )
     )
 );
+export const walletConnectProvider = new Promise((resolve) =>
+  setTimeout(resolve, 5000)
+)
+  .then(() => import("polkahub"))
+  .then(({ createWalletConnectProvider, knownChains }) =>
+    createWalletConnectProvider("6f2b51e45da9528f7058fd272af3bb8d", [
+      knownChains.polkadot,
+      knownChains.polkadotAh,
+      knownChains.kusama,
+      knownChains.kusamaAh,
+      knownChains.paseo,
+      knownChains.paseoAh,
+    ])
+  );
 
 export const accountProviderPlugins = [
   selectedAccountPlugin,
@@ -52,6 +66,7 @@ export const accountProviderPlugins = [
   polkadotVaultProvider,
   readOnlyProvider,
   ledgerAccountProvider,
+  walletConnectProvider,
 ];
 
 const formattedAccount$ = state(
