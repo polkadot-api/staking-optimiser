@@ -18,19 +18,19 @@ importers:
         version: 6.30.8
       '@polkadot-api/descriptors':
         specifier: file:.papi/descriptors
-        version: file:.papi/descriptors(polkadot-api@1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))
+        version: file:.papi/descriptors(polkadot-api@1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))
       '@polkadot-api/react-components':
         specifier: 0.3.2
         version: 0.3.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@polkadot-api/sdk-accounts':
         specifier: ^0.5.1
-        version: 0.5.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(polkadot-api@1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
+        version: 0.5.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(polkadot-api@1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@polkadot-api/sdk-staking':
         specifier: 0.3.1
-        version: 0.3.1(polkadot-api@1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)
+        version: 0.3.1(polkadot-api@1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)
       '@polkadot-api/substrate-bindings':
-        specifier: ^0.16.4
-        version: 0.16.4
+        specifier: ^0.16.5
+        version: 0.16.5
       '@polkahub/ui-components':
         specifier: 0.1.0-pre.3
         version: 0.1.0-pre.3(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -71,8 +71,8 @@ importers:
         specifier: ^0.548.0
         version: 0.548.0(react@19.2.0)
       polkadot-api:
-        specifier: ^1.20.0
-        version: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+        specifier: ^1.20.1
+        version: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       polkahub:
         specifier: 0.1.0-pre.4
         version: 0.1.0-pre.4(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rxjs@7.8.2)(typescript@5.9.3)(zod@3.25.76)
@@ -600,12 +600,12 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@polkadot-api/cli@0.15.3':
-    resolution: {integrity: sha512-M7cztSLom45+HCvAW55zWE8pwZbF+FWbTQDznh9V7AITPLkXsLWT5qehzfYKjhmCyvwPG/VZ2ZSqCiFMmupDlA==}
+  '@polkadot-api/cli@0.15.4':
+    resolution: {integrity: sha512-+FHUoVTdgEaNjV/8QsOWEsRsR4CZDvhFzrVG1Ujskkoib7IBh/7cBvrfg8HB0mnk0Cq2TDrr3asOzBq0yGejCQ==}
     hasBin: true
 
-  '@polkadot-api/codegen@0.19.2':
-    resolution: {integrity: sha512-VoYXkVD9PSNmhFm8W5peJjo+RiYnW7Iio6PxJi9XYxmm4wHqGu/xCMZfeyO3d1rBB11M+ye1sEEFQ/0kww7YjQ==}
+  '@polkadot-api/codegen@0.19.3':
+    resolution: {integrity: sha512-BBqbN/BkCT0UfAMRpZg08lrbgMjsgMya1bMsa0YNPR4krnpJHbaigKjHhHJt/QuJ1kBfYRffOfppqb1OFVZDVA==}
 
   '@polkadot-api/common-sdk-utils@0.1.0':
     resolution: {integrity: sha512-cgA9fh8dfBai9b46XaaQmj9vwzyHStQjc/xrAvQksgF6SqvZ0yAfxVqLvGrsz/Xi3dsAdKLg09PybC7MUAMv9w==}
@@ -618,8 +618,8 @@ packages:
     peerDependencies:
       polkadot-api: '>=1.11.2'
 
-  '@polkadot-api/ink-contracts@0.4.1':
-    resolution: {integrity: sha512-YQT7/asfp/kl8WERYe1dY+l1U/8X0KJKHFJZ6dpwTg6HlZ89w71A1BJadRX5TbLCJExeuE12YE1nDMvo6ZUaGg==}
+  '@polkadot-api/ink-contracts@0.4.2':
+    resolution: {integrity: sha512-F0wPAFT4wSr4ot0/WccW4vz9vGqLI2izHs6Dde+M7r9VG9+Fv+WjKAfOYxCo1Ep1tfuIK2dQ2qEKt1wpWLJIlw==}
 
   '@polkadot-api/json-rpc-provider-proxy@0.2.5':
     resolution: {integrity: sha512-33ZTvX4OhKmQBbratQP+4Vk4AMYVBYuhCdBXpX8wujRlGbbUcxnLx5B5/uRKnVUOF4blHJ131Ytz9KLZinMk+Q==}
@@ -635,8 +635,8 @@ packages:
     peerDependencies:
       '@ledgerhq/hw-transport': '6'
 
-  '@polkadot-api/legacy-provider@0.3.3':
-    resolution: {integrity: sha512-7zjPTwFrRL8jRXpFo+0ue9LPay0s2ErpSYJ30xCCIEw3wr8Y7V8rGnUYLBHX4FlWbbdv8ynrCP3jcD4cgtmuEQ==}
+  '@polkadot-api/legacy-provider@0.3.4':
+    resolution: {integrity: sha512-9n6hA226vXAtThNOxWXBQguyIzz3AUwIffzxyHMW+7tYE957EIn73zWofqo4oQ81QFy6sxt34VSPqR9+CQ//KQ==}
     peerDependencies:
       rxjs: '>=7.8.0'
 
@@ -646,22 +646,28 @@ packages:
   '@polkadot-api/merkleize-metadata@1.1.26':
     resolution: {integrity: sha512-ag5uSY35314YUNmFRn295dgs4LUCygotlIGvyBObazT8qUV0PbeAOHUO+SGtaSYNz+dCFSHEMNaLinMifSp+VQ==}
 
+  '@polkadot-api/merkleize-metadata@1.1.27':
+    resolution: {integrity: sha512-OdKwOzzrLL0Ju3pQA9LjeQEquMcD+KtLybUAO3fVxwjxD5cyI0RwillGoAIBJvfMaZpNxnxJnD+WzNjRcr7FiQ==}
+
   '@polkadot-api/meta-signers@0.1.16':
     resolution: {integrity: sha512-XTv2JpeR3TmFwUUjfC+UrbWi+ufH+ZVQH2yCaeFFwV9mKhoNIFImhZN/AO8ZroLlrp42xK2HuuJlod9qsWs8WQ==}
 
   '@polkadot-api/metadata-builders@0.13.6':
     resolution: {integrity: sha512-4VIdMkuSYldfzUNBj/fqx4zL4brqFcCVTcwZg0B5zdmAz8Bu2HaNqe06kG13H1qYN4lnEgNX0aBpKxNewsGHbQ==}
 
-  '@polkadot-api/metadata-compatibility@0.3.7':
-    resolution: {integrity: sha512-UIK1Cho6U2kJafsFtSvUYYgBtZojEC6UY+rAMeb9JyDE/KE4pVg1FaAjUPvYAwlyZj9oyeRRSUZ5cVZDg+jUaA==}
+  '@polkadot-api/metadata-builders@0.13.7':
+    resolution: {integrity: sha512-xwggY8F/gtX7qGzz+jzP3DZvWgBWIIFQhk+r2MJ431CR+tNKeTtzGdwNocVrb9NYTK2naC9ckJS14nrNM6LWLw==}
 
-  '@polkadot-api/observable-client@0.15.2':
-    resolution: {integrity: sha512-YUENI0quoWh4mRGJq+h4d4nU/xBDrme5IwYm66YB36QaVDMxtxdwinB4I9Z+DYprYjG+xdQ5xJ10TMqrXE+yzA==}
+  '@polkadot-api/metadata-compatibility@0.4.0':
+    resolution: {integrity: sha512-R7nDjnikSkXotpu/Dl17opT+UQA9SWPxjm19mdv1Aa/MTOoY1OG7sWe7xI03GqxjYhIJwT/rp4/87c0dWMxLTQ==}
+
+  '@polkadot-api/observable-client@0.16.0':
+    resolution: {integrity: sha512-GhjHIcm1JPJTfgj2HR1B5F62twNJE8i/1KVHCUCOPuNe1Jmjr4x2Khx2TfO2hgENm7P8ipwK0Ih0vEdHtw+uHQ==}
     peerDependencies:
       rxjs: '>=7.8.0'
 
-  '@polkadot-api/pjs-signer@0.6.16':
-    resolution: {integrity: sha512-kIv1628CzhpD6kCIuAkrYrFN85pbTNjBPrW09tnC7dfC6YbFgaF3toh2R9xpJG8VcJtWUg8pJuwSk4APXKMZHw==}
+  '@polkadot-api/pjs-signer@0.6.17':
+    resolution: {integrity: sha512-bxFtyiNOchV0osh6m+1CaN4tkWF7Mo4IT9XPLZBwSybpHZgwmu2wbhgqBkVL98QMyGzud7NHfrJsTCgFU6jHGg==}
 
   '@polkadot-api/polkadot-sdk-compat@2.3.3':
     resolution: {integrity: sha512-p30po+iv4trniSJ7UZiIt/rFInvtA9Tzg65EzuRkCaQAnh54a3MPp9w/q+x+SNLEcfzVLvf8LyPnMPOIpKuj5w==}
@@ -693,8 +699,14 @@ packages:
   '@polkadot-api/signer@0.2.10':
     resolution: {integrity: sha512-fzYFiCq98sBP9lmu2OTAOFG4uUOZS7xGuTGO8620sKrLJRRmhfUjtAECK2PTif3RESxQ7k3fc8w/JQhEtbLyGg==}
 
+  '@polkadot-api/signer@0.2.11':
+    resolution: {integrity: sha512-32tqbJo6JDfc/lHg+nTveeunFRULonWoTQX9xbs70arr/tAyyZfljupdECRK8CVRx1777es/CQO3QVj8EpWtYg==}
+
   '@polkadot-api/signers-common@0.1.17':
     resolution: {integrity: sha512-Cp9amiZ99Ofh+7cUNIjeWIxEYorGOO/ZFucZHiX8mEjInMjFroZWZhxmcgoqw1t8y677wsov4npJTXKDqAFApg==}
+
+  '@polkadot-api/signers-common@0.1.18':
+    resolution: {integrity: sha512-UQXuRZoQ+jMolEpIPF0mVXcoqQ/382fHrSOgfK5sIvjeH0HPf4P+s3IwcnwyAdpHY2gdHXYlHd/SAw7Q1gJ4EA==}
 
   '@polkadot-api/sm-provider@0.1.12':
     resolution: {integrity: sha512-l8BR7dQWw7HcXwzeUzJCThzKThU2MwERiLHmr+YNedS4ryg38oUvbDfoofFkE8ZHfwzqMoBQZWTskJQxrVsO3Q==}
@@ -707,6 +719,9 @@ packages:
   '@polkadot-api/substrate-bindings@0.16.4':
     resolution: {integrity: sha512-J6xz4WzERKtH/WJZGTcaKxc9boUGfgq1YxzgBSmpUIKg0iqHTno2KE8p/ccSuuM9BIxG9mFRAKXyNvHq2tWWgw==}
 
+  '@polkadot-api/substrate-bindings@0.16.5':
+    resolution: {integrity: sha512-QFgNlBmtLtiUGTCTurxcE6UZrbI2DaQ5/gyIiC2FYfEhStL8tl20b09FRYHcSjY+lxN42Rcf9HVX+MCFWLYlpQ==}
+
   '@polkadot-api/substrate-client@0.4.7':
     resolution: {integrity: sha512-Mmx9VKincVqfVQmq89gzDk4DN3uKwf8CxoqYvq+EiPUZ1QmMUc7X4QMwG1MXIlYdnm5LSXzn+2Jn8ik8xMgL+w==}
 
@@ -716,8 +731,8 @@ packages:
   '@polkadot-api/wasm-executor@0.2.2':
     resolution: {integrity: sha512-uqQEHO2uho6cwPOfxtZlaQjGwwZfqF4MpmEfyyHw56i+NlvzSQWrLnIIpcAlwsJl8HeHCOy/IPOcLiZzFyXNiQ==}
 
-  '@polkadot-api/ws-provider@0.7.0':
-    resolution: {integrity: sha512-x/ulbwhvWlCyqxwtEfpVqPYArIuoo3g+defPcpZX5iJ1E6/+SYsGChDmgzM5Zbb0wDJMEn+p4us5P1Ll127cUA==}
+  '@polkadot-api/ws-provider@0.7.1':
+    resolution: {integrity: sha512-lmZcilwjV4RiNHEiOYNJPK43AxNFc8uc/g7nghaIFuxy5LFsvkin4x0/ZQdbr/G+nSKS1wWARixwyXozsunebA==}
 
   '@polkahub/context@0.1.0-pre.3':
     resolution: {integrity: sha512-2NhjCzlOq1Z+/u3o110D+KHnngvjbBOkjkOQ63K9WoDUbXKlPX3tciUG1QJWCNJiI10cod9bD1dWQpVmA/72ow==}
@@ -1874,8 +1889,8 @@ packages:
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
 
-  commander@14.0.1:
-    resolution: {integrity: sha512-2JkV3gUZUVrbNA+1sjBOYLsMZ5cEEl8GTFP2a4AVz5hvasAMCQ1D2l2le/cX+pV4N6ZU17zjUahLpIXRrnWL8A==}
+  commander@14.0.2:
+    resolution: {integrity: sha512-TywoWNNRbhoD0BXs1P3ZEScW8W5iKrnbithIl0YH+uCmBd0QpPOA8yc82DS3BIE5Ma6FnBVUsJ7wVUDz4dvOWQ==}
     engines: {node: '>=20'}
 
   commander@4.1.1:
@@ -2503,6 +2518,9 @@ packages:
   magic-string@0.30.19:
     resolution: {integrity: sha512-2N21sPY9Ws53PZvsEpVtNuSW+ScYbQdp4b9qUaL+9QkHUrGFKo56Lg9Emg5s9V/qrtNBmiR01sYhUOwu3H+VOw==}
 
+  magic-string@0.30.21:
+    resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
+
   matchmediaquery@0.4.2:
     resolution: {integrity: sha512-wrZpoT50ehYOudhDjt/YvUJc6eUzcdFPdmbizfgvswCKNHD1/OBOHYJpHie+HXpu6bSkEGieFMYk6VuutaiRfA==}
 
@@ -2704,8 +2722,8 @@ packages:
     resolution: {integrity: sha512-40QW5YalBNfQo5yRYmiw7Yz6TKKVr3h6970B2YE+3fQpsWcrbj1PzJgxeJ19DRQjhMbKPIuMY8rFaXc8moolVw==}
     engines: {node: '>=10.13.0'}
 
-  polkadot-api@1.20.0:
-    resolution: {integrity: sha512-XAh5Y9ZXxIFDrX+LrITdR7NhkA9NzNp91x0tFUA72TKgWP2wqnm6gGeNQsLYV81MuN+tw5MfJp/1LafUwGnLsQ==}
+  polkadot-api@1.20.1:
+    resolution: {integrity: sha512-kRLKneWdCLMFG/fOHVh2UJsa29fSUAM6i2rQIRvVHsJdiallMM29/wozskW8xDqq1raIhLRxizpofxPYJgT7OQ==}
     hasBin: true
     peerDependencies:
       rxjs: '>=7.8.0'
@@ -3586,9 +3604,9 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
 
-  '@commander-js/extra-typings@14.0.0(commander@14.0.1)':
+  '@commander-js/extra-typings@14.0.0(commander@14.0.2)':
     dependencies:
-      commander: 14.0.1
+      commander: 14.0.2
 
   '@esbuild/aix-ppc64@0.25.11':
     optional: true
@@ -3816,12 +3834,12 @@ snapshots:
 
   '@mimirdev/apps-transports@3.1.0': {}
 
-  '@mimirdev/papi-signer@3.1.0(@polkadot-api/polkadot-signer@0.1.6)(@polkadot-api/substrate-bindings@0.16.4)(@polkadot-api/utils@0.2.0)':
+  '@mimirdev/papi-signer@3.1.0(@polkadot-api/polkadot-signer@0.1.6)(@polkadot-api/substrate-bindings@0.16.5)(@polkadot-api/utils@0.2.0)':
     dependencies:
       '@mimirdev/apps-sdk': 3.1.0
       '@mimirdev/apps-transports': 3.1.0
       '@polkadot-api/polkadot-signer': 0.1.6
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkadot-api/utils': 0.2.0
 
   '@msgpack/msgpack@3.1.2': {}
@@ -3865,26 +3883,26 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@polkadot-api/cli@0.15.3(jiti@2.6.1)(postcss@8.5.6)':
+  '@polkadot-api/cli@0.15.4(jiti@2.6.1)(postcss@8.5.6)':
     dependencies:
-      '@commander-js/extra-typings': 14.0.0(commander@14.0.1)
-      '@polkadot-api/codegen': 0.19.2
-      '@polkadot-api/ink-contracts': 0.4.1
+      '@commander-js/extra-typings': 14.0.0(commander@14.0.2)
+      '@polkadot-api/codegen': 0.19.3
+      '@polkadot-api/ink-contracts': 0.4.2
       '@polkadot-api/json-rpc-provider': 0.0.4
       '@polkadot-api/known-chains': 0.9.12
-      '@polkadot-api/legacy-provider': 0.3.3(rxjs@7.8.2)
-      '@polkadot-api/metadata-compatibility': 0.3.7
-      '@polkadot-api/observable-client': 0.15.2(rxjs@7.8.2)
+      '@polkadot-api/legacy-provider': 0.3.4(rxjs@7.8.2)
+      '@polkadot-api/metadata-compatibility': 0.4.0
+      '@polkadot-api/observable-client': 0.16.0(rxjs@7.8.2)
       '@polkadot-api/polkadot-sdk-compat': 2.3.3
       '@polkadot-api/sm-provider': 0.1.12(@polkadot-api/smoldot@0.3.14)
       '@polkadot-api/smoldot': 0.3.14
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkadot-api/substrate-client': 0.4.7
       '@polkadot-api/utils': 0.2.0
       '@polkadot-api/wasm-executor': 0.2.2
-      '@polkadot-api/ws-provider': 0.7.0
+      '@polkadot-api/ws-provider': 0.7.1
       '@types/node': 24.9.2
-      commander: 14.0.1
+      commander: 14.0.2
       execa: 9.6.0
       fs.promises.exists: 1.1.4
       ora: 9.0.0
@@ -3905,27 +3923,27 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  '@polkadot-api/codegen@0.19.2':
+  '@polkadot-api/codegen@0.19.3':
     dependencies:
-      '@polkadot-api/ink-contracts': 0.4.1
-      '@polkadot-api/metadata-builders': 0.13.6
-      '@polkadot-api/metadata-compatibility': 0.3.7
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/ink-contracts': 0.4.2
+      '@polkadot-api/metadata-builders': 0.13.7
+      '@polkadot-api/metadata-compatibility': 0.4.0
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkadot-api/utils': 0.2.0
 
-  '@polkadot-api/common-sdk-utils@0.1.0(polkadot-api@1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)':
+  '@polkadot-api/common-sdk-utils@0.1.0(polkadot-api@1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)':
     dependencies:
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       rxjs: 7.8.2
 
-  '@polkadot-api/descriptors@file:.papi/descriptors(polkadot-api@1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))':
+  '@polkadot-api/descriptors@file:.papi/descriptors(polkadot-api@1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))':
     dependencies:
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
 
-  '@polkadot-api/ink-contracts@0.4.1':
+  '@polkadot-api/ink-contracts@0.4.2':
     dependencies:
-      '@polkadot-api/metadata-builders': 0.13.6
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/metadata-builders': 0.13.7
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkadot-api/utils': 0.2.0
 
   '@polkadot-api/json-rpc-provider-proxy@0.2.5': {}
@@ -3943,11 +3961,11 @@ snapshots:
       '@polkadot-api/substrate-bindings': 0.16.4
       '@polkadot-api/utils': 0.2.0
 
-  '@polkadot-api/legacy-provider@0.3.3(rxjs@7.8.2)':
+  '@polkadot-api/legacy-provider@0.3.4(rxjs@7.8.2)':
     dependencies:
       '@polkadot-api/json-rpc-provider': 0.0.4
       '@polkadot-api/raw-client': 0.1.1
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkadot-api/utils': 0.2.0
       rxjs: 7.8.2
 
@@ -3959,6 +3977,12 @@ snapshots:
     dependencies:
       '@polkadot-api/metadata-builders': 0.13.6
       '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/utils': 0.2.0
+
+  '@polkadot-api/merkleize-metadata@1.1.27':
+    dependencies:
+      '@polkadot-api/metadata-builders': 0.13.7
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkadot-api/utils': 0.2.0
 
   '@polkadot-api/meta-signers@0.1.16':
@@ -3974,25 +3998,30 @@ snapshots:
       '@polkadot-api/substrate-bindings': 0.16.4
       '@polkadot-api/utils': 0.2.0
 
-  '@polkadot-api/metadata-compatibility@0.3.7':
+  '@polkadot-api/metadata-builders@0.13.7':
     dependencies:
-      '@polkadot-api/metadata-builders': 0.13.6
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/substrate-bindings': 0.16.5
+      '@polkadot-api/utils': 0.2.0
 
-  '@polkadot-api/observable-client@0.15.2(rxjs@7.8.2)':
+  '@polkadot-api/metadata-compatibility@0.4.0':
     dependencies:
-      '@polkadot-api/metadata-builders': 0.13.6
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/metadata-builders': 0.13.7
+      '@polkadot-api/substrate-bindings': 0.16.5
+
+  '@polkadot-api/observable-client@0.16.0(rxjs@7.8.2)':
+    dependencies:
+      '@polkadot-api/metadata-builders': 0.13.7
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkadot-api/substrate-client': 0.4.7
       '@polkadot-api/utils': 0.2.0
       rxjs: 7.8.2
 
-  '@polkadot-api/pjs-signer@0.6.16':
+  '@polkadot-api/pjs-signer@0.6.17':
     dependencies:
-      '@polkadot-api/metadata-builders': 0.13.6
+      '@polkadot-api/metadata-builders': 0.13.7
       '@polkadot-api/polkadot-signer': 0.1.6
-      '@polkadot-api/signers-common': 0.1.17
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/signers-common': 0.1.18
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkadot-api/utils': 0.2.0
 
   '@polkadot-api/polkadot-sdk-compat@2.3.3':
@@ -4008,27 +4037,27 @@ snapshots:
   '@polkadot-api/react-components@0.3.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@noble/hashes': 2.0.1
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/substrate-bindings': 0.16.5
       lucide-react: 0.548.0(react@19.2.0)
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
-  '@polkadot-api/sdk-accounts@0.5.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(polkadot-api@1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)':
+  '@polkadot-api/sdk-accounts@0.5.1(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(polkadot-api@1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)':
     dependencies:
-      '@polkadot-api/common-sdk-utils': 0.1.0(polkadot-api@1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/common-sdk-utils': 0.1.0(polkadot-api@1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       rxjs: 7.8.2
     transitivePeerDependencies:
       - '@react-rxjs/core'
       - react
 
-  '@polkadot-api/sdk-staking@0.3.1(polkadot-api@1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)':
+  '@polkadot-api/sdk-staking@0.3.1(polkadot-api@1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)':
     dependencies:
-      '@polkadot-api/common-sdk-utils': 0.1.0(polkadot-api@1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)
-      '@polkadot-api/substrate-bindings': 0.16.4
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      '@polkadot-api/common-sdk-utils': 0.1.0(polkadot-api@1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@polkadot-api/substrate-bindings': 0.16.5
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       rxjs: 7.8.2
 
   '@polkadot-api/signer@0.2.10':
@@ -4040,11 +4069,27 @@ snapshots:
       '@polkadot-api/substrate-bindings': 0.16.4
       '@polkadot-api/utils': 0.2.0
 
+  '@polkadot-api/signer@0.2.11':
+    dependencies:
+      '@noble/hashes': 2.0.1
+      '@polkadot-api/merkleize-metadata': 1.1.27
+      '@polkadot-api/polkadot-signer': 0.1.6
+      '@polkadot-api/signers-common': 0.1.18
+      '@polkadot-api/substrate-bindings': 0.16.5
+      '@polkadot-api/utils': 0.2.0
+
   '@polkadot-api/signers-common@0.1.17':
     dependencies:
       '@polkadot-api/metadata-builders': 0.13.6
       '@polkadot-api/polkadot-signer': 0.1.6
       '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/utils': 0.2.0
+
+  '@polkadot-api/signers-common@0.1.18':
+    dependencies:
+      '@polkadot-api/metadata-builders': 0.13.7
+      '@polkadot-api/polkadot-signer': 0.1.6
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkadot-api/utils': 0.2.0
 
   '@polkadot-api/sm-provider@0.1.12(@polkadot-api/smoldot@0.3.14)':
@@ -4068,6 +4113,13 @@ snapshots:
       '@scure/base': 2.0.0
       scale-ts: 1.6.1
 
+  '@polkadot-api/substrate-bindings@0.16.5':
+    dependencies:
+      '@noble/hashes': 2.0.1
+      '@polkadot-api/utils': 0.2.0
+      '@scure/base': 2.0.0
+      scale-ts: 1.6.1
+
   '@polkadot-api/substrate-client@0.4.7':
     dependencies:
       '@polkadot-api/json-rpc-provider': 0.0.4
@@ -4078,7 +4130,7 @@ snapshots:
 
   '@polkadot-api/wasm-executor@0.2.2': {}
 
-  '@polkadot-api/ws-provider@0.7.0':
+  '@polkadot-api/ws-provider@0.7.1':
     dependencies:
       '@polkadot-api/json-rpc-provider': 0.0.4
       '@polkadot-api/json-rpc-provider-proxy': 0.2.5
@@ -4096,7 +4148,7 @@ snapshots:
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@rx-state/core': 0.1.4(rxjs@7.8.2)
       '@types/react': 19.2.2
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       react: 19.2.0
       rxjs: 7.8.2
     transitivePeerDependencies:
@@ -4123,7 +4175,7 @@ snapshots:
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@types/react': 19.2.2
       lucide-react: 0.548.0(react@19.2.0)
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       react: 19.2.0
       rxjs: 7.8.2
     transitivePeerDependencies:
@@ -4142,9 +4194,9 @@ snapshots:
   '@polkahub/mimir@0.1.0-pre.4(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@mimirdev/apps-inject': 3.2.0
-      '@mimirdev/papi-signer': 3.1.0(@polkadot-api/polkadot-signer@0.1.6)(@polkadot-api/substrate-bindings@0.16.4)(@polkadot-api/utils@0.2.0)
+      '@mimirdev/papi-signer': 3.1.0(@polkadot-api/polkadot-signer@0.1.6)(@polkadot-api/substrate-bindings@0.16.5)(@polkadot-api/utils@0.2.0)
       '@polkadot-api/polkadot-signer': 0.1.6
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkadot-api/utils': 0.2.0
       '@polkahub/context': 0.1.0-pre.3(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@polkahub/plugin': 0.1.0-pre.3(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
@@ -4169,12 +4221,12 @@ snapshots:
   '@polkahub/multisig@0.1.0-pre.3(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)':
     dependencies:
       '@polkadot-api/meta-signers': 0.1.16
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkahub/plugin': 0.1.0-pre.3(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@types/react': 19.2.2
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       react: 19.2.0
       rxjs: 7.8.2
     transitivePeerDependencies:
@@ -4190,7 +4242,7 @@ snapshots:
 
   '@polkahub/pjs-wallet@0.1.0-pre.4(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
-      '@polkadot-api/pjs-signer': 0.6.16
+      '@polkadot-api/pjs-signer': 0.6.17
       '@polkahub/context': 0.1.0-pre.3(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@polkahub/plugin': 0.1.0-pre.3(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@polkahub/ui-components': 0.1.0-pre.3(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -4198,7 +4250,7 @@ snapshots:
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@types/react': 19.2.2
       lucide-react: 0.548.0(react@19.2.0)
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       react: 19.2.0
       rxjs: 7.8.2
     transitivePeerDependencies:
@@ -4218,7 +4270,7 @@ snapshots:
     dependencies:
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@rx-state/core': 0.1.4(rxjs@7.8.2)
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       rxjs: 7.8.2
     transitivePeerDependencies:
       - '@microsoft/api-extractor'
@@ -4240,7 +4292,7 @@ snapshots:
       '@react-rxjs/core': 0.10.8(react@19.2.0)(rxjs@7.8.2)
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@types/react': 19.2.2
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       react: 19.2.0
       rxjs: 7.8.2
     transitivePeerDependencies:
@@ -4256,7 +4308,7 @@ snapshots:
 
   '@polkahub/read-only@0.1.0-pre.3(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkahub/context': 0.1.0-pre.3(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@polkahub/plugin': 0.1.0-pre.3(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@polkahub/select-account': 0.1.0-pre.3(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -4265,7 +4317,7 @@ snapshots:
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@types/react': 19.2.2
       lucide-react: 0.548.0(react@19.2.0)
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       react: 19.2.0
       rxjs: 7.8.2
     transitivePeerDependencies:
@@ -4284,7 +4336,7 @@ snapshots:
   '@polkahub/select-account@0.1.0-pre.3(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@polkadot-api/react-components': 0.3.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkahub/context': 0.1.0-pre.3(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@polkahub/plugin': 0.1.0-pre.3(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@polkahub/ui-components': 0.1.0-pre.3(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -4328,7 +4380,7 @@ snapshots:
   '@polkahub/vault@0.1.0-pre.3(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@polkadot-api/signers-common': 0.1.17
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkahub/context': 0.1.0-pre.3(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@polkahub/plugin': 0.1.0-pre.3(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@polkahub/select-account': 0.1.0-pre.3(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -4337,7 +4389,7 @@ snapshots:
       '@react-rxjs/utils': 0.9.7(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(react@19.2.0)(rxjs@7.8.2)
       '@types/react': 19.2.2
       lucide-react: 0.548.0(react@19.2.0)
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       react: 19.2.0
       rxjs: 7.8.2
     transitivePeerDependencies:
@@ -4355,7 +4407,7 @@ snapshots:
 
   '@polkahub/wallet-connect@0.1.0-pre.4(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.3)(zod@3.25.76)':
     dependencies:
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkahub/context': 0.1.0-pre.3(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@polkahub/plugin': 0.1.0-pre.3(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@polkahub/select-account': 0.1.0-pre.3(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -4367,7 +4419,7 @@ snapshots:
       '@walletconnect/types': 2.23.0
       '@walletconnect/universal-provider': 2.23.0(typescript@5.9.3)(zod@3.25.76)
       '@walletconnect/utils': 2.23.0(typescript@5.9.3)(zod@3.25.76)
-      polkadot-api: 1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
+      polkadot-api: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       react: 19.2.0
       rxjs: 7.8.2
     transitivePeerDependencies:
@@ -6108,7 +6160,7 @@ snapshots:
 
   color-name@1.1.4: {}
 
-  commander@14.0.1: {}
+  commander@14.0.2: {}
 
   commander@4.1.1: {}
 
@@ -6412,7 +6464,7 @@ snapshots:
 
   fix-dts-default-cjs-exports@1.0.1:
     dependencies:
-      magic-string: 0.30.19
+      magic-string: 0.30.21
       mlly: 1.8.0
       rollup: 4.52.5
 
@@ -6689,6 +6741,10 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  magic-string@0.30.21:
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.5.5
+
   matchmediaquery@0.4.2:
     dependencies:
       css-mediaquery: 0.1.2
@@ -6917,26 +6973,26 @@ snapshots:
 
   pngjs@5.0.0: {}
 
-  polkadot-api@1.20.0(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2):
+  polkadot-api@1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2):
     dependencies:
-      '@polkadot-api/cli': 0.15.3(jiti@2.6.1)(postcss@8.5.6)
-      '@polkadot-api/ink-contracts': 0.4.1
+      '@polkadot-api/cli': 0.15.4(jiti@2.6.1)(postcss@8.5.6)
+      '@polkadot-api/ink-contracts': 0.4.2
       '@polkadot-api/json-rpc-provider': 0.0.4
       '@polkadot-api/known-chains': 0.9.12
       '@polkadot-api/logs-provider': 0.0.6
-      '@polkadot-api/metadata-builders': 0.13.6
-      '@polkadot-api/metadata-compatibility': 0.3.7
-      '@polkadot-api/observable-client': 0.15.2(rxjs@7.8.2)
-      '@polkadot-api/pjs-signer': 0.6.16
+      '@polkadot-api/metadata-builders': 0.13.7
+      '@polkadot-api/metadata-compatibility': 0.4.0
+      '@polkadot-api/observable-client': 0.16.0(rxjs@7.8.2)
+      '@polkadot-api/pjs-signer': 0.6.17
       '@polkadot-api/polkadot-sdk-compat': 2.3.3
       '@polkadot-api/polkadot-signer': 0.1.6
-      '@polkadot-api/signer': 0.2.10
+      '@polkadot-api/signer': 0.2.11
       '@polkadot-api/sm-provider': 0.1.12(@polkadot-api/smoldot@0.3.14)
       '@polkadot-api/smoldot': 0.3.14
-      '@polkadot-api/substrate-bindings': 0.16.4
+      '@polkadot-api/substrate-bindings': 0.16.5
       '@polkadot-api/substrate-client': 0.4.7
       '@polkadot-api/utils': 0.2.0
-      '@polkadot-api/ws-provider': 0.7.0
+      '@polkadot-api/ws-provider': 0.7.1
       '@rx-state/core': 0.1.4(rxjs@7.8.2)
       rxjs: 7.8.2
     transitivePeerDependencies:
