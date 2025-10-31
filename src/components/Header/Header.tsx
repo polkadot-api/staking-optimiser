@@ -8,7 +8,11 @@ export const Header = () => (
     <div className="flex p-4 items-center gap-2 container m-auto">
       <div className="flex flex-1 items-center flex-row gap-2 relative">
         <Link to="/">
-          <img alt="logo" src="/staking.svg" className="w-10 inline-block" />
+          <img
+            alt="logo"
+            src="/android-chrome-192x192.png"
+            className="w-10 inline-block"
+          />
         </Link>
       </div>
       <SelectAccount />
