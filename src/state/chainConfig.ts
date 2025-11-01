@@ -67,7 +67,6 @@ export const rpcsByChain: Record<
       IBP2: "wss://people-polkadot.dotters.network",
       LuckyFriday: "wss://rpc-people-polkadot.luckyfriday.io",
       Parity: "wss://polkadot-people-rpc.polkadot.io",
-      RadiumBlock: "wss://people-polkadot.public.curie.radiumblock.co/ws",
     },
     assetHub: {
       Dwellir: "wss://asset-hub-polkadot-rpc.dwellir.com",
@@ -76,7 +75,6 @@ export const rpcsByChain: Record<
       IBP2: "wss://asset-hub-polkadot.dotters.network",
       LuckyFriday: "wss://rpc-asset-hub-polkadot.luckyfriday.io",
       Parity: "wss://polkadot-asset-hub-rpc.polkadot.io",
-      RadiumBlock: "wss://statemint.public.curie.radiumblock.co/ws",
       Stakeworld: "wss://dot-rpc.stakeworld.io/assethub",
     },
   },
@@ -105,7 +103,6 @@ export const rpcsByChain: Record<
       IBP2: "wss://asset-hub-kusama.dotters.network",
       LuckyFriday: "wss://rpc-asset-hub-kusama.luckyfriday.io",
       Parity: "wss://kusama-asset-hub-rpc.polkadot.io",
-      RadiumBlock: "wss://statemine.public.curie.radiumblock.co/ws",
       Stakeworld: "wss://ksm-rpc.stakeworld.io/assethub",
     },
   },
@@ -116,7 +113,6 @@ export const rpcsByChain: Record<
       IBP1: "wss://rpc.ibp.network/westend",
       IBP2: "wss://westend.dotters.network",
       Parity: "wss://westend-rpc.polkadot.io",
-      RadiumBlock: "wss://westend.public.curie.radiumblock.co/ws",
     },
     people: {
       Dwellir: "wss://people-westend-rpc.dwellir.com",

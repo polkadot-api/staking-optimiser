@@ -5,7 +5,6 @@ import { createIdentitySdk } from "@polkadot-api/sdk-accounts";
 import { createStakingSdk } from "@polkadot-api/sdk-staking";
 import { state, withDefault } from "@react-rxjs/core";
 import { createClient, type PolkadotClient } from "polkadot-api";
-import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat";
 import { getSmProvider } from "polkadot-api/sm-provider";
 import type { Client as Smoldot } from "polkadot-api/smoldot";
 import SmWorker from "polkadot-api/smoldot/worker?worker";
@@ -89,8 +88,8 @@ const createClients = (chain: KnownChains, useSmoldoge: boolean) => {
   const descriptors = descriptorsByChain[chain];
 
   const getRpcClient = (type: "relay" | "staking" | "people") => {
-    const getWsProvider = getGetWsProvider(type);
     if (USE_CHOPSTICKS && type === "staking") {
+      const getWsProvider = getGetWsProvider(type);
       if (!clients.assetHub) {
         const rpcProvider = withChopsticksEnhancer(
           getWsProvider("ws://localhost:8132"),
@@ -128,8 +127,9 @@ const createClients = (chain: KnownChains, useSmoldoge: boolean) => {
         ),
       );
     } else {
+      const getWsProvider = getGetWsProvider(chainType);
       const urls = shuffleArray(Object.values(rpcs[chainType]));
-      rpcProvider = withPolkadotSdkCompat(getWsProvider(urls));
+      rpcProvider = getWsProvider(urls);
     }
 
     clients[chainType] = createClient(rpcProvider);

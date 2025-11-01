@@ -1,4 +1,5 @@
 import { withLogsRecorder } from "polkadot-api/logs-provider";
+import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat";
 import {
   getWsProvider as _getWsProvider,
   WsEvent,
@@ -24,27 +25,37 @@ const logs: Record<string, string[]> = {};
 export const getGetWsProvider: (name: string) => typeof _getWsProvider = (
   name,
 ) => {
-  const data: Array<string> = [];
-  logs[name + idx] = data;
+  const dataIn: Array<string> = [];
+  const dataOut: Array<string> = [];
+  logs[name + "_in_" + ++idx] = dataIn;
+  logs[name + "_out_" + idx] = dataOut;
+
   return (endpoints, config) =>
-    _getWsProvider(endpoints, {
-      ...config,
-      innerEnhancer: (x) =>
-        withLogsRecorder((log) => {
-          data.push(log);
-        }, x),
-      onStatusChanged: (status) => {
-        data.push(
-          status.type === WsEvent.CONNECTING
-            ? `CONNECTING ${status.uri}`
-            : status.type === WsEvent.CONNECTED
-              ? `CONNECTED ${status.uri}`
-              : status.type === WsEvent.CLOSE
-                ? `CLOSED`
-                : `ERROR`,
-        );
+    withLogsRecorder(
+      (log) => {
+        dataOut.push(log);
       },
-    });
+      withPolkadotSdkCompat(
+        _getWsProvider(endpoints, {
+          ...config,
+          innerEnhancer: (x) =>
+            withLogsRecorder((log) => {
+              dataIn.push(log);
+            }, x),
+          onStatusChanged: (status) => {
+            dataIn.push(
+              status.type === WsEvent.CONNECTING
+                ? `CONNECTING ${status.uri}`
+                : status.type === WsEvent.CONNECTED
+                  ? `CONNECTED ${status.uri}`
+                  : status.type === WsEvent.CLOSE
+                    ? `CLOSED`
+                    : `ERROR`,
+            );
+          },
+        }),
+      ),
+    ) as any;
 };
 
 const downloadLogs = () => {
