@@ -9,18 +9,19 @@ import {
   type HistoricValidator,
   type PositionValidator,
 } from "./validatorList.state";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 export const ValidatorRow: FC<{
   validator: PositionValidator;
   onSelectChange: (value: boolean) => void;
   selectIcon: (selected: boolean) => ReactElement;
 }> = ({ validator, onSelectChange, selectIcon }) => {
+  const { chain } = useParams();
   return (
     <>
       <td className="text-muted-foreground">{validator.position + 1}</td>
       <td className="overflow-hidden">
-        <Link to={`../validators/${validator.address}`}>
+        <Link to={`/${chain}/validators/${validator.address}`}>
           <AddressIdentity className="w-52" addr={validator.address} />
         </Link>
       </td>
