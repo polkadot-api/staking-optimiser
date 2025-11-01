@@ -20,7 +20,7 @@ export const ValidatorRow: FC<{
     <>
       <td className="text-muted-foreground">{validator.position + 1}</td>
       <td className="overflow-hidden">
-        <Link to={validator.address}>
+        <Link to={`../validators/${validator.address}`}>
           <AddressIdentity className="w-52" addr={validator.address} />
         </Link>
       </td>
