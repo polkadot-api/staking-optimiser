@@ -15,6 +15,9 @@ import {
   USE_CHOPSTICKS,
 } from "./chainConfig";
 
+// Needed for ledger
+import("buffer").then(({ Buffer }) => (globalThis.Buffer = Buffer));
+
 const ss58Format$ = stakingApi$.pipe(
   switchMap((v) => v.constants.System.SS58Prefix()),
   shareLatest()
