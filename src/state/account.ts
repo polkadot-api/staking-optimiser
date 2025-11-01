@@ -45,12 +45,9 @@ const ledgerAccountProvider = createLedgerProvider(
       )
     )
 );
-const walletConnectProvider = new Promise((resolve) =>
-  setTimeout(resolve, 5000)
-)
-  .then(() => import("polkahub"))
-  .then(({ createWalletConnectProvider, knownChains }) =>
-    createWalletConnectProvider("6f2b51e45da9528f7058fd272af3bb8d", [
+const walletConnectProvider = import("polkahub").then(
+  ({ createWalletConnectProvider, knownChains }) =>
+    createWalletConnectProvider(import.meta.env.VITE_REOWN_PROJECT_ID, [
       knownChains.polkadot,
       knownChains.polkadotAh,
       knownChains.kusama,
@@ -58,7 +55,7 @@ const walletConnectProvider = new Promise((resolve) =>
       knownChains.paseo,
       knownChains.paseoAh,
     ])
-  );
+);
 
 export const accountProviderPlugins = [
   selectedAccountPlugin,
