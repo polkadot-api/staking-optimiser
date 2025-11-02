@@ -9,8 +9,13 @@ function Slider({
   value,
   min = 0,
   max = 100,
+  rangeOverlay,
+  rangeTicks,
   ...props
-}: React.ComponentProps<typeof SliderPrimitive.Root>) {
+}: React.ComponentProps<typeof SliderPrimitive.Root> & {
+  rangeOverlay?: React.ReactNode;
+  rangeTicks?: boolean;
+}) {
   const _values = React.useMemo(
     () =>
       Array.isArray(value)
@@ -21,6 +26,27 @@ function Slider({
     [value, defaultValue, min, max]
   );
 
+  const calculateTicks = (tickLen: number) => {
+    /**
+     * The first offset is challenging. We want the offset as a % of the [min,max]
+     * range, but making sure the tick is aligned with the [0,max] range.
+     */
+    const maxTicks = Math.floor(100 / tickLen);
+    const pMin = (min / max) * 100;
+    const startingTick = Math.ceil(pMin / tickLen);
+    const firstTickOffset =
+      ((startingTick * tickLen - pMin) / (100 - pMin)) * 100;
+
+    const ticks = new Array(maxTicks - startingTick + 1)
+      .fill(0)
+      .map((_, i) => tickLen * (startingTick + i));
+
+    return { ticks, firstTickOffset };
+  };
+
+  const ticks10 = calculateTicks(10);
+  const ticks25 = calculateTicks(25);
+
   return (
     <SliderPrimitive.Root
       data-slot="slider"
@@ -29,7 +55,7 @@ function Slider({
       min={min}
       max={max}
       className={cn(
-        "relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col",
+        "@container/slider relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col",
         className
       )}
       {...props}
@@ -40,6 +66,7 @@ function Slider({
           "bg-muted relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-1.5 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5"
         )}
       >
+        {rangeOverlay}
         <SliderPrimitive.Range
           data-slot="slider-range"
           className={cn(
@@ -47,6 +74,30 @@ function Slider({
           )}
         />
       </SliderPrimitive.Track>
+      {rangeTicks ? (
+        <>
+          <div
+            className="absolute hidden @sm/slider:flex top-0 right-0 justify-between text-[0.6rem] text-muted-foreground -translate-y-full"
+            style={{
+              left: `${ticks10.firstTickOffset}%`,
+            }}
+          >
+            {ticks10.ticks.map((v, i) => (
+              <div key={i}>{v}%</div>
+            ))}
+          </div>
+          <div
+            className="absolute flex @sm/slider:hidden top-0 right-0 justify-between text-[0.6rem] text-muted-foreground -translate-y-full"
+            style={{
+              left: `${ticks25.firstTickOffset}%`,
+            }}
+          >
+            {ticks25.ticks.map((v, i) => (
+              <div key={i}>{v}%</div>
+            ))}
+          </div>
+        </>
+      ) : null}
       {Array.from({ length: _values.length }, (_, index) => (
         <SliderPrimitive.Thumb
           data-slot="slider-thumb"

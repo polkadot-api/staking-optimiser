@@ -24,10 +24,14 @@ const getStakingEffectiveFrozen = (
 
   const rounding = 10n ** BigInt(token.decimals - 2);
 
-  return (
+  const stakingFrozen =
     rounding *
-    ((accountStatus.balance.raw.frozen - nonStakingReserves) / rounding + 1n)
-  );
+    ((accountStatus.balance.raw.frozen -
+      nonStakingReserves -
+      accountStatus.balance.raw.existentialDeposit) /
+      rounding +
+      1n);
+  return { stakingFrozen, nonStakingReserves };
 };
 
 export const bond$ = state(
@@ -40,7 +44,7 @@ export const bond$ = state(
             return account.nomination.currentBond;
 
           // Default to frozen balance that's overlapping with the free balance
-          const stakingFrozen = getStakingEffectiveFrozen(account, token);
+          const { stakingFrozen } = getStakingEffectiveFrozen(account, token);
           const minBond = account.nomination.minNominationBond;
           return stakingFrozen < minBond ? minBond : stakingFrozen;
         })
@@ -66,9 +70,26 @@ export const BondInput: FC = () => {
 
   const showSafeMaxWarning = bond != null && bond > maxSafeBond;
 
-  const stakingEffectiveFrozen = getStakingEffectiveFrozen(
+  const { stakingFrozen, nonStakingReserves } = getStakingEffectiveFrozen(
     accountStatus,
     token
+  );
+
+  const { frozen, existentialDeposit } = accountStatus.balance.raw;
+  const reservedAfter = bond ? nonStakingReserves + bond : null;
+  const lockedAfter = reservedAfter
+    ? reservedAfter + existentialDeposit > frozen
+      ? reservedAfter + existentialDeposit
+      : frozen
+    : null;
+  const spendableAfter =
+    lockedAfter && bond
+      ? bond > accountStatus.nomination.currentBond
+        ? accountStatus.balance.total - lockedAfter
+        : accountStatus.balance.spendable
+      : null;
+  const frozenRangePct = Math.round(
+    (100 * Number(stakingFrozen - minBond)) / Number(maxBond - minBond)
   );
 
   return (
@@ -80,11 +101,16 @@ export const BondInput: FC = () => {
             Set the amount to stake
           </p>
         </div>
-        {bond != null ? (
-          <TokenValue className="text-base font-semibold" value={bond} />
-        ) : (
-          "-"
-        )}
+        <TokenInput
+          id="bond-amount-input"
+          inputMode="decimal"
+          className="w-32"
+          value={bond}
+          symbol={symbol}
+          onChange={(v) =>
+            setBond(v == null ? null : v < 0 ? 0n : v > maxBond ? maxBond : v)
+          }
+        />
       </div>
       <Slider
         value={[Number(bond)]}
@@ -92,39 +118,42 @@ export const BondInput: FC = () => {
         max={Number(maxBond)}
         step={10 ** (token.decimals - 2)}
         onValueChange={([value]) => setBond(BigInt(Math.round(value)))}
-      />
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="w-full sm:w-auto">
-          <label
-            className="mb-1 block text-xs font-medium text-muted-foreground"
-            htmlFor="bond-amount-input"
-          >
-            Amount ({symbol})
-          </label>
-          <div className="flex items-center gap-2">
-            <TokenInput
-              id="bond-amount-input"
-              inputMode="decimal"
-              className="w-full sm:w-52"
-              value={bond}
-              onChange={(v) =>
-                setBond(
-                  v == null ? null : v < 0 ? 0n : v > maxBond ? maxBond : v
-                )
-              }
+        rangeOverlay={
+          frozenRangePct > 0 ? (
+            <div
+              className="absolute bg-chart-4 opacity-50 top-0 bottom-0 left-0"
+              style={{
+                width: `${frozenRangePct}%`,
+              }}
             />
-            {stakingEffectiveFrozen >= minBond ? (
-              <Button
-                variant="secondary"
-                type="button"
-                onClick={() => {
-                  setBond(stakingEffectiveFrozen);
-                }}
-              >
-                Eq to frozen
-              </Button>
-            ) : null}
-          </div>
+          ) : null
+        }
+        rangeTicks
+      />
+      <div className="flex justify-between items-center">
+        {stakingFrozen >= minBond ? (
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => {
+              setBond(stakingFrozen);
+            }}
+          >
+            Eq to frozen
+          </Button>
+        ) : (
+          <div />
+        )}
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Spendable after submit:</span>
+          {spendableAfter != null ? (
+            <TokenValue
+              className="tabular-nums font-semibold"
+              value={spendableAfter}
+            />
+          ) : (
+            "-"
+          )}
         </div>
       </div>
 

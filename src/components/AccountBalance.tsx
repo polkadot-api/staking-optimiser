@@ -13,7 +13,7 @@ import {
   switchMap,
 } from "rxjs";
 import { TextHintTooltip } from "./HintTooltip";
-import { formatToken, TokenValue } from "./TokenValue";
+import { TokenValue } from "./TokenValue";
 
 const SectorChart = lazy(() => import("@/components/SectorChart"));
 
@@ -30,7 +30,11 @@ export const getAddressTotalBalance = (addr: SS58String) =>
       ),
       tokenProps$.pipe(filter((v) => v != null)),
     ]).pipe(
-      map(([balance, props]) => (balance ? formatToken(balance, props) : null))
+      map(([value, { decimals, symbol }]) => ({
+        value,
+        decimals,
+        symbol,
+      }))
     )
   );
 

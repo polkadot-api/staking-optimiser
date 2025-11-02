@@ -35,4 +35,15 @@ export const identity$ = state((address: SS58String) => {
 }, null);
 
 export const getAddressIdentity = (address: SS58String) =>
-  firstValueFrom(identity$(address));
+  firstValueFrom(
+    identity$(address).pipe(
+      map((v) =>
+        v
+          ? {
+              ...v,
+              name: v.value,
+            }
+          : null
+      )
+    )
+  );

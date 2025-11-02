@@ -1,4 +1,4 @@
-import { clients$, tokenDecimals$ } from "@/state/chain";
+import { clients$, stakingApi$, tokenDecimals$ } from "@/state/chain";
 import { activeEra$, refreshEra$ } from "@/state/era";
 import { codeSplit } from "@/util/codeSplit";
 import { dot } from "@polkadot-api/descriptors";
@@ -6,7 +6,7 @@ import { u64 } from "@polkadot-api/substrate-bindings";
 import { getTypedCodecs, type HexString } from "polkadot-api";
 import { toHex } from "polkadot-api/utils";
 import { lazy, useRef, type FormEvent } from "react";
-import { combineLatest, firstValueFrom, map, skip } from "rxjs";
+import { combineLatest, firstValueFrom, map, skip, switchMap } from "rxjs";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import logo from "./chopsticks.svg";
@@ -171,14 +171,18 @@ const ResetBalance = () => {
       const accountId = evt.currentTarget.address.value;
       const value = evt.currentTarget.value.value;
 
-      const [client, tokenDecimals] = await firstValueFrom(
+      const [client, tokenDecimals, accountValue] = await firstValueFrom(
         combineLatest([
           clients$.pipe(map((v) => v.stakingClient)),
           tokenDecimals$,
+          stakingApi$.pipe(
+            switchMap((v) => v.query.System.Account.getValue(accountId))
+          ),
         ])
       );
 
       const amount = BigInt(Math.round(value * 10 ** tokenDecimals));
+      accountValue.data.free = amount;
 
       await client._request("dev_setStorage", [
         {
@@ -186,7 +190,9 @@ const ResetBalance = () => {
             account: [
               [
                 [accountId],
-                { providers: 1, data: { free: amount.toString() } },
+                toHex(
+                  stakingCodecs.query.System.Account.value.enc(accountValue)
+                ),
               ],
             ],
           },

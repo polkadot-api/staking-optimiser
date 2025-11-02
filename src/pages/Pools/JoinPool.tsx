@@ -1,12 +1,13 @@
 import { AlertCard } from "@/components/AlertCard";
 import { Card } from "@/components/Card";
 import { DialogButton } from "@/components/DialogButton";
+import { TokenInput } from "@/components/TokenInput";
 import { TokenValue } from "@/components/TokenValue";
 import { TransactionButton } from "@/components/Transactions";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { accountStatus$, selectedSignerAccount$ } from "@/state/account";
-import { stakingApi$, stakingSdk$, tokenDecimals$ } from "@/state/chain";
+import { stakingApi$, stakingSdk$, tokenProps$ } from "@/state/chain";
 import { formatPercentage } from "@/util/format";
 import { state, useStateObservable } from "@react-rxjs/core";
 import { useState, type FC } from "react";
@@ -84,32 +85,42 @@ const JoinPoolModal: FC<{
   const accountStatus = useStateObservable(accountStatus$);
   const minBond = useStateObservable(minPoolJoin$);
   const pool = useStateObservable(pool$(poolId));
-  const decimals = useStateObservable(tokenDecimals$);
-  const [bondAmount, setBondAmount] = useState<number>(Number(minBond));
+  const token = useStateObservable(tokenProps$);
+  const [bond, setBond] = useState<bigint | null>(minBond);
 
-  if (!accountStatus) {
-    throw new Error("Missing account");
-  }
-  if (!pool) return null;
+  if (!pool || !accountStatus || !token) return null;
+  const { decimals, symbol } = token;
+  const { nomination: nominationStatus } = accountStatus;
 
-  const maxBond = accountStatus.nomination.maxBond;
-  const spendable = accountStatus.balance.spendable;
-  const tokenUnit = 10 ** decimals;
-  const step = tokenUnit / 100;
+  const tokenUnit = 10n ** BigInt(decimals);
+  const maxBond = nominationStatus.maxBond;
+  const maxSafeBond = maxBond - tokenUnit;
 
-  const sliderMin = Number(minBond);
-  const sliderMax = Number(maxBond);
-  const clampAmount = (raw: number) => {
-    if (!Number.isFinite(raw)) return sliderMin || 0;
-    const rounded = Math.max(Math.round(raw), sliderMin || 0);
-    return sliderMax > 0 ? Math.min(rounded, sliderMax) : rounded;
-  };
-  const handleSetAmount = (value: number) => setBondAmount(clampAmount(value));
+  const showSafeMaxWarning = bond != null && bond > maxSafeBond;
 
-  const amountBig = BigInt(Math.max(Math.round(bondAmount), sliderMin));
-  const spendableAfter = spendable - amountBig;
+  const {
+    reserved: nonStakingReserves,
+    frozen,
+    existentialDeposit,
+  } = accountStatus.balance.raw;
+  const rounding = 10n ** BigInt(token.decimals - 2);
+  const stakingFrozen =
+    rounding *
+    ((frozen - nonStakingReserves - existentialDeposit) / rounding + 1n);
 
-  const alertTooMuchBond = amountBig > maxBond - BigInt(tokenUnit);
+  const frozenRangePct = Math.round(
+    (100 * Number(stakingFrozen - minBond)) / Number(maxBond - minBond)
+  );
+
+  const reservedAfter = bond ? nonStakingReserves + bond : null;
+  const lockedAfter = reservedAfter
+    ? reservedAfter + existentialDeposit > frozen
+      ? reservedAfter + existentialDeposit
+      : frozen
+    : null;
+  const spendableAfter = lockedAfter
+    ? accountStatus.balance.total - lockedAfter
+    : null;
 
   return (
     <div className="space-y-6">
@@ -130,59 +141,68 @@ const JoinPoolModal: FC<{
               Amount to bond
             </div>
             <div className="flex items-baseline gap-2 text-2xl font-semibold">
-              <TokenValue value={amountBig} />
               <span className="text-xs text-muted-foreground">
                 Min <TokenValue value={minBond} colored={false} />
               </span>
             </div>
           </div>
-          <div className="w-full max-w-[200px]">
-            <label
-              htmlFor="join-pool-amount"
-              className="mb-1 block text-xs font-medium text-muted-foreground"
-            >
-              Amount (tokens)
-            </label>
-            <Input
-              id="join-pool-amount"
+          <div className="w-32">
+            <TokenInput
               type="number"
               inputMode="decimal"
-              min={sliderMin}
-              step={step}
-              value={bondAmount / tokenUnit}
-              onChange={(event) =>
-                handleSetAmount(event.target.valueAsNumber * tokenUnit)
-              }
+              value={bond}
+              onChange={setBond}
+              symbol={symbol}
             />
           </div>
         </div>
 
         <Slider
-          value={[bondAmount]}
-          min={sliderMin}
-          max={sliderMax}
-          step={step}
-          disabled={sliderMax === 0}
-          onValueChange={([value]) => handleSetAmount(value)}
+          value={[Number(bond)]}
+          min={Number(minBond)}
+          max={Number(maxBond)}
+          step={10 ** (token.decimals - 2)}
+          onValueChange={([value]) => setBond(BigInt(Math.round(value)))}
+          rangeOverlay={
+            frozenRangePct > 0 ? (
+              <div
+                className="absolute bg-chart-4 opacity-50 top-0 bottom-0 left-0"
+                style={{
+                  width: `${frozenRangePct}%`,
+                }}
+              />
+            ) : null
+          }
+          rangeTicks
         />
+        <div>
+          {stakingFrozen >= minBond ? (
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => {
+                setBond(stakingFrozen);
+              }}
+            >
+              Eq to frozen
+            </Button>
+          ) : null}
+        </div>
       </section>
 
       <section className="space-y-4 rounded-lg border border-dashed border-border/60 bg-muted/10 p-4 text-sm">
         <div className="flex items-center justify-between">
-          <span className="text-muted-foreground">You will bond</span>
-          <TokenValue
-            className="tabular-nums font-semibold"
-            value={amountBig}
-          />
-        </div>
-        <div className="flex items-center justify-between">
           <span className="text-muted-foreground">Spendable after submit</span>
-          <TokenValue
-            className="tabular-nums font-semibold"
-            value={spendableAfter >= 0 ? spendableAfter : 0n}
-          />
+          {spendableAfter != null ? (
+            <TokenValue
+              className="tabular-nums font-semibold"
+              value={spendableAfter}
+            />
+          ) : (
+            "-"
+          )}
         </div>
-        {alertTooMuchBond ? (
+        {showSafeMaxWarning ? (
           <AlertCard type="warning">
             Careful! If you bond all your balance you might not have enough to
             pay transaction fees, which could lock you out.
@@ -197,13 +217,16 @@ const JoinPoolModal: FC<{
         </p>
         <TransactionButton
           createTx={async () => {
+            if (!bond) return null;
+
             const api = await firstValueFrom(stakingApi$);
             return api.tx.NominationPools.join({
-              amount: amountBig,
+              amount: bond,
               pool_id: poolId,
             });
           }}
           onSuccess={close}
+          disabled={bond == null || bond < minBond}
         >
           Join
         </TransactionButton>
