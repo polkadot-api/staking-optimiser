@@ -5,7 +5,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { activeEraNumber$ } from "@/state/era";
 import { useStateObservable } from "@react-rxjs/core";
 import { Search, SortAsc, SortDesc } from "lucide-react";
-import { useEffect, useState } from "react";
 import {
   filterBlocked$,
   filterCommision$,
@@ -25,6 +24,7 @@ import {
 } from "./validatorList.state";
 import { Card } from "@/components/Card";
 import { merge } from "rxjs";
+import { EraRangeSlider } from "@/components/EraRangeSlider";
 
 export const Params = () => {
   return (
@@ -45,91 +45,33 @@ export const MaParams = () => {
   const selectedEra = useStateObservable(selectedEra$);
   const maType = useStateObservable(maType$);
 
-  const [sliderValue, setSliderValue] = useState([
-    selectedEra - period,
-    selectedEra,
-  ]);
-  const [sliderFocused, setSliderFocused] = useState(false);
-
-  const resetSliderState = () => {
-    setSliderValue([selectedEra - period, selectedEra]);
-  };
-
-  useEffect(() => {
-    if (sliderFocused) return;
-    resetSliderState();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sliderFocused, period, selectedEra]);
-
   return (
-    <div>
-      <div className="flex gap-2 items-center justify-center mb-4">
-        <label className="flex flex-col overflow-hidden">
-          <div className="text-muted-foreground">Era</div>
-          <Input
-            type="number"
-            value={selectedEra}
-            onChange={(evt) =>
-              evt.target.valueAsNumber &&
-              setEra(
-                Math.round(
-                  Math.max(
-                    Math.min(evt.target.valueAsNumber, activeEraNumber - 1),
-                    activeEraNumber - 21
-                  )
-                )
-              )
-            }
-          />
-        </label>
-        <label className="flex flex-col overflow-hidden">
-          <div className="text-muted-foreground">Period</div>
-          <Input
-            type="number"
-            value={period}
-            onChange={(evt) =>
-              evt.target.valueAsNumber &&
-              setMaPeriod(
-                Math.round(Math.max(Math.min(evt.target.valueAsNumber, 21), 1))
-              )
-            }
-          />
-        </label>
-        <label className="flex flex-col overflow-hidden shrink-0">
-          <div className="text-muted-foreground">Avg type</div>
-          <ToggleGroup
-            value={maType}
-            type="single"
-            onValueChange={(value) => setMaType(value as any)}
-          >
-            <ToggleGroupItem value="simple">SMA</ToggleGroupItem>
-            <ToggleGroupItem value="exponential">EMA</ToggleGroupItem>
-          </ToggleGroup>
-        </label>
+    <div className="flex items-center gap-6">
+      <div className="min-w-0 flex-1">
+        <EraRangeSlider
+          minEra={activeEraNumber - 21}
+          maxEra={activeEraNumber - 1}
+          startEra={selectedEra - period}
+          endEra={selectedEra}
+          onRangeChange={(start, end) => {
+            setMaPeriod(end - start);
+            setEra(end);
+          }}
+        />
       </div>
-      <Slider
-        className="max-md:hidden"
-        value={sliderValue}
-        min={activeEraNumber - 21}
-        max={activeEraNumber - 1}
-        step={0.01}
-        onFocus={() => setSliderFocused(true)}
-        onBlur={() => setSliderFocused(false)}
-        onValueChange={([start, nextFloatEra]) => {
-          if (nextFloatEra != sliderValue[1]) {
-            setSliderValue([nextFloatEra - period, nextFloatEra]);
-            const nextEra = Math.round(nextFloatEra);
-            if (nextEra != selectedEra) setEra(nextEra);
-          } else {
-            const newFloatPeriod = Math.max(1, nextFloatEra - start);
-            setSliderValue([nextFloatEra - newFloatPeriod, nextFloatEra]);
-
-            const newPeriod = Math.round(newFloatPeriod);
-            if (newPeriod != period) setMaPeriod(newPeriod);
-          }
-        }}
-        onValueCommit={resetSliderState}
-      />
+      <div className="flex shrink-0 flex-col gap-2">
+        <span className="text-sm font-medium text-muted-foreground">
+          Avg type
+        </span>
+        <ToggleGroup
+          value={maType}
+          type="single"
+          onValueChange={(value) => setMaType(value as any)}
+        >
+          <ToggleGroupItem value="simple">SMA</ToggleGroupItem>
+          <ToggleGroupItem value="exponential">EMA</ToggleGroupItem>
+        </ToggleGroup>
+      </div>
     </div>
   );
 };
