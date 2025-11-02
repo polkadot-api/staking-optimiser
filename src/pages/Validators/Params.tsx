@@ -32,9 +32,7 @@ export const Params = () => {
       <Card title="Data Options" className="grow">
         <MaParams />
       </Card>
-      <Card title="Filters" className="grow">
-        <Filters />
-      </Card>
+      <FiltersNew />
     </div>
   );
 };
@@ -132,43 +130,62 @@ export const SortBy = () => {
   );
 };
 
-const Filters = () => {
+function FiltersNew() {
   const filterBlocked = useStateObservable(filterBlocked$);
   const filterCommission = useStateObservable(filterCommision$);
   const search = useStateObservable(search$);
 
   return (
-    <div>
-      <label className="block py-4">
-        <Switch
-          checked={filterBlocked}
-          onCheckedChange={() => setFilterBlocked(!filterBlocked)}
-        />{" "}
-        Filter Blocked
-      </label>
-      <div>
-        <label className="flex items-center gap-2">
-          Commission
-          <Slider
-            className="max-w-40"
-            min={0}
-            max={100}
-            step={1}
-            value={[filterCommission]}
-            onValueChange={([value]) => setFilterCommission(value)}
-          />
-          <div>{filterCommission.toLocaleString()}%</div>
-        </label>
-      </div>
-      <div>
-        <label className="flex items-center gap-2">
-          <Search />
-          <Input
-            value={search}
-            onChange={(evt) => setSearch(evt.target.value)}
-          />
-        </label>
+    <div className="shadow rounded-xl bg-card text-card-foreground p-4 grow">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium text-muted-foreground">Filters</h3>
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="filter-blocked"
+              className="text-sm font-normal cursor-pointer"
+            >
+              Filter Blocked
+            </label>
+            <Switch
+              id="filter-blocked"
+              checked={filterBlocked}
+              onCheckedChange={setFilterBlocked}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+          <div className="flex flex-col gap-2 w-full sm:w-auto sm:min-w-[240px]">
+            <label htmlFor="commission-slider" className="text-sm font-medium">
+              Commission
+            </label>
+            <div className="flex items-center gap-2">
+              <Slider
+                id="commission-slider"
+                value={[filterCommission]}
+                onValueChange={([value]) => setFilterCommission(value)}
+                max={100}
+                step={1}
+                className="flex-1"
+              />
+              <span className="text-sm font-medium tabular-nums w-12 text-right">
+                {filterCommission}%
+              </span>
+            </div>
+          </div>
+
+          <div className="relative w-full sm:flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search..."
+              value={search}
+              onChange={(evt) => setSearch(evt.target.value)}
+              className="pl-9"
+            />
+          </div>
+        </div>{" "}
       </div>
     </div>
   );
-};
+}
