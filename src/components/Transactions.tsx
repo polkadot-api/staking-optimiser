@@ -24,7 +24,7 @@ import { Button } from "./ui/button";
 const toastModule = import("react-toastify");
 
 const ToastContainer = lazy(() =>
-  toastModule.then((mod) => ({ default: mod.ToastContainer }))
+  toastModule.then((mod) => ({ default: mod.ToastContainer })),
 );
 
 // Error invalid fee keeps the toast open
@@ -53,7 +53,7 @@ function trackTransaction(tx$: Observable<TxEvent>) {
                     render:
                       "Transaction included in a block but is failing: " +
                       JSON.stringify(res.dispatchError),
-                  }
+                  },
             );
           } else if (res.type === "finalized") {
             // Can't toast.update the type of toast :(
@@ -64,7 +64,7 @@ function trackTransaction(tx$: Observable<TxEvent>) {
                 "Transaction failed: " + JSON.stringify(res.dispatchError),
                 {
                   autoClose: false,
-                }
+                },
               );
               return;
             }
@@ -87,7 +87,7 @@ function trackTransaction(tx$: Observable<TxEvent>) {
       });
 
       return shared$;
-    })
+    }),
   );
 }
 
@@ -110,7 +110,7 @@ const useSingleTransaction = () => {
 
 const [hasAccepted$, setHasAccepted] = createLocalStorageState(
   "tos-accepted",
-  false
+  false,
 );
 
 type ButtonProps = typeof Button extends ComponentType<infer R> ? R : never;
@@ -125,7 +125,7 @@ export const TransactionButton: FC<
     onSuccess?: () => void;
     onError?: (err: any) => void;
   }
-> = ({ createTx, onSuccess, onError, ...props }) => {
+> = ({ createTx, onSuccess, onError, disabled, ...props }) => {
   const hasAccepted = useStateObservable(hasAccepted$);
   const account = useStateObservable(selectedSignerAccount$);
   const [isOngoing, trackTx] = useSingleTransaction();
@@ -148,11 +148,11 @@ export const TransactionButton: FC<
     }
   };
 
-  return hasAccepted ? (
+  return hasAccepted || disabled ? (
     <AcceptedTransactionButton
       {...props}
       isOngoing={isOngoing}
-      disabled={isSubmitting || props.disabled}
+      disabled={isSubmitting || disabled}
       onClick={sign}
     />
   ) : (

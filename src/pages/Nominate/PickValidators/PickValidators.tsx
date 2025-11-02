@@ -1,24 +1,20 @@
-import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
 import { ContractableText, createSortByButton } from "@/components/SortBy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { formatPercentage } from "@/util/format";
 import { useStateObservable } from "@react-rxjs/core";
-import { Search, Square, SquareCheck, X } from "lucide-react";
+import { Search, Square, SquareCheck } from "lucide-react";
 import { useMemo, type FC } from "react";
 import { useMediaQuery } from "react-responsive";
 import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso";
 import { merge } from "rxjs";
-import { MaParams, maParamsSub$, SortBy } from "../Validators/Params";
-import { ValidatorCard, ValidatorRow } from "../Validators/Validator";
+import { MaParams, maParamsSub$, SortBy } from "../../Validators/Params";
 import {
   validatorPrefs$,
   type HistoricValidator,
   type PositionValidator,
-} from "../Validators/validatorList.state";
-import { NominateButton } from "./NominateButton";
+} from "../../Validators/validatorList.state";
 import {
   MAX_VALIDATORS,
   search$,
@@ -29,7 +25,9 @@ import {
   sortedValidators$,
   toggleValidator,
   validatorsWithPreferences$,
-} from "./pickValidators.state";
+} from "../pickValidators.state";
+import { ValidatorCard, ValidatorRow } from "../../Validators/Validator";
+import { ValidatorGrid } from "./ValidatorGrid";
 
 const SortByButton = createSortByButton(sortBy$, setSortBy);
 
@@ -62,7 +60,7 @@ export const pickValidatorsSub$ = merge(
   maParamsSub$,
   selectedValidators$,
   validatorsWithPreferences$,
-  sortedValidators$
+  sortedValidators$,
 );
 
 const Selection = () => {
@@ -73,59 +71,23 @@ const Selection = () => {
 
   const validatorByAddr = useMemo(
     () => Object.fromEntries(validators.map((v) => [v.address, v])),
-    [validators]
+    [validators],
   );
 
-  const slots = new Array(Math.max(MAX_VALIDATORS, selectionArr.length))
-    .fill(0)
-    .map((_, i) => selectionArr[i] || null);
+  const selectedValidators = selectionArr.map((address) => {
+    const validator = validatorByAddr[address];
+    const isActive = selection ? validator.prefs != null : false;
+    return {
+      address,
+      apy: isActive ? validator.nominatorApy : 0,
+    };
+  });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3>You can select up to {MAX_VALIDATORS} validators</h3>
-        <NominateButton />
-      </div>
-      <ul className="flex flex-wrap gap-2 justify-evenly">
-        {slots.map((selection, i) => {
-          const isActive = selection
-            ? validatorByAddr[selection]?.prefs != null
-            : false;
-          const apy = isActive ? validatorByAddr[selection!].nominatorApy : 0;
-
-          // TODO red the blocked ones if they were previously blocked? Figure out if they can be sent if they were already previously set.
-          const invalid = (selection && !isActive) || i >= MAX_VALIDATORS;
-
-          return (
-            <li
-              key={i}
-              className={cn(
-                "border border-muted-foreground/50 rounded-lg p-2 w-xs h-12 flex items-center justify-between",
-                {
-                  "border-neutral": !!selection,
-                  "border-destructive": invalid,
-                  "bg-destructive/5": invalid,
-                }
-              )}
-            >
-              {selection ? (
-                <>
-                  <AddressIdentity addr={selection} />
-                  <div className="flex items-center gap-2">
-                    <div className="text-sm">APY: {formatPercentage(apy)}</div>
-                    <button
-                      className="text-destructive"
-                      onClick={() => toggleValidator(selection)}
-                    >
-                      <X />
-                    </button>
-                  </div>
-                </>
-              ) : null}
-            </li>
-          );
-        })}
-      </ul>
+    <ValidatorGrid
+      selectedValidators={selectedValidators}
+      onRemove={toggleValidator}
+    >
       <div className="flex flex-wrap gap-2 justify-center">
         <Button
           variant="secondary"
@@ -154,7 +116,7 @@ const Selection = () => {
             for (let i = 0; i < MAX_VALIDATORS - selection.size; i++) {
               const [pick] = unselectedTop10.splice(
                 Math.floor(Math.random() * unselectedTop10.length),
-                1
+                1,
               );
               toggleValidator(pick.address);
             }
@@ -189,7 +151,7 @@ const Selection = () => {
           Remove all
         </Button>
       </div>
-    </div>
+    </ValidatorGrid>
   );
 };
 
@@ -207,7 +169,7 @@ const ValidatorsDisplay = () => {
         ...v,
         position: v.position ?? i,
         selected: selection.has(v.address),
-      })
+      }),
     );
   }, [selection, validators]);
 
