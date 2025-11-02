@@ -76,10 +76,9 @@ const Selection = () => {
 
   const selectedValidators = selectionArr.map((address) => {
     const validator = validatorByAddr[address];
-    const isActive = selection ? validator.prefs != null : false;
     return {
       address,
-      apy: isActive ? validator.nominatorApy : 0,
+      apy: validator?.prefs != null ? validator.nominatorApy : 0,
     };
   });
 
