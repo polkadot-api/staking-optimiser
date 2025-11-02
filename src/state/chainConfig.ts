@@ -38,11 +38,12 @@ export const tokenDecimalsByChain: Record<KnownChains, number> = {
   paseo: 12,
 };
 
+const INDEXER_URI = "https://staking-eras.usepapi.app/";
 export const indexerUrl: Record<KnownChains, string> = {
-  polkadot: "https://staking-eras.s3.us-east-1.amazonaws.com/dot",
-  kusama: "https://staking-eras.s3.us-east-1.amazonaws.com/ksm",
-  westend: "https://staking-eras.s3.us-east-1.amazonaws.com/wnd",
-  paseo: "https://staking-eras.s3.us-east-1.amazonaws.com/pas",
+  polkadot: `${INDEXER_URI}dot`,
+  kusama: `${INDEXER_URI}ksm`,
+  westend: `${INDEXER_URI}wnd`,
+  paseo: `${INDEXER_URI}pas`,
 };
 
 export type ChainType = "relay" | "people" | "assetHub";
