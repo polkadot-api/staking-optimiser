@@ -56,9 +56,16 @@ export const [search$, setSearch] = createState("");
 
 export const sortedPools$ = state(
   combineLatest([poolNominations$, sortBy$]).pipe(
-    map(([pools, sortBy]) =>
-      sortBy === null ? pools : [...pools].sort(genericSort(sortBy))
-    ),
+    map(([pools, sortBy]) => {
+      if (sortBy === null) return pools;
+      if (sortBy.prop === "commission") {
+        return [...pools].sort((a, b) => {
+          const value = a.commission.current - b.commission.current;
+          return sortBy.dir === "asc" ? value : -value;
+        });
+      }
+      return [...pools].sort(genericSort(sortBy));
+    }),
     combineLatestWith(search$),
     map(
       ([sorted, search]): Array<NominationPool & { position?: number }> =>
