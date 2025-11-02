@@ -30,7 +30,7 @@ import {
 
 export const [maPeriod$, setMaPeriod] = createState(2);
 export const [maType$, setMaType] = createState<"simple" | "exponential">(
-  "simple",
+  "simple"
 );
 
 export const [eraChange$, setEra] = createSignal<number>();
@@ -41,18 +41,18 @@ export const selectedEra$ = state(
       concat(
         activeEraNumber$.pipe(
           map((v) => v - 1),
-          take(1),
+          take(1)
         ),
-        eraChange$,
-      ),
-    ),
-  ),
+        eraChange$
+      )
+    )
+  )
 );
 
 const selectedEras$ = combineLatest([maPeriod$, selectedEra$]).pipe(
   map(([emaPeriod, selectedEra]) =>
-    new Array(emaPeriod).fill(0).map((_, i) => selectedEra - i),
-  ),
+    new Array(emaPeriod).fill(0).map((_, i) => selectedEra - i)
+  )
 );
 
 export interface HistoricValidator {
@@ -60,13 +60,11 @@ export interface HistoricValidator {
   commission: number;
   blocked: boolean;
   points: number;
-  reward: bigint;
-  commissionShare: bigint;
-  nominatorsShare: bigint;
   activeBond: bigint;
   nominatorQuantity: number;
   nominatorApy: number;
   totalApy: number;
+  active: number;
 }
 
 export interface PositionValidator extends HistoricValidator {
@@ -77,7 +75,7 @@ export interface PositionValidator extends HistoricValidator {
 const aggregateHistoricValidatorProp = <T extends keyof HistoricValidator>(
   validators: HistoricValidator[],
   key: T,
-  maType: "exponential" | "simple",
+  maType: "exponential" | "simple"
 ): HistoricValidator[T] => {
   if (["address", "commission", "blocked"].includes(key)) {
     return validators[0][key];
@@ -108,7 +106,7 @@ const aggregateHistoricValidatorProp = <T extends keyof HistoricValidator>(
 
 const aggregateHistoricValidators = (
   validators: HistoricValidator[],
-  maType: "exponential" | "simple",
+  maType: "exponential" | "simple"
 ): HistoricValidator => {
   if (validators.length === 1) return validators[0];
 
@@ -118,18 +116,19 @@ const aggregateHistoricValidators = (
       aggregateHistoricValidatorProp(
         validators,
         key as keyof HistoricValidator,
-        maType,
+        maType
       ),
-    ]),
+    ])
   ) as any;
 };
 
 const validatorRewardsToHistoric = (
-  validator: ValidatorRewards,
+  validator: ValidatorRewards
 ): HistoricValidator => {
   return {
     ...validator,
     nominatorQuantity: validator.nominatorCount,
+    active: 1,
   };
 };
 
@@ -143,21 +142,21 @@ const validatorHistory$ = stakingSdk$.pipe(
         (era) =>
           validatorsEra$(era).pipe(
             map((validators) => ({ era, validators })),
-            take(1),
+            take(1)
           ),
-        3,
+        3
       ),
       scan(
         (acc, v) => {
           acc[v.era] = Object.fromEntries(
-            v.validators.map((v) => [v.address, validatorRewardsToHistoric(v)]),
+            v.validators.map((v) => [v.address, validatorRewardsToHistoric(v)])
           );
           return acc;
         },
-        {} as Record<number, Record<string, HistoricValidator>>,
-      ),
-    ),
-  ),
+        {} as Record<number, Record<string, HistoricValidator>>
+      )
+    )
+  )
 );
 
 // Only fetching for the current era
@@ -165,9 +164,9 @@ const validatorIdentities$ = activeEraNumber$.pipe(
   switchMap((era) => validatorsEra$(era - 1)),
   withLatestFrom(identitySdk$),
   switchMap(([validators, identitySdk]) =>
-    identitySdk.getIdentities(validators.map((v) => v.address)),
+    identitySdk.getIdentities(validators.map((v) => v.address))
   ),
-  startWith({} as Record<SS58String, Identity | null>),
+  startWith({} as Record<SS58String, Identity | null>)
 );
 
 export const aggregatedValidators$ = combineLatest([
@@ -177,25 +176,38 @@ export const aggregatedValidators$ = combineLatest([
   maType$,
 ]).pipe(
   map(([history, era, period, maType]) => {
-    // The selected era is what marks the validators to be aggregated.
-    // The idea is to let the user move to previous eras, and move the ma along.
-    // But what should be shown is always the validator set of that era, with their commission at that era, etc.
-    if (!history[era] || period < 1) return null;
+    if (period < 1) return null;
 
     const relevantHistory = new Array(period)
       .fill(0)
       .map((_, i) => history[era - i])
       .filter((v) => v != null);
 
-    return Object.keys(relevantHistory[0]).map((address) =>
-      aggregateHistoricValidators(
-        relevantHistory
-          .map((eraValidators) => eraValidators[address])
-          .filter((v) => v != null),
-        maType,
-      ),
-    );
-  }),
+    if (!relevantHistory.length) return null;
+
+    // We have to invert the Array<Record<addr -> validator>> to Record<addr -> Array<validator>>
+    // I.e. the array of validators per each era, to a record of the performance of that validator at each era.
+    const allValidators: Record<SS58String, HistoricValidator[]> = {};
+    relevantHistory.forEach((eraValidators) => {
+      Object.entries(eraValidators).forEach(
+        ([addr, eraValidatorPerformance]) => {
+          allValidators[addr] ??= [];
+          allValidators[addr].push(eraValidatorPerformance);
+        }
+      );
+    });
+
+    return Object.values(allValidators).map((validatorPerformance) => {
+      const aggregated = aggregateHistoricValidators(
+        validatorPerformance,
+        maType
+      );
+      // whether it was active has to be done separately, as `aggregateHistoricValidators` only takes non-null dataPoints.
+      // TODO refactor this, because now we can't support EMA for `active`.
+      aggregated.active = validatorPerformance.length / relevantHistory.length;
+      return aggregated;
+    });
+  })
 );
 
 export const [filterBlocked$, setFilterBlocked] = createState(true);
@@ -204,11 +216,9 @@ export const [search$, setSearch] = createState("");
 
 export const validatorPrefs$ = state(
   registeredValidators$.pipe(
-    map((val) =>
-      Object.fromEntries(val.map((v) => [v.address, v.preferences])),
-    ),
+    map((val) => Object.fromEntries(val.map((v) => [v.address, v.preferences])))
   ),
-  {},
+  {}
 );
 
 const filteredValidators$ = combineLatest([
@@ -235,7 +245,7 @@ const filteredValidators$ = combineLatest([
 
       return true;
     });
-  }),
+  })
 );
 
 export const [sortBy$, setSortBy] = createState<SortBy<HistoricValidator>>({
@@ -245,7 +255,7 @@ export const [sortBy$, setSortBy] = createState<SortBy<HistoricValidator>>({
 
 export const withSearch =
   (
-    search$: Observable<string>,
+    search$: Observable<string>
   ): MonoTypeOperatorFunction<(HistoricValidator & { position?: number })[]> =>
   (source$) =>
     combineLatest([source$, search$, validatorIdentities$]).pipe(
@@ -284,18 +294,18 @@ export const withSearch =
 
             return false;
           });
-      }),
+      })
     );
 
 export const sortedValidators$ = state(
   combineLatest([filteredValidators$, sortBy$]).pipe(
     map(([validators, sortBy]) =>
-      sortBy === null ? validators : [...validators].sort(genericSort(sortBy)),
+      sortBy === null ? validators : [...validators].sort(genericSort(sortBy))
     ),
     // this "search" filter is different: It must happen after sorting because we
     // want to keep the original position (so that the user can look for validator
     // X and it will show that it's in 15th position instead of #1)
-    withSearch(search$),
+    withSearch(search$)
   ),
-  [],
+  []
 );

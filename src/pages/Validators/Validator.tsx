@@ -15,7 +15,8 @@ export const ValidatorRow: FC<{
   validator: PositionValidator;
   onSelectChange: (value: boolean) => void;
   selectIcon: (selected: boolean) => ReactElement;
-}> = ({ validator, onSelectChange, selectIcon }) => {
+  hideValApy?: boolean;
+}> = ({ validator, onSelectChange, selectIcon, hideValApy }) => {
   const { chain } = useParams();
   return (
     <>
@@ -32,10 +33,16 @@ export const ValidatorRow: FC<{
       >
         {formatPercentage(validator.nominatorApy)}
       </td>
-      <td className="text-right">{formatPercentage(validator.totalApy)}</td>
+      {hideValApy ? null : (
+        <td className="text-right">{formatPercentage(validator.totalApy)}</td>
+      )}
       <td className="text-right">{formatPercentage(validator.commission)}</td>
-      <td className="text-right">
-        <TokenValue value={validator.reward} />
+      <td
+        className={cn("text-right", {
+          "text-warning": validator.active < 0.5,
+        })}
+      >
+        {formatPercentage(validator.active)}
       </td>
       <td className="text-right">
         {Math.round(validator.nominatorQuantity).toLocaleString()}
@@ -96,8 +103,14 @@ export const ValidatorCard: FC<{
           {formatPercentage(validator.commission)}
         </div>
         <div>
-          <span className="font-medium text-muted-foreground">Reward</span>:{" "}
-          <TokenValue value={validator.reward} />
+          <span className="font-medium text-muted-foreground">Active</span>:{" "}
+          <span
+            className={cn({
+              "text-warning": validator.active < 0.5,
+            })}
+          >
+            {formatPercentage(validator.active)}
+          </span>
         </div>
         <div>
           <span className="font-medium text-muted-foreground">Points</span>:{" "}

@@ -1,9 +1,9 @@
 import { AddressIdentity } from "@/components/AddressIdentity";
 import { Card } from "@/components/Card";
 import { TokenValue } from "@/components/TokenValue";
-import { HISTORY_DEPTH } from "@/constants";
+import { HISTORY_DEPTH, PERBILL } from "@/constants";
 import { cn } from "@/lib/utils";
-import { stakingSdk$ } from "@/state/chain";
+import { stakingApi$, stakingSdk$ } from "@/state/chain";
 import { activeEraNumber$, eraDurationInMs$, getEraApy } from "@/state/era";
 import { validatorPerformance$ } from "@/state/validators";
 import { formatPercentage } from "@/util/format";
@@ -36,8 +36,18 @@ export const ValidatorDetailPage: FC = () => {
 };
 
 const validator$ = state((address: SS58String) =>
-  combineLatest([stakingSdk$, activeEraNumber$]).pipe(
-    switchMap(([sdk, era]) => sdk.getValidatorRewards(address, era - 1))
+  combineLatest([stakingApi$, stakingSdk$, activeEraNumber$]).pipe(
+    switchMap(([api, sdk, era]) =>
+      combineLatest({
+        validatorPrefs: api.query.Staking.Validators.getValue(address).then(
+          (r) => ({
+            ...r,
+            commission: Number(r.commission) / PERBILL,
+          })
+        ),
+        lastRewards: sdk.getValidatorRewards(address, era - 1),
+      })
+    )
   )
 );
 
@@ -65,29 +75,37 @@ const apyInfo$ = state(
 );
 
 const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
-  const validator = useStateObservable(validator$(address));
+  const { validatorPrefs, lastRewards } = useStateObservable(
+    validator$(address)
+  );
   const apyInfo = useStateObservable(apyInfo$(address));
   const eraDuration = useStateObservable(eraDurationInMs$);
   const activeEra = useStateObservable(activeEraNumber$);
 
-  if (!validator) return <div>Validator not active</div>;
+  const lastValidatorApy = lastRewards
+    ? getEraApy(
+        lastRewards.nominatorsShare,
+        lastRewards.activeBond,
+        eraDuration
+      )
+    : null;
 
-  const lastValidatorApy = getEraApy(
-    validator.nominatorsShare,
-    validator.activeBond,
-    eraDuration
-  );
-
-  const validatorStakePct =
-    Number(validator.selfStake) / Number(validator.activeBond);
-  const totalReward = Number(
-    validator.nominatorsShare + validator.commissionShare
-  );
-  const nominatorRewardPct =
-    (Number(validator.nominatorsShare) * (1 - validatorStakePct)) / totalReward;
-  const validatorRewardPct =
-    (Number(validator.nominatorsShare) * validatorStakePct) / totalReward;
-  const commissionRewardPct = Number(validator.commissionShare) / totalReward;
+  const validatorStakePct = lastRewards
+    ? Number(lastRewards.selfStake) / Number(lastRewards.activeBond)
+    : null;
+  const totalReward = lastRewards
+    ? Number(lastRewards.nominatorsShare + lastRewards.commissionShare)
+    : null;
+  const nominatorRewardPct = lastRewards
+    ? (Number(lastRewards.nominatorsShare) * (1 - validatorStakePct!)) /
+      totalReward!
+    : null;
+  const validatorRewardPct = lastRewards
+    ? (Number(lastRewards.nominatorsShare) * validatorStakePct!) / totalReward!
+    : null;
+  const commissionRewardPct = lastRewards
+    ? Number(lastRewards.commissionShare) / totalReward!
+    : null;
 
   return (
     <div className="space-y-4 p-2">
@@ -99,32 +117,36 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <AddressIdentity
-              addr={validator.address}
+              addr={address}
               className="flex-1 text-lg md:text-xl"
             />
             <span
               className={cn(
                 "rounded-full px-3 py-1 text-[0.7rem]",
-                validator.blocked
+                validatorPrefs.blocked
                   ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
                   : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
               )}
             >
-              {validator.blocked ? "Blocking nominations" : "Open"}
+              {validatorPrefs.blocked ? "Blocking nominations" : "Open"}
             </span>
           </div>
           <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Stat icon={<Users className="size-4" />} label="Nominators">
-              {validator.nominatorCount.toLocaleString()}
+              {lastRewards?.nominatorCount.toLocaleString() ?? "-"}
             </Stat>
             <Stat icon={<ShieldCheck className="size-4" />} label="Active bond">
-              <TokenValue value={validator.activeBond} />
+              {lastRewards ? (
+                <TokenValue value={lastRewards.activeBond} />
+              ) : (
+                "-"
+              )}
             </Stat>
             <Stat icon={<Crown className="size-4" />} label="Self stake">
-              <TokenValue value={validator.selfStake} />
+              {lastRewards ? <TokenValue value={lastRewards.selfStake} /> : "-"}
             </Stat>
             <Stat icon={<PieChart className="size-4" />} label="Commission">
-              {formatPercentage(validator.commission)}
+              {formatPercentage(validatorPrefs.commission)}
             </Stat>
           </div>
         </div>
@@ -140,48 +162,50 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
               <LineChart className="size-4" />
               <span>Points awarded</span>
             </div>
-            <span>{validator.points.toLocaleString()}</span>
+            <span>{lastRewards?.points.toLocaleString() ?? "-"}</span>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
             <div className="flex items-center gap-2">
               <DollarSign className="size-4" />
               <span>Total payout</span>
             </div>
-            <TokenValue value={validator.reward} />
+            {lastRewards ? <TokenValue value={lastRewards.reward} /> : "-"}
           </div>
 
-          <div className="space-y-2">
-            <div>Reward share</div>
-            <div className="h-2 rounded-full overflow-hidden flex bg-red-500">
-              <div
-                className="shrink bg-blue-500"
-                style={{
-                  flexBasis: `${nominatorRewardPct * 100}%`,
-                }}
-              />
-              <div
-                className="shrink bg-orange-400"
-                style={{
-                  flexBasis: `${validatorRewardPct * 100}%`,
-                }}
-              />
-              <div
-                className="shrink bg-red-600"
-                style={{
-                  flexBasis: `${commissionRewardPct * 100}%`,
-                }}
-              />
-            </div>
+          {lastRewards ? (
+            <div className="space-y-2">
+              <div>Reward share</div>
+              <div className="h-2 rounded-full overflow-hidden flex bg-red-500">
+                <div
+                  className="shrink bg-blue-500"
+                  style={{
+                    flexBasis: `${nominatorRewardPct! * 100}%`,
+                  }}
+                />
+                <div
+                  className="shrink bg-orange-400"
+                  style={{
+                    flexBasis: `${validatorRewardPct! * 100}%`,
+                  }}
+                />
+                <div
+                  className="shrink bg-red-600"
+                  style={{
+                    flexBasis: `${commissionRewardPct! * 100}%`,
+                  }}
+                />
+              </div>
 
-            <div className="text-sm text-muted-foreground">
-              <div className="inline-block ml-0.5 bg-blue-500 w-2 h-2 rounded-full align-middle" />{" "}
-              Nominators |{" "}
-              <div className="inline-block ml-0.5 bg-orange-400 w-2 h-2 rounded-full align-middle" />{" "}
-              Validator |{" "}
-              <div className="inline-block ml-0.5 bg-red-600 w-2 h-2 rounded-full align-middle" />{" "}
-              Commission
+              <div className="text-sm text-muted-foreground">
+                <div className="inline-block ml-0.5 bg-blue-500 w-2 h-2 rounded-full align-middle" />{" "}
+                Nominators |{" "}
+                <div className="inline-block ml-0.5 bg-orange-400 w-2 h-2 rounded-full align-middle" />{" "}
+                Validator |{" "}
+                <div className="inline-block ml-0.5 bg-red-600 w-2 h-2 rounded-full align-middle" />{" "}
+                Commission
+              </div>
             </div>
-          </div>
+          ) : null}
         </Card>
 
         <Card
@@ -197,7 +221,7 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Last era APY</dt>
               <dd className="text-right font-medium text-foreground">
-                {formatPercentage(lastValidatorApy)}
+                {lastValidatorApy ? formatPercentage(lastValidatorApy) : "-"}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-4">

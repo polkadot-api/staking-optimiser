@@ -10,7 +10,7 @@ function download(filename: string, text: string) {
   element.style.display = "none";
   element.setAttribute(
     "href",
-    "data:text/plain;charset=utf-8," + encodeURIComponent(text),
+    "data:text/plain;charset=utf-8," + encodeURIComponent(text)
   );
   element.setAttribute("download", filename);
   document.body.appendChild(element);
@@ -22,8 +22,10 @@ let idx = 1;
 const logs: Record<string, string[]> = {};
 (globalThis as any).__logs = logs;
 
+const logsEnabled =
+  import.meta.env.DEV || localStorage.getItem("rpc-logs") === "true";
 export const getGetWsProvider: (name: string) => typeof _getWsProvider = (
-  name,
+  name
 ) => {
   const dataIn: Array<string> = [];
   const dataOut: Array<string> = [];
@@ -33,6 +35,7 @@ export const getGetWsProvider: (name: string) => typeof _getWsProvider = (
   return (endpoints, config) =>
     withLogsRecorder(
       (log) => {
+        if (logsEnabled) console.debug(name, log);
         dataOut.push(log);
       },
       withPolkadotSdkCompat(
@@ -50,11 +53,11 @@ export const getGetWsProvider: (name: string) => typeof _getWsProvider = (
                   ? `CONNECTED ${status.uri}`
                   : status.type === WsEvent.CLOSE
                     ? `CLOSED`
-                    : `ERROR`,
+                    : `ERROR`
             );
           },
-        }),
-      ),
+        })
+      )
     ) as any;
 };
 

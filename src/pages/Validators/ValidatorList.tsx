@@ -149,7 +149,7 @@ const ValidatorTable: FC<{
             </SortByButton>
           </th>
           <th>
-            <SortByButton prop="reward">Reward</SortByButton>
+            <SortByButton prop="active">Active</SortByButton>
           </th>
           <th>
             <SortByButton prop="nominatorQuantity">

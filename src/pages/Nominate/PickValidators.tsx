@@ -270,17 +270,12 @@ const ValidatorTable: FC<{
             </SortByButton>
           </th>
           <th>
-            <SortByButton prop="totalApy">
-              <ContractableText smol="Val. APY">Validator APY</ContractableText>
-            </SortByButton>
-          </th>
-          <th>
             <SortByButton prop="commission">
               <ContractableText smol="Comm.">Commission</ContractableText>
             </SortByButton>
           </th>
           <th>
-            <SortByButton prop="reward">Reward</SortByButton>
+            <SortByButton prop="active">Active</SortByButton>
           </th>
           <th>
             <SortByButton prop="nominatorQuantity">
@@ -313,6 +308,7 @@ const ValidatorTable: FC<{
                 <Square className="text-muted-foreground" />
               )
             }
+            hideValApy
           />
         );
       }}
