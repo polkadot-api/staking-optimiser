@@ -11,13 +11,18 @@ interface ValidatorCardProps {
   onRemove: (address: string) => void;
 }
 
+const truncateMiddle = (text: string, maxLength = 14) => {
+  if (text.length <= maxLength) return text;
+  const start = Math.ceil(maxLength / 2);
+  return `${text.slice(0, start)}...${text.slice(-(start - 1))}`;
+};
+
 export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
   let identity = useStateObservable(identity$(address));
   const name =
     identity && identity.value + (identity.subId ? `/${identity.subId}` : "");
-  const displayName = name || address;
   return (
-    <Card className="group relative transition-all hover:shadow-md p-2 border-0 shadow-sm ring-2 ring-primary/50 bg-primary/5 shadow-md">
+    <Card className="group relative transition-all hover:shadow-md p-2 border rounded-lg shadow-sm ring-primary/50 bg-primary/5 ">
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -48,8 +53,8 @@ export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
-            <p className="text-sm font-medium truncate" title={displayName}>
-              {displayName}
+            <p className="text-sm font-medium truncate" title={name || address}>
+              {name || truncateMiddle(address)}
             </p>
             {identity?.verified && (
               <CheckCircle2 className="size-3 text-green-500 shrink-0" />
