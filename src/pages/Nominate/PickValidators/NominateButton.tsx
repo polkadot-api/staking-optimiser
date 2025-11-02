@@ -9,8 +9,8 @@ import {
   map,
   withLatestFrom,
 } from "rxjs";
-import { bond$ } from "./BondInput";
-import { minBond$ } from "./MinBondingAmounts";
+import { bond$ } from "../BondInput";
+import { minBond$ } from "../MinBondingAmounts";
 import { MAX_VALIDATORS, selectedValidators$ } from "./pickValidators.state";
 
 export const NominateButton = () => {
@@ -44,8 +44,8 @@ const nominateTx$ = combineLatest([
     sdk.upsertNomination(nominator, {
       bond,
       validators: Array.from(selectedValidators),
-    })
-  )
+    }),
+  ),
 );
 
 const createNominateTx = async () => firstValueFrom(nominateTx$);

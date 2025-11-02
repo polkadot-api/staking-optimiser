@@ -11,7 +11,7 @@ import {
   validatorPrefs$,
   withSearch,
   type HistoricValidator,
-} from "../Validators/validatorList.state";
+} from "../../Validators/validatorList.state";
 
 export const MAX_VALIDATORS = 16;
 
@@ -21,8 +21,8 @@ export const onChainSelectedValidators$ = state(
     selectedAccountAddr$.pipe(filter((v) => v != null)),
   ]).pipe(
     switchMap(([api, addr]) => api.query.Staking.Nominators.watchValue(addr)),
-    map((v) => v?.targets ?? [])
-  )
+    map((v) => v?.targets ?? []),
+  ),
 );
 
 export const [toggleValidator$, toggleValidator] = createSignal<SS58String>();
@@ -39,9 +39,9 @@ export const selectedValidators$ = onChainSelectedValidators$.pipeState(
         }
         return res;
       }, initialValidators),
-      startWith(initialValidators)
-    )
-  )
+      startWith(initialValidators),
+    ),
+  ),
 );
 
 export const validatorsWithPreferences$ = state(
@@ -57,14 +57,14 @@ export const validatorsWithPreferences$ = state(
             ...v,
             prefs,
           };
-        }) ?? []
-    )
-  )
+        }) ?? [],
+    ),
+  ),
 );
 
 const filteredValidators$ = validatorsWithPreferences$.pipe(
   // TODO include the ones currently selected (to be able to de-select them)
-  map((v) => v.filter((v) => v && !v.blocked))
+  map((v) => v.filter((v) => v && !v.blocked)),
 );
 
 export const [sortBy$, setSortBy] = createState<SortBy<HistoricValidator>>({
@@ -76,9 +76,9 @@ export const [search$, setSearch] = createState("");
 export const sortedValidators$ = state(
   combineLatest([filteredValidators$, sortBy$]).pipe(
     map(([validators, sortBy]) =>
-      sortBy === null ? validators : [...validators].sort(genericSort(sortBy))
+      sortBy === null ? validators : [...validators].sort(genericSort(sortBy)),
     ),
-    withSearch(search$)
+    withSearch(search$),
   ),
-  []
+  [],
 );

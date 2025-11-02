@@ -25,7 +25,7 @@ import {
   sortedValidators$,
   toggleValidator,
   validatorsWithPreferences$,
-} from "../pickValidators.state";
+} from "./pickValidators.state";
 import { ValidatorCard, ValidatorRow } from "../../Validators/Validator";
 import { ValidatorGrid } from "./ValidatorGrid";
 

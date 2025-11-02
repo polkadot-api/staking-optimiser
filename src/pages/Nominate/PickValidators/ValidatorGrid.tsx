@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from "react";
-import { NominateButton } from "../NominateButton.tsx";
+import { NominateButton } from "./NominateButton.tsx";
 import { ValidatorCard, EmptyValidatorSlot } from "./ValidatorCard.tsx";
+import { MAX_VALIDATORS } from "./pickValidators.state.ts";
 
 export interface Validator {
   address: string;
@@ -12,13 +13,12 @@ interface ValidatorGridProps {
   onRemove: (address: string) => void;
 }
 
-const MAX_SELECTION = 16;
 export const ValidatorGrid: React.FC<PropsWithChildren<ValidatorGridProps>> = ({
   selectedValidators,
   onRemove,
   children,
 }) => {
-  const emptySlots = MAX_SELECTION - selectedValidators.length;
+  const emptySlots = MAX_VALIDATORS - selectedValidators.length;
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -41,7 +41,7 @@ export const ValidatorGrid: React.FC<PropsWithChildren<ValidatorGridProps>> = ({
         ))}
       </div>
 
-      {selectedValidators.length === MAX_SELECTION && (
+      {selectedValidators.length === MAX_VALIDATORS && (
         <p className="text-sm text-muted-foreground text-center">
           Maximum validators selected. Remove one to select another.
         </p>

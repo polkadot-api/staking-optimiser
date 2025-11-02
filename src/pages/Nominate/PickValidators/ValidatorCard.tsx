@@ -17,7 +17,7 @@ export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
     identity && identity.value + (identity.subId ? `/${identity.subId}` : "");
   const displayName = name || address;
   return (
-    <Card className="group relative cursor-pointer transition-all hover:shadow-md p-2 border-0 shadow-sm ring-2 ring-primary/50 bg-primary/5 shadow-md">
+    <Card className="group relative transition-all hover:shadow-md p-2 border-0 shadow-sm ring-2 ring-primary/50 bg-primary/5 shadow-md">
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -48,7 +48,7 @@ export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
-            <p className="text-xs font-medium truncate" title={displayName}>
+            <p className="text-sm font-medium truncate" title={displayName}>
               {displayName}
             </p>
             {identity?.verified && (
