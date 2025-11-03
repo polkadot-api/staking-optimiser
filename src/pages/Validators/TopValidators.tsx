@@ -30,7 +30,7 @@ export default function TopValidators() {
     <ol className="space-y-4">
       {validators.map((v) => (
         <li key={v.address} className="shadow rounded-xl p-2 space-y-2">
-          <Link to={"../validators/" + v.address}>
+          <Link to={"../validators/" + v.address} className="flex items-center gap-2">
             <AddressIdentity addr={v.address} />
           </Link>
           <div className="flex gap-4 justify-center">
