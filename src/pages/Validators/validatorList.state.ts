@@ -239,18 +239,15 @@ const filteredValidators$ = combineLatest([
   filterCommision$,
 ]).pipe(
   map(([validators, registerdValidators, filterBlocked, filterCommission]) => {
-    if ((!filterBlocked && filterCommission == null) || !validators) {
+    if ((!filterBlocked && filterCommission == null) || !validators)
       return validators ?? []
-    }
 
     return validators.filter((v) => {
-      if (!filterBlocked && filterCommission == null) return true
-
       const prefs = registerdValidators[v.address]
       // We are in the branch that we have a filter blocked or commission.
       // Exclude validators that are not eligible to be nominated now (counts as blocked or commission 100%)
       if (!prefs || (filterBlocked && prefs.blocked)) return false
-      return filterCommission / 100 <= prefs.commission
+      return filterCommission / 100 > prefs.commission
     })
   }),
 )

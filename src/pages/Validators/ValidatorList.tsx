@@ -97,6 +97,7 @@ const ValidatorsDisplay = () => {
           <ValidatorTable
             validators={actualValidators}
             setSelection={setSelection}
+            hideSelected
           />
         </>
       ) : (
@@ -137,7 +138,8 @@ const ValidatorTable: FC<{
   validators: PositionValidator[] | Array<null>
   setSelection: (value: SetStateAction<SS58String[]>) => void
   className?: string
-}> = ({ validators, setSelection, className }) => {
+  hideSelected?: boolean
+}> = ({ validators, setSelection, className, hideSelected }) => {
   return (
     <TableVirtuoso
       className={cn("data-table", className)}
@@ -184,22 +186,24 @@ const ValidatorTable: FC<{
       )}
       itemContent={(idx, v) =>
         v ? (
-          <ValidatorRow
-            validator={v}
-            onSelectChange={(c) =>
-              setSelection((p) =>
-                c ? [...p, v.address] : p.filter((addr) => addr != v.address),
-              )
-            }
-            selectIcon={(selected) => (
-              <Pin
-                className={cn({
-                  "text-neutral": selected,
-                  "text-muted-foreground": !selected,
-                })}
-              />
-            )}
-          />
+          hideSelected && v.selected ? null : (
+            <ValidatorRow
+              validator={v}
+              onSelectChange={(c) =>
+                setSelection((p) =>
+                  c ? [...p, v.address] : p.filter((addr) => addr != v.address),
+                )
+              }
+              selectIcon={(selected) => (
+                <Pin
+                  className={cn({
+                    "text-neutral": selected,
+                    "text-muted-foreground": !selected,
+                  })}
+                />
+              )}
+            />
+          )
         ) : (
           <ValidatorRowSkeleton isWhite={idx % 2 === 0} />
         )
