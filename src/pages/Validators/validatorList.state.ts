@@ -28,13 +28,16 @@ import {
   type MonoTypeOperatorFunction,
 } from "rxjs"
 
-export const [maPeriod$, setMaPeriod] = createState(2)
+export const [eraPeriodChange$, setEraAndPeriod] = createSignal<{
+  era: number
+  period: number
+}>()
+
 export const [maType$, setMaType] = createState<"simple" | "exponential">(
   "simple",
 )
 
-export const [eraChange$, setEra] = createSignal<number>()
-export const selectedEra$ = state(
+export const selectedEraAndPeriod$ = state(
   // When changing network, re-fetch the current era
   stakingApi$.pipe(
     switchMap(() =>
@@ -42,17 +45,16 @@ export const selectedEra$ = state(
         activeEraNumber$.pipe(
           map((v) => v - 1),
           take(1),
+          map((era) => ({ era, period: 2 })),
         ),
-        eraChange$,
+        eraPeriodChange$,
       ),
     ),
   ),
 )
 
-const selectedEras$ = combineLatest([maPeriod$, selectedEra$]).pipe(
-  map(([emaPeriod, selectedEra]) =>
-    new Array(emaPeriod).fill(0).map((_, i) => selectedEra - i),
-  ),
+const selectedEras$ = selectedEraAndPeriod$.pipe(
+  map(({ era, period }) => new Array(period).fill(0).map((_, i) => era - i)),
 )
 
 export interface HistoricValidator {
@@ -171,11 +173,10 @@ const validatorIdentities$ = activeEraNumber$.pipe(
 
 export const aggregatedValidators$ = combineLatest([
   validatorHistory$,
-  selectedEra$,
-  maPeriod$,
+  selectedEraAndPeriod$,
   maType$,
 ]).pipe(
-  map(([history, era, period, maType]) => {
+  map(([history, { era, period }, maType]) => {
     if (period < 1) return null
 
     const relevantHistory = new Array(period)
@@ -230,22 +231,18 @@ const filteredValidators$ = combineLatest([
   filterCommision$,
 ]).pipe(
   map(([validators, registerdValidators, filterBlocked, filterCommission]) => {
-    if ((!filterBlocked && filterCommision$ == null) || !validators) {
+    if ((!filterBlocked && filterCommission == null) || !validators) {
       return validators ?? []
     }
 
     return validators.filter((v) => {
-      if (filterBlocked || filterCommision$ != null) {
-        const prefs = registerdValidators[v.address]
-        // We are in the branch that we have a filter blocked or commission.
-        // Exclude validators that are not eligible to be nominated now (counts as blocked or commission 100%)
-        if (!prefs) return false
+      if (!filterBlocked && filterCommission == null) return true
 
-        if (filterBlocked && prefs.blocked) return false
-        if (prefs.commission > filterCommission / 100) return false
-      }
-
-      return true
+      const prefs = registerdValidators[v.address]
+      // We are in the branch that we have a filter blocked or commission.
+      // Exclude validators that are not eligible to be nominated now (counts as blocked or commission 100%)
+      if (!prefs || (filterBlocked && prefs.blocked)) return false
+      return filterCommission / 100 <= prefs.commission
     })
   }),
 )

@@ -8,14 +8,12 @@ import { Search, SortAsc, SortDesc } from "lucide-react"
 import {
   filterBlocked$,
   filterCommision$,
-  maPeriod$,
   maType$,
   search$,
-  selectedEra$,
-  setEra,
+  selectedEraAndPeriod$,
+  setEraAndPeriod,
   setFilterBlocked,
   setFilterCommission,
-  setMaPeriod,
   setMaType,
   setSearch,
   setSortBy,
@@ -38,9 +36,8 @@ export const Params = () => {
 }
 
 export const MaParams = () => {
-  const period = useStateObservable(maPeriod$)
+  const { period, era } = useStateObservable(selectedEraAndPeriod$)
   const activeEraNumber = useStateObservable(activeEraNumber$)
-  const selectedEra = useStateObservable(selectedEra$)
   const maType = useStateObservable(maType$)
 
   return (
@@ -49,11 +46,10 @@ export const MaParams = () => {
         <EraRangeSlider
           minEra={activeEraNumber - 21}
           maxEra={activeEraNumber - 1}
-          startEra={selectedEra - period}
-          endEra={selectedEra}
+          startEra={era - period}
+          endEra={era}
           onRangeChange={(start, end) => {
-            setMaPeriod(end - start)
-            setEra(end)
+            setEraAndPeriod({ era: end, period: end - start })
           }}
         />
       </div>
@@ -73,7 +69,7 @@ export const MaParams = () => {
     </div>
   )
 }
-export const maParamsSub$ = merge(activeEraNumber$, selectedEra$)
+export const maParamsSub$ = merge(activeEraNumber$, selectedEraAndPeriod$)
 
 const sortOpitons: Partial<Record<keyof HistoricValidator, string>> = {
   nominatorApy: "Nominator APY",
