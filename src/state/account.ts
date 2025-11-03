@@ -86,27 +86,28 @@ export type SignerAccount = {
   address: SS58String
   polkadotSigner: PolkadotSigner
 }
-export const selectedSignerAccount$ = formattedAccount$.pipeState(
-  map((v): SignerAccount | null => {
-    if (!v?.signer) return null
+export const selectedSignerAccount$ =
+  selectedAccountPlugin.selectedAccount$.pipeState(
+    map((v): SignerAccount | null => {
+      if (!v?.signer) return null
 
-    return {
-      address: v.address,
-      polkadotSigner: v.signer,
-    }
-  }),
-)
+      return {
+        address: v.address,
+        polkadotSigner: v.signer,
+      }
+    }),
+  )
 
 export const selectedAccountAddr$ = formattedAccount$.pipeState(
   map((v): SS58String | null => v?.address ?? null),
 )
 
 export const accountStatus$ = state(
-  combineLatest([stakingSdk$, selectedAccountAddr$]).pipe(
-    switchMap(([sdk, addr]) => {
-      if (!addr) return [null]
+  combineLatest([stakingSdk$, selectedAccountPlugin.selectedAccount$]).pipe(
+    switchMap(([sdk, account]) => {
+      if (!account) return [null]
 
-      return sdk.getAccountStatus$(addr)
+      return sdk.getAccountStatus$(account.address)
     }),
   ),
 )
