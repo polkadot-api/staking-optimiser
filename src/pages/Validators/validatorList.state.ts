@@ -161,6 +161,14 @@ const validatorHistory$ = stakingSdk$.pipe(
   ),
 )
 
+export const percentLoaded$ = state(
+  validatorHistory$.pipe(
+    withLatestFrom(selectedEras$),
+    map(([hist, sel]) => sel.filter((x) => hist[x]).length / sel.length),
+  ),
+  0,
+)
+
 // Only fetching for the current era
 const validatorIdentities$ = activeEraNumber$.pipe(
   switchMap((era) => validatorsEra$(era - 1)),

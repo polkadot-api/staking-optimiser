@@ -27,7 +27,7 @@ import { EraRangeSlider } from "@/components/EraRangeSlider"
 export const Params = () => {
   return (
     <div className="space-y-4 pb-2 md:space-y-0 md:flex gap-2 justify-stretch">
-      <Card title="Data Options" className="grow">
+      <Card title="DataOptions" className="grow">
         <MaParams />
       </Card>
       <FiltersNew />

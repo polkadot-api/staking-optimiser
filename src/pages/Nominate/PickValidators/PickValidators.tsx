@@ -11,6 +11,7 @@ import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso"
 import { merge } from "rxjs"
 import { MaParams, maParamsSub$, SortBy } from "../../Validators/Params"
 import {
+  percentLoaded$,
   validatorPrefs$,
   type HistoricValidator,
   type PositionValidator,
@@ -26,8 +27,14 @@ import {
   toggleValidator,
   validatorsWithPreferences$,
 } from "./pickValidators.state"
-import { ValidatorCard, ValidatorRow } from "../../Validators/Validator"
+import {
+  ValidatorCard,
+  ValidatorCardSkeleton,
+  ValidatorRow,
+  ValidatorRowSkeleton,
+} from "../../Validators/Validator"
 import { ValidatorGrid } from "./ValidatorGrid"
+import { LoadingTable } from "@/components/LoadingTable"
 
 const SortByButton = createSortByButton(sortBy$, setSortBy)
 
@@ -154,6 +161,7 @@ const Selection = () => {
   )
 }
 
+const emptyList: Array<null> = Array(1000).fill(null)
 const ValidatorsDisplay = () => {
   const supportsTable = useMediaQuery({
     query: "(min-width: 768px)",
@@ -161,6 +169,7 @@ const ValidatorsDisplay = () => {
 
   const selection = useStateObservable(selectedValidators$)
   const validators = useStateObservable(sortedValidators$)
+  const percentLoaded = useStateObservable(percentLoaded$)
 
   const sortedValidators = useMemo(() => {
     return validators.map(
@@ -171,20 +180,26 @@ const ValidatorsDisplay = () => {
       }),
     )
   }, [selection, validators])
+  const actualValidators = sortedValidators.length
+    ? sortedValidators
+    : emptyList
 
-  return supportsTable ? (
-    <ValidatorTable validators={sortedValidators} />
-  ) : (
-    <ValidatorCards validators={sortedValidators} />
+  return (
+    <LoadingTable progress={percentLoaded}>
+      {supportsTable ? (
+        <ValidatorTable validators={actualValidators} />
+      ) : (
+        <ValidatorCards validators={actualValidators} />
+      )}
+    </LoadingTable>
   )
 }
 
-const TableRow: FC<ItemProps<HistoricValidator & { selected: boolean }>> = ({
-  item: validator,
-  ...props
-}) => {
+const TableRow: FC<
+  ItemProps<(HistoricValidator & { selected: boolean }) | null>
+> = ({ item: validator, ...props }) => {
   const prefs = useStateObservable(validatorPrefs$)
-  const vPrefs = prefs[validator.address]
+  const vPrefs = validator && prefs[validator.address]
 
   const idx = props["data-index"]
 
@@ -194,10 +209,11 @@ const TableRow: FC<ItemProps<HistoricValidator & { selected: boolean }>> = ({
         {...props}
         className={cn({
           "bg-muted": idx % 2 === 0,
-          "bg-destructive/5": !vPrefs || vPrefs.blocked,
-          "bg-destructive/10": (!vPrefs || vPrefs.blocked) && idx % 2 === 0,
-          "bg-neutral/5": validator.selected,
-          "bg-neutral/10": validator.selected && idx % 2 === 0,
+          "bg-destructive/5": validator && (!vPrefs || vPrefs.blocked),
+          "bg-destructive/10":
+            validator && (!vPrefs || vPrefs.blocked) && idx % 2 === 0,
+          "bg-neutral/5": validator?.selected,
+          "bg-neutral/10": validator?.selected && idx % 2 === 0,
         })}
       >
         {props.children}
@@ -207,7 +223,7 @@ const TableRow: FC<ItemProps<HistoricValidator & { selected: boolean }>> = ({
 }
 
 const ValidatorTable: FC<{
-  validators: PositionValidator[]
+  validators: PositionValidator[] | Array<null>
   className?: string
 }> = ({ validators, className }) => {
   return (
@@ -253,12 +269,7 @@ const ValidatorTable: FC<{
         </tr>
       )}
       itemContent={(idx, v) => {
-        if (!v) {
-          console.error("no validator!!", idx, validators.length)
-          return null
-        }
-
-        return (
+        return v ? (
           <ValidatorRow
             validator={v}
             onSelectChange={() => toggleValidator(v.address)}
@@ -271,6 +282,8 @@ const ValidatorTable: FC<{
             }
             hideValApy
           />
+        ) : (
+          <ValidatorRowSkeleton isWhite={idx % 2 === 0} />
         )
       }}
     />
@@ -280,7 +293,7 @@ const ValidatorTable: FC<{
 const Item = (props: ItemProps<any>) => <div {...props} className="p-4" />
 
 const ValidatorCards: FC<{
-  validators: PositionValidator[]
+  validators: PositionValidator[] | null[]
 }> = ({ validators }) => {
   return (
     <div>
@@ -294,13 +307,7 @@ const ValidatorCards: FC<{
         components={{ Item }}
         itemContent={(idx) => {
           const v = validators[idx]
-
-          if (!v) {
-            console.error("no validator!!", idx, validators.length)
-            return null
-          }
-
-          return <ValidatorCard validator={v} />
+          return v ? <ValidatorCard validator={v} /> : <ValidatorCardSkeleton />
         }}
       />
     </div>

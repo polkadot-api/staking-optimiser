@@ -3,13 +3,60 @@ import { TokenValue } from "@/components/TokenValue"
 import { cn } from "@/lib/utils"
 import { formatPercentage } from "@/util/format"
 import { useStateObservable } from "@react-rxjs/core"
-import { type FC, type ReactElement } from "react"
+import { createContext, useContext, type FC, type ReactElement } from "react"
 import {
   validatorPrefs$,
   type HistoricValidator,
   type PositionValidator,
 } from "./validatorList.state"
 import { Link, useParams } from "react-router-dom"
+import { Skeleton as OSkeleton } from "@/components/ui/skeleton"
+
+const whiteCtx = createContext(false)
+
+const Skeleton: React.FC<{ className: string }> = ({ className }) => (
+  <OSkeleton className={cn({ "bg-white": useContext(whiteCtx) }, className)} />
+)
+
+export const ValidatorRowSkeleton: FC<{
+  hideValApy?: boolean
+  isWhite: boolean
+}> = ({ hideValApy, isWhite }) => {
+  return (
+    <whiteCtx.Provider value={isWhite}>
+      <td className="text-muted-foreground">
+        <Skeleton className="h-4 w-6" />
+      </td>
+      <td className="overflow-hidden">
+        <Skeleton className="h-10 w-10 rounded-full" />
+      </td>
+      <td className="text-right font-bold">
+        <Skeleton className="h-4 w-16" />
+      </td>
+      {hideValApy ? null : (
+        <td className="text-right">
+          <Skeleton className="h-4 w-16" />
+        </td>
+      )}
+      <td className="text-right">
+        <Skeleton className="h-4 w-16" />
+      </td>
+      <td className="text-right">
+        <Skeleton className="h-4 w-16" />
+      </td>
+      <td className="text-right">
+        <Skeleton className="h-4 w-8" />
+      </td>
+      <td className="text-right">
+        <Skeleton className="h-4 w-16" />
+      </td>
+      <td className="text-right hidden xl:table-cell">
+        <Skeleton className="h-4 w-16" />
+      </td>
+      <td></td>
+    </whiteCtx.Provider>
+  )
+}
 
 export const ValidatorRow: FC<{
   validator: PositionValidator
@@ -59,6 +106,55 @@ export const ValidatorRow: FC<{
         </button>
       </td>
     </>
+  )
+}
+
+export const ValidatorCardSkeleton = () => {
+  return (
+    <div className="shadow p-2 rounded space-y-4">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-10 w-10 rounded-full" />
+      </div>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+        <div>
+          <span className="font-medium text-muted-foreground">
+            Nominator APY
+          </span>
+          :{" "}
+          <span className="font-bold">
+            <Skeleton className="h-4 w-10" />
+          </span>
+        </div>
+        <div>
+          <span className="font-medium text-muted-foreground">
+            Validator APY:
+          </span>
+          <Skeleton className="h-4 w-10" />
+        </div>
+        <div>
+          <span className="font-medium text-muted-foreground">Commission:</span>{" "}
+          <Skeleton className="h-4 w-10" />
+        </div>
+        <div>
+          <span className="font-medium text-muted-foreground">Active</span>:{" "}
+          <span>
+            <Skeleton className="h-4 w-10" />
+          </span>
+        </div>
+        <div>
+          <span className="font-medium text-muted-foreground">Points</span>:{" "}
+          <Skeleton className="h-4 w-10" />
+        </div>
+        <div>
+          <span className="font-medium text-muted-foreground">Bond</span>
+          : <Skeleton className="h-4 w-16" />
+        </div>
+        <div>
+          <span className="font-medium text-muted-foreground">Nominators</span>:{" "}
+          <Skeleton className="h-4 w-8" />
+        </div>
+      </div>
+    </div>
   )
 }
 

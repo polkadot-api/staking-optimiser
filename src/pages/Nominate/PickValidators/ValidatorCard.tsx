@@ -39,13 +39,10 @@ export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
           <CopyText
             text={address}
             copiedIndicator={
-                <CheckCircle size={18} className="text-positive" />
+              <CheckCircle size={18} className="text-positive" />
             }
           >
-            <PolkadotIdenticon
-              publicKey={getPublicKey(address)}
-              size={30}
-            />
+            <PolkadotIdenticon publicKey={getPublicKey(address)} size={30} />
           </CopyText>
         </div>
 
