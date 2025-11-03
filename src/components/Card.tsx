@@ -1,21 +1,21 @@
-import { cn } from "@/lib/utils";
-import { useId, type FC, type PropsWithChildren, type ReactNode } from "react";
-import { TextHintTooltip } from "./HintTooltip";
+import { cn } from "@/lib/utils"
+import { useId, type FC, type PropsWithChildren, type ReactNode } from "react"
+import { TextHintTooltip } from "./HintTooltip"
 
 export const Card: FC<
   PropsWithChildren<{
-    title?: ReactNode;
-    hint?: string;
-    className?: string;
+    title?: ReactNode
+    hint?: string
+    className?: string
   }>
 > = ({ title, hint, className, children }) => {
-  const titleId = useId();
+  const titleId = useId()
 
   return (
     <article
       className={cn(
         "p-4 shadow rounded-xl bg-card text-card-foreground",
-        className
+        className,
       )}
       role="region"
       aria-labelledby={titleId}
@@ -28,5 +28,5 @@ export const Card: FC<
       </div>
       {children}
     </article>
-  );
-};
+  )
+}

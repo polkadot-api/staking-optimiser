@@ -1,12 +1,12 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GitFork, Home, ShieldCheck, Star } from "lucide-react";
-import { type FC, type PropsWithChildren } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { GitFork, Home, ShieldCheck, Star } from "lucide-react"
+import { type FC, type PropsWithChildren } from "react"
 import {
   matchPath,
   useLocation,
   useNavigate,
   useParams,
-} from "react-router-dom";
+} from "react-router-dom"
 
 const pages = [
   {
@@ -29,20 +29,20 @@ const pages = [
     label: "Validators",
     icon: <ShieldCheck />,
   },
-];
+]
 
 export const NavMenu: FC<PropsWithChildren> = ({ children }) => {
-  const location = useLocation();
-  const params = useParams<{ chain: string }>();
-  const navigate = useNavigate();
+  const location = useLocation()
+  const params = useParams<{ chain: string }>()
+  const navigate = useNavigate()
 
   const chainPages = pages.map((v) => ({
     ...v,
     path: v.path.replace(":chain", params.chain!),
-  }));
+  }))
   const matchedPath = chainPages.find((page) =>
-    matchPath(page.path + "/*", location.pathname)
-  );
+    matchPath(page.path + "/*", location.pathname),
+  )
 
   return (
     <Tabs
@@ -59,5 +59,5 @@ export const NavMenu: FC<PropsWithChildren> = ({ children }) => {
       </TabsList>
       <TabsContent value="dashboard">{children}</TabsContent>
     </Tabs>
-  );
-};
+  )
+}

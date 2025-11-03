@@ -1,16 +1,16 @@
-import { state } from "@react-rxjs/core";
-import { type SS58String } from "polkadot-api";
-import { firstValueFrom, map, startWith, switchMap, tap } from "rxjs";
-import { identitySdk$ } from "./chain";
+import { state } from "@react-rxjs/core"
+import { type SS58String } from "polkadot-api"
+import { firstValueFrom, map, startWith, switchMap, tap } from "rxjs"
+import { identitySdk$ } from "./chain"
 
-const CACHE_KEY = "identity-cache";
+const CACHE_KEY = "identity-cache"
 const cache: Record<
   SS58String,
   { value: string; verified: boolean; subId?: string } | undefined
-> = JSON.parse(localStorage.getItem(CACHE_KEY) ?? "{}");
+> = JSON.parse(localStorage.getItem(CACHE_KEY) ?? "{}")
 
 export const identity$ = state((address: SS58String) => {
-  const defaultValue = cache[address] ?? null;
+  const defaultValue = cache[address] ?? null
   return identitySdk$.pipe(
     switchMap((identitySdk) => identitySdk.getIdentity(address)),
     map((v) =>
@@ -20,19 +20,19 @@ export const identity$ = state((address: SS58String) => {
             verified: v.verified,
             subId: v.subIdentity,
           }
-        : null
+        : null,
     ),
     tap((v) => {
       if (v != null) {
-        cache[address] = v;
+        cache[address] = v
       } else {
-        delete cache[address];
+        delete cache[address]
       }
-      localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+      localStorage.setItem(CACHE_KEY, JSON.stringify(cache))
     }),
-    startWith(defaultValue)
-  );
-}, null);
+    startWith(defaultValue),
+  )
+}, null)
 
 export const getAddressIdentity = (address: SS58String) =>
   firstValueFrom(
@@ -43,7 +43,7 @@ export const getAddressIdentity = (address: SS58String) =>
               ...v,
               name: v.value,
             }
-          : null
-      )
-    )
-  );
+          : null,
+      ),
+    ),
+  )

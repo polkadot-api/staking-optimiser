@@ -1,12 +1,12 @@
-import { TokenValue } from "@/components/TokenValue";
-import { TransactionButton } from "@/components/Transactions";
-import { selectedSignerAccount$ } from "@/state/account";
-import { relayApi$, stakingApi$ } from "@/state/chain";
-import { activeEra$, eraDurationInMs$ } from "@/state/era";
-import { currentNominatorBond$ } from "@/state/nominate";
-import { estimatedFuture } from "@/util/date";
-import { state, useStateObservable } from "@react-rxjs/core";
-import { combineLatest, filter, firstValueFrom, map, switchMap } from "rxjs";
+import { TokenValue } from "@/components/TokenValue"
+import { TransactionButton } from "@/components/Transactions"
+import { selectedSignerAccount$ } from "@/state/account"
+import { relayApi$, stakingApi$ } from "@/state/chain"
+import { activeEra$, eraDurationInMs$ } from "@/state/era"
+import { currentNominatorBond$ } from "@/state/nominate"
+import { estimatedFuture } from "@/util/date"
+import { state, useStateObservable } from "@react-rxjs/core"
+import { combineLatest, filter, firstValueFrom, map, switchMap } from "rxjs"
 
 const locks$ = state(
   combineLatest([
@@ -21,18 +21,18 @@ const locks$ = state(
         estimatedUnlock: new Date(
           Date.now() +
             Math.max(0, activeEra.estimatedEnd.getTime() - Date.now()) +
-            (era - activeEra.era - 1) * eraDuration
+            (era - activeEra.era - 1) * eraDuration,
         ),
-      }));
+      }))
       return unlocks.sort(
-        (a, b) => a.estimatedUnlock.getTime() - b.estimatedUnlock.getTime()
-      );
-    })
-  )
-);
+        (a, b) => a.estimatedUnlock.getTime() - b.estimatedUnlock.getTime(),
+      )
+    }),
+  ),
+)
 
 export const NominateLocks = () => {
-  const locks = useStateObservable(locks$);
+  const locks = useStateObservable(locks$)
 
   return (
     <div className="grow">
@@ -53,20 +53,20 @@ export const NominateLocks = () => {
             const [api, slashingSpans] = await Promise.all([
               firstValueFrom(stakingApi$),
               firstValueFrom(slashingSpans$.pipe(filter((v) => v != null))),
-            ]);
+            ])
 
             return api.tx.Staking.withdraw_unbonded({
               num_slashing_spans: slashingSpans,
-            });
+            })
           }}
         >
           Unlock funds
         </TransactionButton>
       ) : null}
     </div>
-  );
-};
-export const nominateLocksSub$ = locks$;
+  )
+}
+export const nominateLocksSub$ = locks$
 
 export const slashingSpans$ = state(
   // TODO verify it's actually on relay chain
@@ -75,9 +75,9 @@ export const slashingSpans$ = state(
     selectedSignerAccount$.pipe(filter((v) => v != null)),
   ]).pipe(
     switchMap(([api, account]) =>
-      api.query.Staking.SlashingSpans.getValue(account?.address)
+      api.query.Staking.SlashingSpans.getValue(account?.address),
     ),
-    map((r) => (r ? 1 + r.prior.length : 0))
+    map((r) => (r ? 1 + r.prior.length : 0)),
   ),
-  null
-);
+  null,
+)

@@ -1,14 +1,14 @@
-import { TokenValue } from "@/components/TokenValue";
-import { TransactionButton } from "@/components/Transactions";
-import { selectedSignerAccount$ } from "@/state/account";
-import { stakingApi$ } from "@/state/chain";
-import { activeEra$, eraDurationInMs$ } from "@/state/era";
-import { currentNominationPoolStatus$ } from "@/state/nominationPool";
-import { estimatedFuture } from "@/util/date";
-import { MultiAddress } from "@polkadot-api/descriptors";
-import { liftSuspense, state, useStateObservable } from "@react-rxjs/core";
-import { combineLatest, filter, firstValueFrom, map } from "rxjs";
-import { slashingSpans$ } from "../Nominate/NominateLocks";
+import { TokenValue } from "@/components/TokenValue"
+import { TransactionButton } from "@/components/Transactions"
+import { selectedSignerAccount$ } from "@/state/account"
+import { stakingApi$ } from "@/state/chain"
+import { activeEra$, eraDurationInMs$ } from "@/state/era"
+import { currentNominationPoolStatus$ } from "@/state/nominationPool"
+import { estimatedFuture } from "@/util/date"
+import { MultiAddress } from "@polkadot-api/descriptors"
+import { liftSuspense, state, useStateObservable } from "@react-rxjs/core"
+import { combineLatest, filter, firstValueFrom, map } from "rxjs"
+import { slashingSpans$ } from "../Nominate/NominateLocks"
 
 const locks$ = state(
   combineLatest([
@@ -23,18 +23,18 @@ const locks$ = state(
         estimatedUnlock: new Date(
           Date.now() +
             Math.max(0, activeEra.estimatedEnd.getTime() - Date.now()) +
-            (era - activeEra.era - 1) * eraDuration
+            (era - activeEra.era - 1) * eraDuration,
         ),
-      }));
+      }))
       return unlocks.sort(
-        (a, b) => a.estimatedUnlock.getTime() - b.estimatedUnlock.getTime()
-      );
-    })
-  )
-);
+        (a, b) => a.estimatedUnlock.getTime() - b.estimatedUnlock.getTime(),
+      )
+    }),
+  ),
+)
 
 export const ManageLocks = () => {
-  const locks = useStateObservable(locks$);
+  const locks = useStateObservable(locks$)
 
   return (
     <div className="grow">
@@ -51,12 +51,12 @@ export const ManageLocks = () => {
       </ol>
       {locks.some((v) => v.unlocked) ? <UnlockPoolBonds /> : null}
     </div>
-  );
-};
-export const manageLocksSub$ = locks$.pipe(liftSuspense());
+  )
+}
+export const manageLocksSub$ = locks$.pipe(liftSuspense())
 
 export const UnlockPoolBonds = () => {
-  const selectedAccount = useStateObservable(selectedSignerAccount$);
+  const selectedAccount = useStateObservable(selectedSignerAccount$)
 
   return (
     <TransactionButton
@@ -64,15 +64,15 @@ export const UnlockPoolBonds = () => {
         const [api, slashingSpans] = await Promise.all([
           firstValueFrom(stakingApi$),
           firstValueFrom(slashingSpans$.pipe(filter((v) => v != null))),
-        ]);
+        ])
 
         return api.tx.NominationPools.withdraw_unbonded({
           member_account: MultiAddress.Id(selectedAccount!.address),
           num_slashing_spans: slashingSpans,
-        });
+        })
       }}
     >
       Unlock funds
     </TransactionButton>
-  );
-};
+  )
+}

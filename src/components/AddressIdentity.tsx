@@ -1,21 +1,21 @@
-import { identity$ } from "@/state/identity";
-import { AccountDisplay } from "@polkadot-api/react-components";
-import { useStateObservable } from "@react-rxjs/core";
-import type { FC } from "react";
+import { identity$ } from "@/state/identity"
+import { AccountDisplay } from "@polkadot-api/react-components"
+import { useStateObservable } from "@react-rxjs/core"
+import type { FC } from "react"
 
 export const AddressIdentity: FC<{
-  addr: string;
-  name?: string;
-  copyable?: boolean;
-  className?: string;
+  addr: string
+  name?: string
+  copyable?: boolean
+  className?: string
 }> = ({ addr, name, className, copyable = true }) => {
-  let identity = useStateObservable(identity$(addr));
+  let identity = useStateObservable(identity$(addr))
 
   if (name && !identity) {
     identity = {
       value: name,
       verified: false,
-    };
+    }
   }
 
   return (
@@ -30,5 +30,5 @@ export const AddressIdentity: FC<{
       copyable={copyable}
       maxAddrLength={12}
     />
-  );
-};
+  )
+}

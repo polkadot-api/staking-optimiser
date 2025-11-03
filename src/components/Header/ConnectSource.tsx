@@ -3,8 +3,8 @@ import {
   ManageReadOnly,
   ManageVault,
   WalletConnectButton,
-} from "polkahub";
-import { type FC } from "react";
+} from "polkahub"
+import { type FC } from "react"
 
 export const ConnectSource: FC = () => (
   <div>
@@ -16,4 +16,4 @@ export const ConnectSource: FC = () => (
       <WalletConnectButton />
     </div>
   </div>
-);
+)

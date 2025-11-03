@@ -1,4 +1,4 @@
-import { NavMenu } from "@/components/NavMenu/NavMenu";
+import { NavMenu } from "@/components/NavMenu/NavMenu"
 
 export const NotFound = () => {
   return (
@@ -6,5 +6,5 @@ export const NotFound = () => {
       <NavMenu />
       <div>NotFound</div>
     </div>
-  );
-};
+  )
+}

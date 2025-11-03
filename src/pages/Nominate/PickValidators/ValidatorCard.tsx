@@ -1,32 +1,32 @@
-import { X, Plus, CheckCircle2, CheckCircle } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { CopyText, PolkadotIdenticon } from "@polkadot-api/react-components";
-import { getPublicKey } from "@/util/ss58";
-import { useStateObservable } from "@react-rxjs/core";
-import { identity$ } from "@/state/identity";
+import { X, Plus, CheckCircle2, CheckCircle } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { CopyText, PolkadotIdenticon } from "@polkadot-api/react-components"
+import { getPublicKey } from "@/util/ss58"
+import { useStateObservable } from "@react-rxjs/core"
+import { identity$ } from "@/state/identity"
 
 interface ValidatorCardProps {
-  address: string;
-  apy: number;
-  onRemove: (address: string) => void;
+  address: string
+  apy: number
+  onRemove: (address: string) => void
 }
 
 const truncateMiddle = (text: string, maxLength = 14) => {
-  if (text.length <= maxLength) return text;
-  const start = Math.ceil(maxLength / 2);
-  return `${text.slice(0, start)}...${text.slice(-(start - 1))}`;
-};
+  if (text.length <= maxLength) return text
+  const start = Math.ceil(maxLength / 2)
+  return `${text.slice(0, start)}...${text.slice(-(start - 1))}`
+}
 
 export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
-  let identity = useStateObservable(identity$(address));
+  let identity = useStateObservable(identity$(address))
   const name =
-    identity && identity.value + (identity.subId ? `/${identity.subId}` : "");
+    identity && identity.value + (identity.subId ? `/${identity.subId}` : "")
   return (
     <Card className="group relative transition-all hover:shadow-md p-2 border rounded-lg shadow-sm ring-primary/50 bg-primary/5 ">
       <button
         onClick={(e) => {
-          e.stopPropagation();
-          onRemove(address);
+          e.stopPropagation()
+          onRemove(address)
         }}
         className="absolute -top-1.5 -right-1.5 z-10 bg-background border border-border shadow-sm text-muted-foreground rounded-full p-0.5 hover:bg-muted hover:text-foreground transition-all opacity-0 group-hover:opacity-100"
         aria-label="Remove validator"
@@ -72,7 +72,7 @@ export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
         </div>
       </div>
     </Card>
-  );
+  )
 }
 
 export function EmptyValidatorSlot() {
@@ -80,5 +80,5 @@ export function EmptyValidatorSlot() {
     <Card className="p-2 border-dashed border-2 border-border/30 bg-muted/10 flex items-center justify-center min-h-[52px]">
       <Plus className="size-4 text-muted-foreground/30" />
     </Card>
-  );
+  )
 }

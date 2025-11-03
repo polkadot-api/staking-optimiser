@@ -2,4 +2,4 @@ export {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@polkahub/ui-components";
+} from "@polkahub/ui-components"

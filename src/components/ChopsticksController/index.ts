@@ -1,1 +1,1 @@
-export * from "./ChopsticksController";
+export * from "./ChopsticksController"

@@ -1,35 +1,35 @@
-import { shareLatest, state } from "@react-rxjs/core";
-import { AccountId, type PolkadotSigner, type SS58String } from "polkadot-api";
+import { shareLatest, state } from "@react-rxjs/core"
+import { AccountId, type PolkadotSigner, type SS58String } from "polkadot-api"
 import {
   createLedgerProvider,
   createPjsWalletProvider,
   createPolkadotVaultProvider,
   createReadOnlyProvider,
   createSelectedAccountPlugin,
-} from "polkahub";
-import { combineLatest, firstValueFrom, map, switchMap } from "rxjs";
-import { selectedChain$, stakingApi$, stakingSdk$ } from "./chain";
+} from "polkahub"
+import { combineLatest, firstValueFrom, map, switchMap } from "rxjs"
+import { selectedChain$, stakingApi$, stakingSdk$ } from "./chain"
 import {
   tokenDecimalsByChain,
   tokenSymbolByChain,
   USE_CHOPSTICKS,
-} from "./chainConfig";
+} from "./chainConfig"
 
 const ss58Format$ = stakingApi$.pipe(
   switchMap((v) => v.constants.System.SS58Prefix()),
-  shareLatest()
-);
+  shareLatest(),
+)
 
-const selectedAccountPlugin = createSelectedAccountPlugin();
-const pjsWalletProvider = createPjsWalletProvider();
-const polkadotVaultProvider = createPolkadotVaultProvider();
+const selectedAccountPlugin = createSelectedAccountPlugin()
+const pjsWalletProvider = createPjsWalletProvider()
+const polkadotVaultProvider = createPolkadotVaultProvider()
 const readOnlyProvider = createReadOnlyProvider({
   fakeSigner: USE_CHOPSTICKS,
-});
+})
 const ledgerAccountProvider = createLedgerProvider(
   async () => {
-    const module = await import("@ledgerhq/hw-transport-webhid");
-    return module.default.create();
+    const module = await import("@ledgerhq/hw-transport-webhid")
+    return module.default.create()
   },
   () =>
     firstValueFrom(
@@ -41,10 +41,10 @@ const ledgerAccountProvider = createLedgerProvider(
           decimals: tokenDecimalsByChain[chain],
           tokenSymbol: tokenSymbolByChain[chain],
           ss58Format,
-        }))
-      )
-    )
-);
+        })),
+      ),
+    ),
+)
 const walletConnectProvider = import("polkahub").then(
   ({ createWalletConnectProvider, knownChains }) =>
     createWalletConnectProvider(import.meta.env.VITE_REOWN_PROJECT_ID, [
@@ -54,8 +54,8 @@ const walletConnectProvider = import("polkahub").then(
       knownChains.kusamaAh,
       knownChains.paseo,
       knownChains.paseoAh,
-    ])
-);
+    ]),
+)
 
 export const accountProviderPlugins = [
   selectedAccountPlugin,
@@ -64,7 +64,7 @@ export const accountProviderPlugins = [
   readOnlyProvider,
   ledgerAccountProvider,
   walletConnectProvider,
-];
+]
 
 const formattedAccount$ = state(
   combineLatest([
@@ -77,36 +77,36 @@ const formattedAccount$ = state(
             ...selectedAccount,
             address: codec.dec(codec.enc(selectedAccount.address)),
           }
-        : null
-    )
-  )
-);
+        : null,
+    ),
+  ),
+)
 
 export type SignerAccount = {
-  address: SS58String;
-  polkadotSigner: PolkadotSigner;
-};
+  address: SS58String
+  polkadotSigner: PolkadotSigner
+}
 export const selectedSignerAccount$ = formattedAccount$.pipeState(
   map((v): SignerAccount | null => {
-    if (!v?.signer) return null;
+    if (!v?.signer) return null
 
     return {
       address: v.address,
       polkadotSigner: v.signer,
-    };
-  })
-);
+    }
+  }),
+)
 
 export const selectedAccountAddr$ = formattedAccount$.pipeState(
-  map((v): SS58String | null => v?.address ?? null)
-);
+  map((v): SS58String | null => v?.address ?? null),
+)
 
 export const accountStatus$ = state(
   combineLatest([stakingSdk$, selectedAccountAddr$]).pipe(
     switchMap(([sdk, addr]) => {
-      if (!addr) return [null];
+      if (!addr) return [null]
 
-      return sdk.getAccountStatus$(addr);
-    })
-  )
-);
+      return sdk.getAccountStatus$(addr)
+    }),
+  ),
+)

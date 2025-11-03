@@ -1,1 +1,1 @@
-export { CardPlaceholder } from "@polkahub/ui-components";
+export { CardPlaceholder } from "@polkahub/ui-components"

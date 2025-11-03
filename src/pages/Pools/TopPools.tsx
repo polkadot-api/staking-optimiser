@@ -1,12 +1,12 @@
-import { AddressIdentity } from "@/components/AddressIdentity";
-import { cn } from "@/lib/utils";
-import { formatPercentage } from "@/util/format";
-import { useStateObservable } from "@react-rxjs/core";
-import { Link } from "react-router-dom";
-import { sortedPools$ } from "./poolList.state";
+import { AddressIdentity } from "@/components/AddressIdentity"
+import { cn } from "@/lib/utils"
+import { formatPercentage } from "@/util/format"
+import { useStateObservable } from "@react-rxjs/core"
+import { Link } from "react-router-dom"
+import { sortedPools$ } from "./poolList.state"
 
 export default function TopPools() {
-  const pools = useStateObservable(sortedPools$).slice(0, 10);
+  const pools = useStateObservable(sortedPools$).slice(0, 10)
 
   return (
     <div className="data-table compact">
@@ -53,7 +53,7 @@ export default function TopPools() {
         </tbody>
       </table>
     </div>
-  );
+  )
 }
 
-export const topPoolsSub$ = sortedPools$;
+export const topPoolsSub$ = sortedPools$

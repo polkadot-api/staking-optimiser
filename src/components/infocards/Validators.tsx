@@ -1,9 +1,9 @@
-import { stakingApi$ } from "@/state/chain";
-import { activeEra$ } from "@/state/era";
-import { useStateObservable, withDefault } from "@react-rxjs/core";
-import { combineLatest, map, switchMap } from "rxjs";
-import { Card } from "../Card";
-import { CircularProgress } from "../CircularProgress";
+import { stakingApi$ } from "@/state/chain"
+import { activeEra$ } from "@/state/era"
+import { useStateObservable, withDefault } from "@react-rxjs/core"
+import { combineLatest, map, switchMap } from "rxjs"
+import { Card } from "../Card"
+import { CircularProgress } from "../CircularProgress"
 
 const validators$ = stakingApi$.pipeState(
   switchMap((api) =>
@@ -11,19 +11,19 @@ const validators$ = stakingApi$.pipeState(
       count: api.query.Staking.CounterForValidators.getValue(),
       active: activeEra$.pipe(
         switchMap((activeEra) =>
-          api.query.Staking.ErasStakersOverview.getEntries(activeEra.era)
+          api.query.Staking.ErasStakersOverview.getEntries(activeEra.era),
         ),
-        map((stakers) => stakers.length)
+        map((stakers) => stakers.length),
       ),
       ideal: api.query.Staking.ValidatorCount.getValue(),
       max: api.query.Staking.MaxValidatorsCount.getValue(),
-    })
+    }),
   ),
-  withDefault(null)
-);
+  withDefault(null),
+)
 
 export const ActiveValidators = () => {
-  const validators = useStateObservable(validators$);
+  const validators = useStateObservable(validators$)
 
   return (
     <Card title="Active Validators">
@@ -38,11 +38,11 @@ export const ActiveValidators = () => {
         </div>
       </div>
     </Card>
-  );
-};
+  )
+}
 
 export const TotalValidators = () => {
-  const validators = useStateObservable(validators$);
+  const validators = useStateObservable(validators$)
 
   return (
     <Card title="Total Validators">
@@ -59,5 +59,5 @@ export const TotalValidators = () => {
         </div>
       </div>
     </Card>
-  );
-};
+  )
+}

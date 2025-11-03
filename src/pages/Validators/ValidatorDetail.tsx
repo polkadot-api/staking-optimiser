@@ -1,14 +1,14 @@
-import { AddressIdentity } from "@/components/AddressIdentity";
-import { Card } from "@/components/Card";
-import { TokenValue } from "@/components/TokenValue";
-import { HISTORY_DEPTH, PERBILL } from "@/constants";
-import { cn } from "@/lib/utils";
-import { stakingApi$, stakingSdk$ } from "@/state/chain";
-import { activeEraNumber$, eraDurationInMs$, getEraApy } from "@/state/era";
-import { validatorPerformance$ } from "@/state/validators";
-import { formatPercentage } from "@/util/format";
-import { CardPlaceholder } from "@polkahub/ui-components";
-import { state, useStateObservable } from "@react-rxjs/core";
+import { AddressIdentity } from "@/components/AddressIdentity"
+import { Card } from "@/components/Card"
+import { TokenValue } from "@/components/TokenValue"
+import { HISTORY_DEPTH, PERBILL } from "@/constants"
+import { cn } from "@/lib/utils"
+import { stakingApi$, stakingSdk$ } from "@/state/chain"
+import { activeEraNumber$, eraDurationInMs$, getEraApy } from "@/state/era"
+import { validatorPerformance$ } from "@/state/validators"
+import { formatPercentage } from "@/util/format"
+import { CardPlaceholder } from "@polkahub/ui-components"
+import { state, useStateObservable } from "@react-rxjs/core"
 import {
   ArrowLeft,
   Crown,
@@ -18,22 +18,22 @@ import {
   PieChart,
   ShieldCheck,
   Users,
-} from "lucide-react";
-import type { SS58String } from "polkadot-api";
-import { lazy, Suspense, type FC } from "react";
-import { Link, useParams } from "react-router-dom";
-import { combineLatest, debounceTime, map, merge, switchMap } from "rxjs";
-import { Stat } from "../Pools/PoolDetail";
+} from "lucide-react"
+import type { SS58String } from "polkadot-api"
+import { lazy, Suspense, type FC } from "react"
+import { Link, useParams } from "react-router-dom"
+import { combineLatest, debounceTime, map, merge, switchMap } from "rxjs"
+import { Stat } from "../Pools/PoolDetail"
 
-const EraChart = lazy(() => import("@/components/EraChart"));
+const EraChart = lazy(() => import("@/components/EraChart"))
 
 export const ValidatorDetailPage: FC = () => {
-  const { address } = useParams<{ address: string }>();
+  const { address } = useParams<{ address: string }>()
   if (!address) {
-    return null;
+    return null
   }
-  return <ValidatorDetail address={address} />;
-};
+  return <ValidatorDetail address={address} />
+}
 
 const validator$ = state((address: SS58String) =>
   combineLatest([stakingApi$, stakingSdk$, activeEraNumber$]).pipe(
@@ -43,69 +43,66 @@ const validator$ = state((address: SS58String) =>
           (r) => ({
             ...r,
             commission: Number(r.commission) / PERBILL,
-          })
+          }),
         ),
         lastRewards: sdk.getValidatorRewards(address, era - 1),
-      })
-    )
-  )
-);
+      }),
+    ),
+  ),
+)
 
 const apyInfo$ = state(
   (address: SS58String) =>
     validatorPerformance$(address).pipe(
       map((performance) => {
-        if (performance.length === 0) return null;
+        if (performance.length === 0) return null
 
         const average =
           performance.reduce((acc, v) => acc + (v.apy ?? 0), 0) /
-          performance.length;
-        const max = performance.reduce(
-          (acc, v) => Math.max(acc, v.apy ?? 0),
-          0
-        );
+          performance.length
+        const max = performance.reduce((acc, v) => Math.max(acc, v.apy ?? 0), 0)
         const min = performance.reduce(
           (acc, v) => Math.min(acc, v.apy ?? 0),
-          Number.POSITIVE_INFINITY
-        );
-        return { average, max, min };
-      })
+          Number.POSITIVE_INFINITY,
+        )
+        return { average, max, min }
+      }),
     ),
-  null
-);
+  null,
+)
 
 const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
   const { validatorPrefs, lastRewards } = useStateObservable(
-    validator$(address)
-  );
-  const apyInfo = useStateObservable(apyInfo$(address));
-  const eraDuration = useStateObservable(eraDurationInMs$);
-  const activeEra = useStateObservable(activeEraNumber$);
+    validator$(address),
+  )
+  const apyInfo = useStateObservable(apyInfo$(address))
+  const eraDuration = useStateObservable(eraDurationInMs$)
+  const activeEra = useStateObservable(activeEraNumber$)
 
   const lastValidatorApy = lastRewards
     ? getEraApy(
         lastRewards.nominatorsShare,
         lastRewards.activeBond,
-        eraDuration
+        eraDuration,
       )
-    : null;
+    : null
 
   const validatorStakePct = lastRewards
     ? Number(lastRewards.selfStake) / Number(lastRewards.activeBond)
-    : null;
+    : null
   const totalReward = lastRewards
     ? Number(lastRewards.nominatorsShare + lastRewards.commissionShare)
-    : null;
+    : null
   const nominatorRewardPct = lastRewards
     ? (Number(lastRewards.nominatorsShare) * (1 - validatorStakePct!)) /
       totalReward!
-    : null;
+    : null
   const validatorRewardPct = lastRewards
     ? (Number(lastRewards.nominatorsShare) * validatorStakePct!) / totalReward!
-    : null;
+    : null
   const commissionRewardPct = lastRewards
     ? Number(lastRewards.commissionShare) / totalReward!
-    : null;
+    : null
 
   return (
     <div className="space-y-4 p-2">
@@ -125,7 +122,7 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
                 "rounded-full px-3 py-1 text-[0.7rem]",
                 validatorPrefs.blocked
                   ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                  : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
               )}
             >
               {validatorPrefs.blocked ? "Blocking nominations" : "Open"}
@@ -237,7 +234,7 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
               <dd className="text-right font-medium text-foreground">
                 {apyInfo
                   ? `${formatPercentage(
-                      apyInfo.min / 100
+                      apyInfo.min / 100,
                     )} - ${formatPercentage(apyInfo.max / 100)}`
                   : "…"}
               </dd>
@@ -252,27 +249,27 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
         </Card>
       </Suspense>
     </div>
-  );
-};
+  )
+}
 
 const performanceChart$ = state((addr: SS58String) =>
   validatorPerformance$(addr).pipe(
     debounceTime(200),
-    map((values) => values.filter((v) => v != null))
-  )
-);
+    map((values) => values.filter((v) => v != null)),
+  ),
+)
 
 const PerformanceChart: FC<{ addr: SS58String }> = ({ addr }) => {
-  const activeEra = useStateObservable(activeEraNumber$);
-  const performance = useStateObservable(performanceChart$(addr));
+  const activeEra = useStateObservable(activeEraNumber$)
+  const performance = useStateObservable(performanceChart$(addr))
 
-  return <EraChart data={performance} activeEra={activeEra} />;
-};
+  return <EraChart data={performance} activeEra={activeEra} />
+}
 
 export const validatorDetailPageSub$ = (address: SS58String) =>
   merge(
     validator$(address),
     performanceChart$(address),
     eraDurationInMs$,
-    activeEraNumber$
-  );
+    activeEraNumber$,
+  )

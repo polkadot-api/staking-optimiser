@@ -1,16 +1,16 @@
-import { AddressIdentity } from "@/components/AddressIdentity";
-import { Card } from "@/components/Card";
-import { ContractableText, createSortByButton } from "@/components/SortBy";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { formatPercentage } from "@/util/format";
-import { useStateObservable } from "@react-rxjs/core";
-import { Search } from "lucide-react";
-import type { FC } from "react";
-import { Link } from "react-router-dom";
-import { TableVirtuoso, type ItemProps } from "react-virtuoso";
-import { merge } from "rxjs";
-import { MaParams, maParamsSub$ } from "../Validators/Params";
+import { AddressIdentity } from "@/components/AddressIdentity"
+import { Card } from "@/components/Card"
+import { ContractableText, createSortByButton } from "@/components/SortBy"
+import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
+import { formatPercentage } from "@/util/format"
+import { useStateObservable } from "@react-rxjs/core"
+import { Search } from "lucide-react"
+import type { FC } from "react"
+import { Link } from "react-router-dom"
+import { TableVirtuoso, type ItemProps } from "react-virtuoso"
+import { merge } from "rxjs"
+import { MaParams, maParamsSub$ } from "../Validators/Params"
 import {
   search$,
   setSearch,
@@ -18,9 +18,9 @@ import {
   sortBy$,
   sortedPools$,
   type NominationPool,
-} from "./poolList.state";
+} from "./poolList.state"
 
-const SortByButton = createSortByButton(sortBy$, setSortBy);
+const SortByButton = createSortByButton(sortBy$, setSortBy)
 
 export default function PoolList() {
   return (
@@ -36,13 +36,13 @@ export default function PoolList() {
       </div>
       <PoolsTable />
     </div>
-  );
+  )
 }
 
-export const poolListSub$ = merge(maParamsSub$, sortedPools$);
+export const poolListSub$ = merge(maParamsSub$, sortedPools$)
 
 const SearchCard = () => {
-  const search = useStateObservable(search$);
+  const search = useStateObservable(search$)
 
   return (
     <Card title="Search" className="grow">
@@ -56,11 +56,11 @@ const SearchCard = () => {
         </label>
       </div>
     </Card>
-  );
-};
+  )
+}
 
 const PoolsTable = () => {
-  const pools = useStateObservable(sortedPools$);
+  const pools = useStateObservable(sortedPools$)
 
   return (
     <TableVirtuoso
@@ -95,8 +95,8 @@ const PoolsTable = () => {
       )}
       itemContent={(idx, pool) => {
         if (!pool) {
-          console.error("no validator!!", idx, pools.length);
-          return null;
+          console.error("no validator!!", idx, pools.length)
+          return null
         }
 
         return (
@@ -125,14 +125,14 @@ const PoolsTable = () => {
             <td>{formatPercentage(pool.commission.current)}</td>
             <td>{pool.memberCount}</td>
           </>
-        );
+        )
       }}
     />
-  );
-};
+  )
+}
 
 const TableRow: FC<ItemProps<NominationPool>> = ({ item: pool, ...props }) => {
-  const idx = props["data-index"];
+  const idx = props["data-index"]
 
   return (
     <>
@@ -147,5 +147,5 @@ const TableRow: FC<ItemProps<NominationPool>> = ({ item: pool, ...props }) => {
         {props.children}
       </tr>
     </>
-  );
-};
+  )
+}

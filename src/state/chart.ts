@@ -1,5 +1,5 @@
-import { type OperatorFunction, pipe, withLatestFrom, scan, map } from "rxjs";
-import { activeEraNumber$ } from "./era";
+import { type OperatorFunction, pipe, withLatestFrom, scan, map } from "rxjs"
+import { activeEraNumber$ } from "./era"
 
 export const accumulateChart = <T extends { era: number }>(): OperatorFunction<
   T | null,
@@ -10,20 +10,20 @@ export const accumulateChart = <T extends { era: number }>(): OperatorFunction<
     scan(
       (
         acc: {
-          start: number;
-          result: T[];
+          start: number
+          result: T[]
         },
-        [value, era]
+        [value, era],
       ) => {
         if (!value) {
-          return acc;
+          return acc
         }
 
         if (!acc.result.length) {
-          acc.start = era;
-          const idx = acc.start - 1 - value.era;
-          acc.result[idx] = value;
-          return acc;
+          acc.start = era
+          const idx = acc.start - 1 - value.era
+          acc.result[idx] = value
+          return acc
         }
 
         if (era != acc.start) {
@@ -31,14 +31,14 @@ export const accumulateChart = <T extends { era: number }>(): OperatorFunction<
           return {
             start: era,
             result: [value, ...acc.result],
-          };
+          }
         }
-        const idx = acc.start - 1 - value.era;
-        acc.result[idx] = value;
+        const idx = acc.start - 1 - value.era
+        acc.result[idx] = value
 
-        return acc;
+        return acc
       },
-      { start: 0, result: [] }
+      { start: 0, result: [] },
     ),
-    map((v) => v.result)
-  );
+    map((v) => v.result),
+  )

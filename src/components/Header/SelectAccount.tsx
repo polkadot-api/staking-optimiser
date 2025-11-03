@@ -1,6 +1,6 @@
-import { codeSplit } from "@/util/codeSplit";
-import { withSubscribe } from "@/util/rxjs";
-import { PolkaHubModalTrigger } from "polkahub";
+import { codeSplit } from "@/util/codeSplit"
+import { withSubscribe } from "@/util/rxjs"
+import { PolkaHubModalTrigger } from "polkahub"
 
 const payload = Promise.all([
   import("./ConnectSource"),
@@ -9,9 +9,9 @@ const payload = Promise.all([
       PolkaHubModal,
       SelectAccountField,
       ManagePjsWallets,
-    })
+    }),
   ),
-]);
+])
 export const SelectAccount = withSubscribe(
   codeSplit(
     payload,
@@ -20,7 +20,7 @@ export const SelectAccount = withSubscribe(
       const [
         { ConnectSource },
         { PolkaHubModal, SelectAccountField, ManagePjsWallets },
-      ] = payload;
+      ] = payload
 
       return (
         <PolkaHubModal>
@@ -28,7 +28,7 @@ export const SelectAccount = withSubscribe(
           <ManagePjsWallets />
           <ConnectSource />
         </PolkaHubModal>
-      );
-    }
-  )
-);
+      )
+    },
+  ),
+)

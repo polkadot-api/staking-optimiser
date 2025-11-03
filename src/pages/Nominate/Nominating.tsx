@@ -1,26 +1,23 @@
-import {
-  AccountBalance,
-  accountBalanceSub$,
-} from "@/components/AccountBalance";
-import { AddressIdentity } from "@/components/AddressIdentity";
-import { Card } from "@/components/Card";
-import { CardPlaceholder } from "@/components/CardPlaceholder";
-import { DialogButton } from "@/components/DialogButton";
-import { PERBILL } from "@/constants";
-import { cn } from "@/lib/utils";
-import { accountStatus$, selectedAccountAddr$ } from "@/state/account";
-import { stakingApi$ } from "@/state/chain";
-import { activeEraNumber$ } from "@/state/era";
+import { AccountBalance, accountBalanceSub$ } from "@/components/AccountBalance"
+import { AddressIdentity } from "@/components/AddressIdentity"
+import { Card } from "@/components/Card"
+import { CardPlaceholder } from "@/components/CardPlaceholder"
+import { DialogButton } from "@/components/DialogButton"
+import { PERBILL } from "@/constants"
+import { cn } from "@/lib/utils"
+import { accountStatus$, selectedAccountAddr$ } from "@/state/account"
+import { stakingApi$ } from "@/state/chain"
+import { activeEraNumber$ } from "@/state/era"
 import {
   currentNominatorBond$,
   currentNominatorStatus$,
   rewardHistory$,
   validatorActive$,
-} from "@/state/nominate";
-import { roundToDecimalPlaces } from "@/util/format";
-import { state, useStateObservable } from "@react-rxjs/core";
-import { type SS58String } from "polkadot-api";
-import { lazy, Suspense, type FC } from "react";
+} from "@/state/nominate"
+import { roundToDecimalPlaces } from "@/util/format"
+import { state, useStateObservable } from "@react-rxjs/core"
+import { type SS58String } from "polkadot-api"
+import { lazy, Suspense, type FC } from "react"
 import {
   combineLatest,
   debounceTime,
@@ -29,15 +26,15 @@ import {
   map,
   merge,
   switchMap,
-} from "rxjs";
-import { ManageNomination } from "./ManageNomination";
-import { MinBondingAmounts, minBondingAmountsSub$ } from "./MinBondingAmounts";
-import { NominateLocks, nominateLocksSub$ } from "./NominateLocks";
-import { StopNominating } from "./StopNominating";
-import { validatorPerformance$ } from "@/state/validators";
-import { Link } from "react-router-dom";
+} from "rxjs"
+import { ManageNomination } from "./ManageNomination"
+import { MinBondingAmounts, minBondingAmountsSub$ } from "./MinBondingAmounts"
+import { NominateLocks, nominateLocksSub$ } from "./NominateLocks"
+import { StopNominating } from "./StopNominating"
+import { validatorPerformance$ } from "@/state/validators"
+import { Link } from "react-router-dom"
 
-const EraChart = lazy(() => import("@/components/EraChart"));
+const EraChart = lazy(() => import("@/components/EraChart"))
 
 export const NominatingContent = () => (
   <div className="space-y-4">
@@ -48,16 +45,16 @@ export const NominatingContent = () => (
     <NominateRewards />
     <SelectedValidators />
   </div>
-);
+)
 
 export const nominatingContentSub$ = defer(() =>
   merge(
     minBondingAmountsSub$,
     statusCardSub$,
     nominateRewardsSub$,
-    selectedValidatorsSub$
-  )
-);
+    selectedValidatorsSub$,
+  ),
+)
 
 export const ManageNominationBtn = () => (
   <DialogButton
@@ -68,11 +65,11 @@ export const ManageNominationBtn = () => (
   >
     Manage nomination
   </DialogButton>
-);
+)
 
 const StatusCard = () => {
-  const currentBond = useStateObservable(currentNominatorBond$);
-  const status = useStateObservable(accountStatus$);
+  const currentBond = useStateObservable(currentNominatorBond$)
+  const status = useStateObservable(accountStatus$)
 
   return (
     <Card title="Status">
@@ -93,35 +90,35 @@ const StatusCard = () => {
         ) : null}
       </div>
     </Card>
-  );
-};
+  )
+}
 
 const statusCardSub$ = merge(
   currentNominatorBond$,
   accountStatus$,
   accountBalanceSub$,
-  nominateLocksSub$
-);
+  nominateLocksSub$,
+)
 
 const selectedValidators$ = state(
   combineLatest([selectedAccountAddr$, stakingApi$]).pipe(
     switchMap(([addr, stakingApi]) =>
-      addr ? stakingApi.query.Staking.Nominators.watchValue(addr) : [null]
+      addr ? stakingApi.query.Staking.Nominators.watchValue(addr) : [null],
     ),
-    map((v) => v?.targets ?? [])
-  )
-);
+    map((v) => v?.targets ?? []),
+  ),
+)
 
 const validatorPrefs$ = state((addr: SS58String) =>
   combineLatest([activeEraNumber$, stakingApi$]).pipe(
     switchMap(([era, stakingApi]) =>
-      stakingApi.query.Staking.ErasValidatorPrefs.getValue(era, addr)
-    )
-  )
-);
+      stakingApi.query.Staking.ErasValidatorPrefs.getValue(era, addr),
+    ),
+  ),
+)
 
 const SelectedValidators = () => {
-  const validators = useStateObservable(selectedValidators$);
+  const validators = useStateObservable(selectedValidators$)
 
   return (
     <Card title="Selected Validators">
@@ -139,8 +136,8 @@ const SelectedValidators = () => {
         <div className="text-muted-foreground">No selected validators</div>
       )}
     </Card>
-  );
-};
+  )
+}
 
 const validatorRewardHistory$ = state((addr: SS58String) =>
   combineLatest([validatorActive$(addr), validatorPerformance$(addr)]).pipe(
@@ -149,39 +146,39 @@ const validatorRewardHistory$ = state((addr: SS58String) =>
       activeChart.map((active, i) => ({
         ...active,
         apy: performanceChart[i]?.apy ?? null,
-      }))
+      })),
     ),
-    map((v) => v.filter(() => true))
-  )
-);
+    map((v) => v.filter(() => true)),
+  ),
+)
 
 const selectedValidatorsSub$ = selectedValidators$.pipe(
   switchMap((v) =>
     merge(
       ...v.map((addr) =>
-        merge(validatorRewardHistory$(addr), validatorPrefs$(addr))
+        merge(validatorRewardHistory$(addr), validatorPrefs$(addr)),
       ),
-      activeEraNumber$
-    )
+      activeEraNumber$,
+    ),
   ),
-  ignoreElements()
-);
+  ignoreElements(),
+)
 
 const validatorIsCurrentlyActive$ = state(
   (addr: SS58String) =>
     currentNominatorStatus$.pipe(
-      map((status) => !!status.find((v) => v.validator === addr))
+      map((status) => !!status.find((v) => v.validator === addr)),
     ),
-  false
-);
+  false,
+)
 
 const SelectedValidator: FC<{
-  validator: SS58String;
+  validator: SS58String
 }> = ({ validator }) => {
-  const rewardHistory = useStateObservable(validatorRewardHistory$(validator));
-  const isActive = useStateObservable(validatorIsCurrentlyActive$(validator));
-  const prefs = useStateObservable(validatorPrefs$(validator));
-  const activeEra = useStateObservable(activeEraNumber$);
+  const rewardHistory = useStateObservable(validatorRewardHistory$(validator))
+  const isActive = useStateObservable(validatorIsCurrentlyActive$(validator))
+  const prefs = useStateObservable(validatorPrefs$(validator))
+  const activeEra = useStateObservable(activeEraNumber$)
 
   const averageApy = rewardHistory.length
     ? roundToDecimalPlaces(
@@ -189,9 +186,9 @@ const SelectedValidator: FC<{
           .map((v) => v.apy)
           .filter((v) => v != null)
           .reduce((a, b) => a + b, 0) / rewardHistory.length,
-        2
+        2,
       )
-    : null;
+    : null
 
   return (
     <div
@@ -216,7 +213,7 @@ const SelectedValidator: FC<{
                 <b className="text-foreground">
                   {roundToDecimalPlaces(
                     100 * Number(prefs.commission / PERBILL),
-                    2
+                    2,
                   )}
                   %
                 </b>
@@ -227,8 +224,8 @@ const SelectedValidator: FC<{
       </div>
       <EraChart height={200} data={rewardHistory} activeEra={activeEra} />
     </div>
-  );
-};
+  )
+}
 const SelectedValidatorSkeleton: FC<{ validator: SS58String }> = ({
   validator,
 }) => (
@@ -238,11 +235,11 @@ const SelectedValidatorSkeleton: FC<{ validator: SS58String }> = ({
   >
     <AddressIdentity addr={validator} />
   </div>
-);
+)
 
 export const NominateRewards = () => {
-  const rewardHistory = useStateObservable(rewardHistory$);
-  const activeEra = useStateObservable(activeEraNumber$);
+  const rewardHistory = useStateObservable(rewardHistory$)
+  const activeEra = useStateObservable(activeEraNumber$)
 
   return (
     <Suspense fallback={<CardPlaceholder />}>
@@ -250,7 +247,7 @@ export const NominateRewards = () => {
         <EraChart data={rewardHistory} activeEra={activeEra} />
       </Card>
     </Suspense>
-  );
-};
+  )
+}
 
-export const nominateRewardsSub$ = activeEraNumber$;
+export const nominateRewardsSub$ = activeEraNumber$

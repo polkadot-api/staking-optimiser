@@ -1,33 +1,33 @@
-import { AlertCard } from "@/components/AlertCard";
-import { Card } from "@/components/Card";
-import { DialogButton } from "@/components/DialogButton";
-import { TokenInput } from "@/components/TokenInput";
-import { TokenValue } from "@/components/TokenValue";
-import { TransactionButton } from "@/components/Transactions";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { accountStatus$, selectedSignerAccount$ } from "@/state/account";
-import { stakingApi$, stakingSdk$, tokenProps$ } from "@/state/chain";
-import { formatPercentage } from "@/util/format";
-import { state, useStateObservable } from "@react-rxjs/core";
-import { useState, type FC } from "react";
-import { firstValueFrom, merge, switchMap } from "rxjs";
+import { AlertCard } from "@/components/AlertCard"
+import { Card } from "@/components/Card"
+import { DialogButton } from "@/components/DialogButton"
+import { TokenInput } from "@/components/TokenInput"
+import { TokenValue } from "@/components/TokenValue"
+import { TransactionButton } from "@/components/Transactions"
+import { Button } from "@/components/ui/button"
+import { Slider } from "@/components/ui/slider"
+import { accountStatus$, selectedSignerAccount$ } from "@/state/account"
+import { stakingApi$, stakingSdk$, tokenProps$ } from "@/state/chain"
+import { formatPercentage } from "@/util/format"
+import { state, useStateObservable } from "@react-rxjs/core"
+import { useState, type FC } from "react"
+import { firstValueFrom, merge, switchMap } from "rxjs"
 
 export const minPoolJoin$ = stakingApi$.pipeState(
-  switchMap((api) => api.query.NominationPools.MinJoinBond.getValue())
-);
+  switchMap((api) => api.query.NominationPools.MinJoinBond.getValue()),
+)
 
 export const JoinPool: FC<{ poolId: number }> = ({ poolId }) => {
-  const accountStatus = useStateObservable(accountStatus$);
-  const signer = useStateObservable(selectedSignerAccount$);
-  const minBond = useStateObservable(minPoolJoin$);
+  const accountStatus = useStateObservable(accountStatus$)
+  const signer = useStateObservable(selectedSignerAccount$)
+  const minBond = useStateObservable(minPoolJoin$)
 
   const cantJoinReason =
     !accountStatus || !signer
       ? "Select an account to join"
       : accountStatus.nomination.maxBond < minBond
         ? "Not enough funds to join"
-        : null;
+        : null
 
   return (
     <Card
@@ -65,62 +65,62 @@ export const JoinPool: FC<{ poolId: number }> = ({ poolId }) => {
         <p className="text-xs text-muted-foreground">{cantJoinReason}</p>
       ) : null}
     </Card>
-  );
-};
+  )
+}
 
 export const joinPoolSub$ = merge(
   accountStatus$,
   selectedSignerAccount$,
-  minPoolJoin$
-);
+  minPoolJoin$,
+)
 
 const pool$ = state((id: number) =>
-  stakingSdk$.pipe(switchMap((sdk) => sdk.getNominationPool$(id)))
-);
+  stakingSdk$.pipe(switchMap((sdk) => sdk.getNominationPool$(id))),
+)
 
 const JoinPoolModal: FC<{
-  poolId: number;
-  close?: () => void;
+  poolId: number
+  close?: () => void
 }> = ({ poolId, close }) => {
-  const accountStatus = useStateObservable(accountStatus$);
-  const minBond = useStateObservable(minPoolJoin$);
-  const pool = useStateObservable(pool$(poolId));
-  const token = useStateObservable(tokenProps$);
-  const [bond, setBond] = useState<bigint | null>(minBond);
+  const accountStatus = useStateObservable(accountStatus$)
+  const minBond = useStateObservable(minPoolJoin$)
+  const pool = useStateObservable(pool$(poolId))
+  const token = useStateObservable(tokenProps$)
+  const [bond, setBond] = useState<bigint | null>(minBond)
 
-  if (!pool || !accountStatus || !token) return null;
-  const { decimals, symbol } = token;
-  const { nomination: nominationStatus } = accountStatus;
+  if (!pool || !accountStatus || !token) return null
+  const { decimals, symbol } = token
+  const { nomination: nominationStatus } = accountStatus
 
-  const tokenUnit = 10n ** BigInt(decimals);
-  const maxBond = nominationStatus.maxBond;
-  const maxSafeBond = maxBond - tokenUnit;
+  const tokenUnit = 10n ** BigInt(decimals)
+  const maxBond = nominationStatus.maxBond
+  const maxSafeBond = maxBond - tokenUnit
 
-  const showSafeMaxWarning = bond != null && bond > maxSafeBond;
+  const showSafeMaxWarning = bond != null && bond > maxSafeBond
 
   const {
     reserved: nonStakingReserves,
     frozen,
     existentialDeposit,
-  } = accountStatus.balance.raw;
-  const rounding = 10n ** BigInt(token.decimals - 2);
+  } = accountStatus.balance.raw
+  const rounding = 10n ** BigInt(token.decimals - 2)
   const stakingFrozen =
     rounding *
-    ((frozen - nonStakingReserves - existentialDeposit) / rounding + 1n);
+    ((frozen - nonStakingReserves - existentialDeposit) / rounding + 1n)
 
   const frozenRangePct = Math.round(
-    (100 * Number(stakingFrozen - minBond)) / Number(maxBond - minBond)
-  );
+    (100 * Number(stakingFrozen - minBond)) / Number(maxBond - minBond),
+  )
 
-  const reservedAfter = bond ? nonStakingReserves + bond : null;
+  const reservedAfter = bond ? nonStakingReserves + bond : null
   const lockedAfter = reservedAfter
     ? reservedAfter + existentialDeposit > frozen
       ? reservedAfter + existentialDeposit
       : frozen
-    : null;
+    : null
   const spendableAfter = lockedAfter
     ? accountStatus.balance.total - lockedAfter
-    : null;
+    : null
 
   return (
     <div className="space-y-6">
@@ -181,7 +181,7 @@ const JoinPoolModal: FC<{
               variant="secondary"
               type="button"
               onClick={() => {
-                setBond(stakingFrozen);
+                setBond(stakingFrozen)
               }}
             >
               Eq to frozen
@@ -217,13 +217,13 @@ const JoinPoolModal: FC<{
         </p>
         <TransactionButton
           createTx={async () => {
-            if (!bond) return null;
+            if (!bond) return null
 
-            const api = await firstValueFrom(stakingApi$);
+            const api = await firstValueFrom(stakingApi$)
             return api.tx.NominationPools.join({
               amount: bond,
               pool_id: poolId,
-            });
+            })
           }}
           onSuccess={close}
           disabled={bond == null || bond < minBond}
@@ -232,5 +232,5 @@ const JoinPoolModal: FC<{
         </TransactionButton>
       </div>
     </div>
-  );
-};
+  )
+}

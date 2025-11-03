@@ -1,16 +1,16 @@
-import { Card } from "@/components/Card";
-import { TokenValue } from "@/components/TokenValue";
-import { accountStatus$ } from "@/state/account";
-import { stakingApi$ } from "@/state/chain";
-import { activeEra$ } from "@/state/era";
-import { state, useStateObservable } from "@react-rxjs/core";
-import { defer, map, merge, repeat, skip, switchMap } from "rxjs";
+import { Card } from "@/components/Card"
+import { TokenValue } from "@/components/TokenValue"
+import { accountStatus$ } from "@/state/account"
+import { stakingApi$ } from "@/state/chain"
+import { activeEra$ } from "@/state/era"
+import { state, useStateObservable } from "@react-rxjs/core"
+import { defer, map, merge, repeat, skip, switchMap } from "rxjs"
 
 export const minBond$ = state(
   stakingApi$.pipe(
-    switchMap((api) => api.query.Staking.MinNominatorBond.getValue())
-  )
-);
+    switchMap((api) => api.query.Staking.MinNominatorBond.getValue()),
+  ),
+)
 
 export const lastMinActiveStake$ = state(
   stakingApi$.pipe(
@@ -18,20 +18,20 @@ export const lastMinActiveStake$ = state(
       defer(api.query.Staking.MinimumActiveStake.getValue).pipe(
         repeat({
           delay: () => activeEra$.pipe(skip(1)),
-        })
-      )
-    )
-  )
-);
+        }),
+      ),
+    ),
+  ),
+)
 
 export const bondableAmount$ = accountStatus$.pipeState(
-  map((account) => account?.nomination.maxBond ?? null)
-);
+  map((account) => account?.nomination.maxBond ?? null),
+)
 
 export const MinBondingAmounts = () => {
-  const minBond = useStateObservable(minBond$);
-  const lastMinActiveStake = useStateObservable(lastMinActiveStake$);
-  const bondableAmount = useStateObservable(bondableAmount$);
+  const minBond = useStateObservable(minBond$)
+  const lastMinActiveStake = useStateObservable(lastMinActiveStake$)
+  const bondableAmount = useStateObservable(bondableAmount$)
 
   return (
     <div className="flex flex-wrap gap-4">
@@ -57,11 +57,11 @@ export const MinBondingAmounts = () => {
         {bondableAmount ? <TokenValue value={bondableAmount} /> : "N/A"}
       </Card>
     </div>
-  );
-};
+  )
+}
 
 export const minBondingAmountsSub$ = merge(
   minBond$,
   lastMinActiveStake$,
-  bondableAmount$
-);
+  bondableAmount$,
+)

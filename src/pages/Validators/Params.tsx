@@ -1,10 +1,10 @@
-import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { activeEraNumber$ } from "@/state/era";
-import { useStateObservable } from "@react-rxjs/core";
-import { Search, SortAsc, SortDesc } from "lucide-react";
+import { Input } from "@/components/ui/input"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { activeEraNumber$ } from "@/state/era"
+import { useStateObservable } from "@react-rxjs/core"
+import { Search, SortAsc, SortDesc } from "lucide-react"
 import {
   filterBlocked$,
   filterCommision$,
@@ -21,10 +21,10 @@ import {
   setSortBy,
   sortBy$,
   type HistoricValidator,
-} from "./validatorList.state";
-import { Card } from "@/components/Card";
-import { merge } from "rxjs";
-import { EraRangeSlider } from "@/components/EraRangeSlider";
+} from "./validatorList.state"
+import { Card } from "@/components/Card"
+import { merge } from "rxjs"
+import { EraRangeSlider } from "@/components/EraRangeSlider"
 
 export const Params = () => {
   return (
@@ -34,14 +34,14 @@ export const Params = () => {
       </Card>
       <FiltersNew />
     </div>
-  );
-};
+  )
+}
 
 export const MaParams = () => {
-  const period = useStateObservable(maPeriod$);
-  const activeEraNumber = useStateObservable(activeEraNumber$);
-  const selectedEra = useStateObservable(selectedEra$);
-  const maType = useStateObservable(maType$);
+  const period = useStateObservable(maPeriod$)
+  const activeEraNumber = useStateObservable(activeEraNumber$)
+  const selectedEra = useStateObservable(selectedEra$)
+  const maType = useStateObservable(maType$)
 
   return (
     <div className="flex items-center gap-6">
@@ -52,8 +52,8 @@ export const MaParams = () => {
           startEra={selectedEra - period}
           endEra={selectedEra}
           onRangeChange={(start, end) => {
-            setMaPeriod(end - start);
-            setEra(end);
+            setMaPeriod(end - start)
+            setEra(end)
           }}
         />
       </div>
@@ -71,9 +71,9 @@ export const MaParams = () => {
         </ToggleGroup>
       </div>
     </div>
-  );
-};
-export const maParamsSub$ = merge(activeEraNumber$, selectedEra$);
+  )
+}
+export const maParamsSub$ = merge(activeEraNumber$, selectedEra$)
 
 const sortOpitons: Partial<Record<keyof HistoricValidator, string>> = {
   nominatorApy: "Nominator APY",
@@ -81,10 +81,10 @@ const sortOpitons: Partial<Record<keyof HistoricValidator, string>> = {
   points: "Points",
   activeBond: "Bond",
   nominatorQuantity: "Nominators",
-};
+}
 
 export const SortBy = () => {
-  const sortBy = useStateObservable(sortBy$);
+  const sortBy = useStateObservable(sortBy$)
 
   return (
     <div>
@@ -97,12 +97,12 @@ export const SortBy = () => {
             setSortBy({
               ...sortBy,
               dir: sortBy.dir === "asc" ? "desc" : "asc",
-            });
+            })
           } else {
             setSortBy({
               ...sortBy,
               prop: value as any,
-            });
+            })
           }
         }}
         className="w-auto justify-start"
@@ -127,13 +127,13 @@ export const SortBy = () => {
         ))}
       </ToggleGroup>
     </div>
-  );
-};
+  )
+}
 
 function FiltersNew() {
-  const filterBlocked = useStateObservable(filterBlocked$);
-  const filterCommission = useStateObservable(filterCommision$);
-  const search = useStateObservable(search$);
+  const filterBlocked = useStateObservable(filterBlocked$)
+  const filterCommission = useStateObservable(filterCommision$)
+  const search = useStateObservable(search$)
 
   return (
     <div className="shadow rounded-xl bg-card text-card-foreground p-4 grow">
@@ -187,5 +187,5 @@ function FiltersNew() {
         </div>{" "}
       </div>
     </div>
-  );
+  )
 }

@@ -1,1 +1,1 @@
-export { Checkbox } from "@polkahub/ui-components";
+export { Checkbox } from "@polkahub/ui-components"

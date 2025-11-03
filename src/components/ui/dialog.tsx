@@ -5,4 +5,4 @@ export {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@polkahub/ui-components";
+} from "@polkahub/ui-components"

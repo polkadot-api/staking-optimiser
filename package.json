@@ -9,9 +9,9 @@
     "postinstall": "papi --whitelist ./.papi/whitelist.ts",
     "build": "tsc -b && vite build",
     "analyze": "ANALYZE=true vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "format": "prettier -w src/**/*"
+    "format": "prettier --write README.md \"src/**/*.{js,jsx,ts,tsx,json,md}\"",
+    "lint": "prettier --check README.md \"src/**/*.{js,jsx,ts,tsx,json,md}\" && eslint .",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@ledgerhq/hw-transport-webhid": "^6.30.8",
@@ -67,6 +67,11 @@
     "typescript-eslint": "^8.46.2",
     "vite": "^7.1.12",
     "vite-bundle-analyzer": "^1.2.3"
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": false,
+    "trailingComma": "all"
   },
   "packageManager": "pnpm@10.15.0"
 }

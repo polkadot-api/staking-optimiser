@@ -1,19 +1,19 @@
-import { AlertOctagon, Info, TriangleAlert } from "lucide-react";
-import type { FC, PropsWithChildren } from "react";
+import { AlertOctagon, Info, TriangleAlert } from "lucide-react"
+import type { FC, PropsWithChildren } from "react"
 
 export const AlertCard: FC<
   PropsWithChildren<{
-    type: "info" | "warning" | "error";
+    type: "info" | "warning" | "error"
   }>
 > = ({ type, children }) => {
   const Icon =
-    type === "info" ? Info : type === "warning" ? TriangleAlert : AlertOctagon;
+    type === "info" ? Info : type === "warning" ? TriangleAlert : AlertOctagon
   const color =
     type === "info"
       ? `var(--color-positive)`
       : type === "warning"
         ? `var(--color-warning)`
-        : `var(--color-negative)`;
+        : `var(--color-negative)`
 
   return (
     <div
@@ -27,5 +27,5 @@ export const AlertCard: FC<
       <Icon className="shrink-0" />
       <div>{children}</div>
     </div>
-  );
-};
+  )
+}

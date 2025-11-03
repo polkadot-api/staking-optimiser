@@ -1,8 +1,8 @@
-import { HISTORY_DEPTH as REWARD_HISTORY_DEPTH } from "@/constants";
-import { accountStatus$, selectedAccountAddr$ } from "@/state/account";
-import { amountToNumber, roundToDecimalPlaces } from "@/util/format";
-import { state } from "@react-rxjs/core";
-import type { SS58String } from "polkadot-api";
+import { HISTORY_DEPTH as REWARD_HISTORY_DEPTH } from "@/constants"
+import { accountStatus$, selectedAccountAddr$ } from "@/state/account"
+import { amountToNumber, roundToDecimalPlaces } from "@/util/format"
+import { state } from "@react-rxjs/core"
+import type { SS58String } from "polkadot-api"
 import {
   combineLatest,
   debounceTime,
@@ -11,28 +11,28 @@ import {
   mergeMap,
   switchMap,
   withLatestFrom,
-} from "rxjs";
-import { selectedChain$, tokenDecimals$ } from "./chain";
-import { accumulateChart } from "./chart";
-import { activeEraNumber$, allEras$, eraDurationInMs$, getEraApy } from "./era";
-import { getNominatorRewards, getNominatorValidators } from "./nominatorInfo";
+} from "rxjs"
+import { selectedChain$, tokenDecimals$ } from "./chain"
+import { accumulateChart } from "./chart"
+import { activeEraNumber$, allEras$, eraDurationInMs$, getEraApy } from "./era"
+import { getNominatorRewards, getNominatorValidators } from "./nominatorInfo"
 
 export const currentNominatorBond$ = state(
   accountStatus$.pipe(
     map((v) => {
-      if (!v || !v.nomination.totalLocked) return null;
+      if (!v || !v.nomination.totalLocked) return null
 
       return {
         bond: v.nomination.currentBond,
         unlocks: v.nomination.unlocks,
-      };
-    })
-  )
-);
+      }
+    }),
+  ),
+)
 
 export const isNominating$ = currentNominatorBond$.pipeState(
-  map((v) => v !== null)
-);
+  map((v) => v !== null),
+)
 
 export const lastReward$ = state(
   combineLatest([
@@ -46,23 +46,23 @@ export const lastReward$ = state(
           total: 0n,
           totalCommission: 0n,
           activeBond: 0n,
-        }
+        },
     ),
     withLatestFrom(eraDurationInMs$),
     map(([{ total, totalCommission, activeBond }, eraDurationInMs]) => {
       const apy = roundToDecimalPlaces(
         getEraApy(total, activeBond, eraDurationInMs) * 100,
-        2
-      );
+        2,
+      )
 
       return {
         total,
         totalCommission,
         apy,
-      };
-    })
-  )
-);
+      }
+    }),
+  ),
+)
 
 export const rewardHistory$ = state(
   combineLatest([
@@ -82,18 +82,18 @@ export const rewardHistory$ = state(
                     era: v.era,
                     rewards: amountToNumber(v.result.total, decimals),
                   }
-                : null
+                : null,
             ),
             accumulateChart(),
             debounceTime(100),
             // Exclude empty values
-            map((v) => v.filter((v) => !!v))
+            map((v) => v.filter((v) => !!v)),
           )
-        : [[]]
-    )
+        : [[]],
+    ),
   ),
-  []
-);
+  [],
+)
 
 export const currentNominatorStatus$ = state(
   combineLatest([
@@ -101,11 +101,11 @@ export const currentNominatorStatus$ = state(
     activeEraNumber$,
   ]).pipe(
     switchMap(([nominator, activeEra]) =>
-      getNominatorValidators(nominator, [activeEra])
+      getNominatorValidators(nominator, [activeEra]),
     ),
-    map((v) => v.result ?? [])
-  )
-);
+    map((v) => v.result ?? []),
+  ),
+)
 
 export const validatorActive$ = state((addr: SS58String) =>
   combineLatest([
@@ -119,8 +119,8 @@ export const validatorActive$ = state((addr: SS58String) =>
           era,
           isActive: result?.find((v) => v.validator === addr) != null || false,
         })),
-        accumulateChart()
-      )
-    )
-  )
-);
+        accumulateChart(),
+      ),
+    ),
+  ),
+)

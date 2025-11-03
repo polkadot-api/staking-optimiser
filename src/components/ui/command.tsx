@@ -1,1 +1,1 @@
-export { Command } from "@polkahub/ui-components";
+export { Command } from "@polkahub/ui-components"

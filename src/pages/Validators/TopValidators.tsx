@@ -1,14 +1,14 @@
-import { AddressIdentity } from "@/components/AddressIdentity";
-import { ContractableText } from "@/components/SortBy";
-import { cn } from "@/lib/utils";
-import { formatPercentage } from "@/util/format";
-import { useStateObservable } from "@react-rxjs/core";
-import { sortedValidators$, validatorPrefs$ } from "./validatorList.state";
-import { Link } from "react-router-dom";
+import { AddressIdentity } from "@/components/AddressIdentity"
+import { ContractableText } from "@/components/SortBy"
+import { cn } from "@/lib/utils"
+import { formatPercentage } from "@/util/format"
+import { useStateObservable } from "@react-rxjs/core"
+import { sortedValidators$, validatorPrefs$ } from "./validatorList.state"
+import { Link } from "react-router-dom"
 
 export default function TopValidators() {
-  const validators = useStateObservable(sortedValidators$).slice(0, 10);
-  const prefs = useStateObservable(validatorPrefs$);
+  const validators = useStateObservable(sortedValidators$).slice(0, 10)
+  const prefs = useStateObservable(validatorPrefs$)
 
   return (
     <div className="data-table compact">
@@ -27,7 +27,7 @@ export default function TopValidators() {
         </thead>
         <tbody>
           {validators.map((validator, idx) => {
-            const vPrefs = prefs[validator.address];
+            const vPrefs = prefs[validator.address]
 
             return (
               <tr
@@ -58,10 +58,10 @@ export default function TopValidators() {
                   {Math.round(validator.nominatorQuantity).toLocaleString()}
                 </td>
               </tr>
-            );
+            )
           })}
         </tbody>
       </table>
     </div>
-  );
+  )
 }

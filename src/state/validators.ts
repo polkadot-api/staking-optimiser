@@ -1,7 +1,7 @@
-import { HISTORY_DEPTH, PERBILL } from "@/constants";
-import type { ValidatorRewards as SdkValidatorRewards } from "@polkadot-api/sdk-staking";
-import { state } from "@react-rxjs/core";
-import type { SS58String } from "polkadot-api";
+import { HISTORY_DEPTH, PERBILL } from "@/constants"
+import type { ValidatorRewards as SdkValidatorRewards } from "@polkadot-api/sdk-staking"
+import { state } from "@react-rxjs/core"
+import type { SS58String } from "polkadot-api"
 import {
   catchError,
   combineLatest,
@@ -9,10 +9,10 @@ import {
   mergeAll,
   mergeMap,
   switchMap,
-} from "rxjs";
-import { stakingApi$, stakingSdk$ } from "./chain";
-import { accumulateChart } from "./chart";
-import { allEras$, eraDurationInMs$, getEraApy } from "./era";
+} from "rxjs"
+import { stakingApi$, stakingSdk$ } from "./chain"
+import { accumulateChart } from "./chart"
+import { allEras$, eraDurationInMs$, getEraApy } from "./era"
 
 export const registeredValidators$ = state(
   stakingApi$.pipe(
@@ -21,15 +21,15 @@ export const registeredValidators$ = state(
       result.map(({ keyArgs: [address], value }) => ({
         address,
         preferences: { ...value, commission: value.commission / PERBILL },
-      }))
-    )
-  )
-);
+      })),
+    ),
+  ),
+)
 
 export type ValidatorRewards = SdkValidatorRewards & {
-  nominatorApy: number;
-  totalApy: number;
-};
+  nominatorApy: number
+  totalApy: number
+}
 export const validatorsEra$ = state((era: number) =>
   stakingSdk$.pipe(
     switchMap((stakingSdk) => stakingSdk.getEraValidators(era)),
@@ -42,25 +42,25 @@ export const validatorsEra$ = state((era: number) =>
               nominatorApy: getEraApy(
                 validator.nominatorsShare,
                 validator.activeBond,
-                duration
+                duration,
               ),
               totalApy: getEraApy(
                 validator.reward,
                 validator.activeBond,
-                duration
+                duration,
               ),
-            })
-          )
-        )
-      )
+            }),
+          ),
+        ),
+      ),
     ),
     catchError((ex) => {
       // TODO Might happen when switching chain dot->ksm while in the dashboard
-      console.error(ex);
-      return [[]];
-    })
-  )
-);
+      console.error(ex)
+      return [[]]
+    }),
+  ),
+)
 
 export const validatorPerformance$ = state((addr: SS58String) =>
   combineLatest([stakingSdk$, eraDurationInMs$]).pipe(
@@ -72,7 +72,7 @@ export const validatorPerformance$ = state((addr: SS58String) =>
             era,
             rewards: await stakingSdk.getValidatorRewards(addr, era),
           }),
-          3
+          3,
         ),
         map(({ era, rewards }) => ({
           era,
@@ -80,12 +80,12 @@ export const validatorPerformance$ = state((addr: SS58String) =>
             ? getEraApy(
                 rewards.nominatorsShare,
                 rewards.activeBond,
-                eraDuration
+                eraDuration,
               ) * 100
             : null,
         })),
-        accumulateChart()
-      )
-    )
-  )
-);
+        accumulateChart(),
+      ),
+    ),
+  ),
+)

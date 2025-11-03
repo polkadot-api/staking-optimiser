@@ -1,20 +1,20 @@
-import { Card } from "@/components/Card";
-import { currentNominationPoolStatus$ } from "@/state/nominationPool";
-import { liftSuspense, useStateObservable } from "@react-rxjs/core";
-import { Link } from "react-router-dom";
-import { ManageNomination, manageNominationSub$ } from "./ManageNomination";
+import { Card } from "@/components/Card"
+import { currentNominationPoolStatus$ } from "@/state/nominationPool"
+import { liftSuspense, useStateObservable } from "@react-rxjs/core"
+import { Link } from "react-router-dom"
+import { ManageNomination, manageNominationSub$ } from "./ManageNomination"
 import {
   bondableAmount$,
   minBond$,
   MinBondingAmounts,
   minBondingAmountsSub$,
-} from "./MinBondingAmounts";
-import { merge } from "rxjs";
+} from "./MinBondingAmounts"
+import { merge } from "rxjs"
 
 export const NotNominatingContent = () => {
-  const minBond = useStateObservable(minBond$);
-  const poolStatus = useStateObservable(currentNominationPoolStatus$);
-  const bondableAmount = useStateObservable(bondableAmount$);
+  const minBond = useStateObservable(minBond$)
+  const poolStatus = useStateObservable(currentNominationPoolStatus$)
+  const bondableAmount = useStateObservable(bondableAmount$)
 
   const renderNotEnough = () => {
     return (
@@ -25,8 +25,8 @@ export const NotNominatingContent = () => {
         </Link>{" "}
         instead.
       </div>
-    );
-  };
+    )
+  }
 
   const renderInPools = () => {
     return (
@@ -38,8 +38,8 @@ export const NotNominatingContent = () => {
         . You can't nominate individually and through a nomination pool
         simultaneously.
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -56,13 +56,13 @@ export const NotNominatingContent = () => {
         )}
       </Card>
     </div>
-  );
-};
+  )
+}
 
 export const notNominatingContentSub$ = merge(
   minBondingAmountsSub$,
   minBond$,
   currentNominationPoolStatus$.pipe(liftSuspense()),
   bondableAmount$,
-  manageNominationSub$
-);
+  manageNominationSub$,
+)

@@ -1,1 +1,1 @@
-export { Nominate } from "./Nominate";
+export { Nominate } from "./Nominate"

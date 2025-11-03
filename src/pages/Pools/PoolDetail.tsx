@@ -1,12 +1,12 @@
-import { AddressIdentity } from "@/components/AddressIdentity";
-import { Card } from "@/components/Card";
-import { Loading } from "@/components/Spinner";
-import { TokenValue } from "@/components/TokenValue";
-import { cn } from "@/lib/utils";
-import { accountStatus$ } from "@/state/account";
-import { stakingSdk$ } from "@/state/chain";
-import { formatPercentage } from "@/util/format";
-import { state, useStateObservable, withDefault } from "@react-rxjs/core";
+import { AddressIdentity } from "@/components/AddressIdentity"
+import { Card } from "@/components/Card"
+import { Loading } from "@/components/Spinner"
+import { TokenValue } from "@/components/TokenValue"
+import { cn } from "@/lib/utils"
+import { accountStatus$ } from "@/state/account"
+import { stakingSdk$ } from "@/state/chain"
+import { formatPercentage } from "@/util/format"
+import { state, useStateObservable, withDefault } from "@react-rxjs/core"
 import {
   ArrowLeft,
   Gauge,
@@ -14,37 +14,37 @@ import {
   ShieldAlert,
   ShieldCheck,
   Users,
-} from "lucide-react";
+} from "lucide-react"
 import {
   Fragment,
   type FC,
   type PropsWithChildren,
   type ReactElement,
   type ReactNode,
-} from "react";
-import { Link, useParams } from "react-router-dom";
-import { combineLatest, map, merge, switchMap } from "rxjs";
-import { aggregatedValidators$ } from "../Validators/validatorList.state";
-import { JoinPool, joinPoolSub$ } from "./JoinPool";
+} from "react"
+import { Link, useParams } from "react-router-dom"
+import { combineLatest, map, merge, switchMap } from "rxjs"
+import { aggregatedValidators$ } from "../Validators/validatorList.state"
+import { JoinPool, joinPoolSub$ } from "./JoinPool"
 
 const pool$ = state((id: number) =>
   combineLatest([
     stakingSdk$.pipe(switchMap((sdk) => sdk.getNominationPool$(id))),
     aggregatedValidators$.pipe(
       map((validators) =>
-        Object.fromEntries(validators?.map((v) => [v.address, v]) ?? [])
-      )
+        Object.fromEntries(validators?.map((v) => [v.address, v]) ?? []),
+      ),
     ),
   ]).pipe(
     map(([pool, validators]) => {
-      if (!pool) return null;
+      if (!pool) return null
 
       const nominations = pool.nominations
         .map((v) => validators[v])
         .filter((v) => v != null)
-        .sort((a, b) => b.nominatorApy - a.nominatorApy);
-      const apys = nominations.map((v) => v.nominatorApy);
-      const commissionMul = 1 - pool.commission.current;
+        .sort((a, b) => b.nominatorApy - a.nominatorApy)
+      const apys = nominations.map((v) => v.nominatorApy)
+      const commissionMul = 1 - pool.commission.current
 
       return {
         ...pool,
@@ -56,37 +56,37 @@ const pool$ = state((id: number) =>
         avgApy: apys.length
           ? (apys.reduce((a, b) => a + b) / apys.length) * commissionMul
           : 0,
-      };
-    })
-  )
-);
+      }
+    }),
+  ),
+)
 
 const isNominating$ = accountStatus$.pipeState(
   map((v) => !!v?.nomination.nominating || !!v?.nominationPool.pool),
-  withDefault(true)
-);
+  withDefault(true),
+)
 
 const statusConfig: Record<"Open" | "Blocked" | "Destroying", string> = {
   Open: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
   Blocked:
     "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
   Destroying: "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-300",
-};
+}
 
 export const PoolDetail = () => {
-  const { poolId } = useParams<{ poolId: string }>();
-  const pool = useStateObservable(pool$(Number(poolId)));
-  const isNominating = useStateObservable(isNominating$);
+  const { poolId } = useParams<{ poolId: string }>()
+  const pool = useStateObservable(pool$(Number(poolId)))
+  const isNominating = useStateObservable(isNominating$)
 
   if (!pool) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loading>Loading pool details…</Loading>
       </div>
-    );
+    )
   }
 
-  const statusBadge = statusConfig[pool.state];
+  const statusBadge = statusConfig[pool.state]
 
   return (
     <div className="space-y-6 p-2">
@@ -101,7 +101,7 @@ export const PoolDetail = () => {
             <span
               className={cn(
                 "rounded-full px-3 py-1 text-xs font-semibold capitalize",
-                statusBadge
+                statusBadge,
               )}
             >
               {pool.state}
@@ -158,7 +158,7 @@ export const PoolDetail = () => {
                   ? {
                       term: "Change rate",
                       value: `${formatPercentage(
-                        pool.commission.change_rate.max_increase
+                        pool.commission.change_rate.max_increase,
                       )} max / ${pool.commission.change_rate.min_delay} eras`,
                     }
                   : null,
@@ -258,22 +258,22 @@ export const PoolDetail = () => {
         </aside>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export const poolDetailSub$ = (id: number) => merge(pool$(id), joinPoolSub$);
+export const poolDetailSub$ = (id: number) => merge(pool$(id), joinPoolSub$)
 
 export const Stat: FC<
   PropsWithChildren<{
-    icon: ReactElement;
-    label: string;
-    className?: string;
+    icon: ReactElement
+    label: string
+    className?: string
   }>
 > = ({ icon, label, children, className }) => (
   <div
     className={cn(
       "rounded-xl border border-border/60 bg-muted/30 p-4",
-      className
+      className,
     )}
   >
     <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -282,15 +282,15 @@ export const Stat: FC<
     </div>
     <div className="mt-2 text-xl font-semibold text-foreground">{children}</div>
   </div>
-);
+)
 
 const DefinitionList = ({
   items,
 }: {
   items: Array<{
-    term: string;
-    value: ReactNode;
-  }>;
+    term: string
+    value: ReactNode
+  }>
 }) => (
   <dl className="grid gap-3 text-sm">
     {items.map((item, idx) => (
@@ -302,4 +302,4 @@ const DefinitionList = ({
       </Fragment>
     ))}
   </dl>
-);
+)

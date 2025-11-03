@@ -1,1 +1,1 @@
-export { Button } from "@polkahub/ui-components";
+export { Button } from "@polkahub/ui-components"

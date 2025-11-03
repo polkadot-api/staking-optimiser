@@ -1,17 +1,17 @@
-import { sinkSuspense, state } from "@react-rxjs/core";
-import { switchMapSuspended } from "@react-rxjs/utils";
-import { combineLatest, map, switchMap } from "rxjs";
-import { accountStatus$, selectedAccountAddr$ } from "./account";
-import { stakingApi$ } from "./chain";
+import { sinkSuspense, state } from "@react-rxjs/core"
+import { switchMapSuspended } from "@react-rxjs/utils"
+import { combineLatest, map, switchMap } from "rxjs"
+import { accountStatus$, selectedAccountAddr$ } from "./account"
+import { stakingApi$ } from "./chain"
 
 export const currentNominationPoolStatus$ = state(
   combineLatest([stakingApi$, selectedAccountAddr$]).pipe(
     switchMapSuspended(([stakingApi, selectedAccount]) => {
-      if (!selectedAccount) return [null];
+      if (!selectedAccount) return [null]
 
       return accountStatus$.pipe(
         switchMap((status) => {
-          if (!status) return [null];
+          if (!status) return [null]
 
           const {
             currentBond: bond,
@@ -19,7 +19,7 @@ export const currentNominationPoolStatus$ = state(
             points,
             pool,
             unlocks,
-          } = status.nominationPool;
+          } = status.nominationPool
 
           if (!pool) {
             return [
@@ -30,10 +30,10 @@ export const currentNominationPoolStatus$ = state(
                 unlocks,
                 pool: null,
               },
-            ];
+            ]
           }
 
-          const id = pool;
+          const id = pool
           return combineLatest([
             stakingApi.query.NominationPools.BondedPools.getValue(id),
             stakingApi.query.NominationPools.Metadata.getValue(id),
@@ -48,11 +48,11 @@ export const currentNominationPoolStatus$ = state(
                 id,
                 name: metadata.asText(),
               },
-            }))
-          );
-        })
-      );
+            })),
+          )
+        }),
+      )
     }),
-    sinkSuspense()
-  )
-);
+    sinkSuspense(),
+  ),
+)

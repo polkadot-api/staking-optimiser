@@ -1,23 +1,23 @@
-import { AddressIdentity } from "@/components/AddressIdentity";
-import { TokenValue } from "@/components/TokenValue";
-import { cn } from "@/lib/utils";
-import { formatPercentage } from "@/util/format";
-import { useStateObservable } from "@react-rxjs/core";
-import { type FC, type ReactElement } from "react";
+import { AddressIdentity } from "@/components/AddressIdentity"
+import { TokenValue } from "@/components/TokenValue"
+import { cn } from "@/lib/utils"
+import { formatPercentage } from "@/util/format"
+import { useStateObservable } from "@react-rxjs/core"
+import { type FC, type ReactElement } from "react"
 import {
   validatorPrefs$,
   type HistoricValidator,
   type PositionValidator,
-} from "./validatorList.state";
-import { Link, useParams } from "react-router-dom";
+} from "./validatorList.state"
+import { Link, useParams } from "react-router-dom"
 
 export const ValidatorRow: FC<{
-  validator: PositionValidator;
-  onSelectChange: (value: boolean) => void;
-  selectIcon: (selected: boolean) => ReactElement;
-  hideValApy?: boolean;
+  validator: PositionValidator
+  onSelectChange: (value: boolean) => void
+  selectIcon: (selected: boolean) => ReactElement
+  hideValApy?: boolean
 }> = ({ validator, onSelectChange, selectIcon, hideValApy }) => {
-  const { chain } = useParams();
+  const { chain } = useParams()
   return (
     <>
       <td className="text-muted-foreground">{validator.position + 1}</td>
@@ -59,15 +59,15 @@ export const ValidatorRow: FC<{
         </button>
       </td>
     </>
-  );
-};
+  )
+}
 
 export const ValidatorCard: FC<{
-  validator: HistoricValidator;
+  validator: HistoricValidator
 }> = ({ validator }) => {
-  const prefs = useStateObservable(validatorPrefs$);
+  const prefs = useStateObservable(validatorPrefs$)
 
-  const vPrefs = prefs[validator.address];
+  const vPrefs = prefs[validator.address]
 
   return (
     <div
@@ -126,5 +126,5 @@ export const ValidatorCard: FC<{
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

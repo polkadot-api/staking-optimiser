@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
-import { ChainSelector } from "./ChainSelector";
-import { SelectAccount } from "./SelectAccount";
-import { ChopsticksController } from "../ChopsticksController";
+import { Link } from "react-router-dom"
+import { ChainSelector } from "./ChainSelector"
+import { SelectAccount } from "./SelectAccount"
+import { ChopsticksController } from "../ChopsticksController"
 
 export const Header = () => (
   <div className="shrink-0 border-b">
@@ -23,4 +23,4 @@ export const Header = () => (
       )}
     </div>
   </div>
-);
+)

@@ -5,9 +5,9 @@ import {
   Struct,
   Tuple,
   Vector,
-} from "@polkadot-api/substrate-bindings";
-import { shareLatest } from "@react-rxjs/core";
-import { AccountId, type SS58String } from "polkadot-api";
+} from "@polkadot-api/substrate-bindings"
+import { shareLatest } from "@react-rxjs/core"
+import { AccountId, type SS58String } from "polkadot-api"
 import {
   catchError,
   combineLatest,
@@ -25,84 +25,84 @@ import {
   Subject,
   switchMap,
   take,
-} from "rxjs";
-import { selectedChain$, stakingApi$ } from "./chain";
-import { indexerUrl } from "./chainConfig";
-import { activeEraNumber$ } from "./era";
+} from "rxjs"
+import { selectedChain$, stakingApi$ } from "./chain"
+import { indexerUrl } from "./chainConfig"
+import { activeEraNumber$ } from "./era"
 import {
   type NominatorRewardsResult,
   type NominatorValidatorsResult,
   type Request,
   type Response,
-} from "./rewards.worker";
-import RewardsWorker from "./rewards.worker?worker";
+} from "./rewards.worker"
+import RewardsWorker from "./rewards.worker?worker"
 
-const worker = new RewardsWorker();
+const worker = new RewardsWorker()
 const message$ = fromEvent<MessageEvent<Response>>(worker, "message").pipe(
-  map((evt) => evt.data)
-);
+  map((evt) => evt.data),
+)
 
 export interface NominatorRequest {
-  type: "getNominatorRewards" | "getNominatorActiveValidators";
+  type: "getNominatorRewards" | "getNominatorActiveValidators"
   value: {
-    address: SS58String;
-    era: number;
-  };
+    address: SS58String
+    era: number
+  }
 }
 
 export const getNominatorRewards = (address: SS58String, eras: number[]) =>
   // already falls back to worker if the era isn't indexed
-  getNominatorRewardsThroughIndexer(address, eras);
+  getNominatorRewardsThroughIndexer(address, eras)
 
 export const getNominatorValidators = (address: SS58String, eras: number[]) =>
-  getNominatorValidatorsThroughIndexer(address, eras);
+  getNominatorValidatorsThroughIndexer(address, eras)
 
 /// worker
-let activated = false;
+let activated = false
 function activateWorker() {
-  if (activated) return;
-  activated = true;
+  if (activated) return
+  activated = true
 
   merge(
     message$.pipe(
       filter((v) => v.type === "ready"),
       switchMap(() => selectedChain$),
-      take(1)
+      take(1),
     ),
-    selectedChain$
+    selectedChain$,
   ).subscribe((value) =>
     worker.postMessage({
       type: "setChain",
       value,
-    } satisfies Request)
-  );
+    } satisfies Request),
+  )
 }
 
-let workerReqId = 0;
+let workerReqId = 0
 const throughWorker = <T>(msg: NominatorRequest) =>
   defer(() => {
-    activateWorker();
+    activateWorker()
 
-    const id = workerReqId++;
+    const id = workerReqId++
     worker.postMessage({
       type: msg.type,
       value: {
         ...msg.value,
         id,
       },
-    } satisfies Request);
+    } satisfies Request)
 
     return message$.pipe(
       filter((v) => v.type === "result" && v.value.id === id),
       map((v) => v.value!.result as T),
-      take(1)
-    );
-  });
+      take(1),
+    )
+  })
 
 const sendToWorker = <T>(
   type: NominatorRequest["type"],
   address: SS58String,
-  eras: Observable<number>
+  eras: Observable<number>,
 ) =>
   eras.pipe(
     mergeMap(
@@ -113,13 +113,13 @@ const sendToWorker = <T>(
         }).pipe(
           map((result) => ({ era, result })),
           catchError((ex) => {
-            console.error(ex);
-            return [{ era, result: null }];
-          })
+            console.error(ex)
+            return [{ era, result: null }]
+          }),
         ),
-      3
-    )
-  );
+      3,
+    ),
+  )
 
 /// indexer
 const indexerCodec$ = stakingApi$.pipe(
@@ -129,31 +129,31 @@ const indexerCodec$ = stakingApi$.pipe(
       reward: compactBn,
       bond: compactBn,
       commission: compactBn,
-    });
+    })
 
     const byValidator = enhanceCodec(
       Vector(Tuple(AccountId(ss58Format), nomRewardCodec)),
       Object.entries as (
-        x: Record<SS58String, CodecType<typeof nomRewardCodec>>
+        x: Record<SS58String, CodecType<typeof nomRewardCodec>>,
       ) => Array<[SS58String, CodecType<typeof nomRewardCodec>]>,
-      Object.fromEntries
-    );
+      Object.fromEntries,
+    )
 
     const [, nominatorsRewardDec] = Struct({
       total: compactBn,
       totalCommission: compactBn,
       activeBond: compactBn,
       byValidator,
-    });
+    })
 
-    return nominatorsRewardDec;
+    return nominatorsRewardDec
   }),
-  shareLatest()
-);
+  shareLatest(),
+)
 
-const fetchCache = new Map<string, Promise<Uint8Array | null>>();
+const fetchCache = new Map<string, Promise<Uint8Array | null>>()
 const getIndexerNominatorFile = (address: SS58String, era: number) => {
-  const key = `${address}-${era}`;
+  const key = `${address}-${era}`
   if (!fetchCache.has(key)) {
     fetchCache.set(
       key,
@@ -161,18 +161,18 @@ const getIndexerNominatorFile = (address: SS58String, era: number) => {
         selectedChain$.pipe(
           switchMap((chain) => fetch(`${indexerUrl[chain]}/${era}/${address}`)),
           switchMap((response) => {
-            if (response.status >= 400) throw new Error(response.statusText);
-            return response.bytes();
+            if (response.status >= 400) throw new Error(response.statusText)
+            return response.bytes()
           }),
-          catchError(() => [null])
-        )
-      )
-    );
+          catchError(() => [null]),
+        ),
+      ),
+    )
   }
-  return fetchCache.get(key)!;
-};
+  return fetchCache.get(key)!
+}
 
-const eraIndexedCache = new Map<number, Promise<boolean>>();
+const eraIndexedCache = new Map<number, Promise<boolean>>()
 const isEraIndexed = (era: number) => {
   if (!eraIndexedCache.has(era)) {
     eraIndexedCache.set(
@@ -181,69 +181,69 @@ const isEraIndexed = (era: number) => {
         selectedChain$.pipe(
           switchMap((chain) => fetch(`${indexerUrl[chain]}/${era}/done`)),
           switchMap((response) => {
-            if (response.status >= 400) throw new Error(response.statusText);
-            return [true];
+            if (response.status >= 400) throw new Error(response.statusText)
+            return [true]
           }),
-          catchError(() => [false])
-        )
-      )
-    );
+          catchError(() => [false]),
+        ),
+      ),
+    )
   }
-  return eraIndexedCache.get(era)!;
-};
+  return eraIndexedCache.get(era)!
+}
 
 const getNominatorRewardsThroughIndexer = (
   address: SS58String,
-  eras: number[]
+  eras: number[],
 ): Observable<{
-  era: number;
-  result: NominatorRewardsResult | null;
+  era: number
+  result: NominatorRewardsResult | null
 }> =>
   combineLatest([activeEraNumber$, indexerCodec$]).pipe(
     take(1),
     switchMap(([activeEra, codec]) => {
-      const aboveActiveEra = eras.filter((e) => e >= activeEra);
-      const belowActiveEra = eras.filter((e) => e < activeEra);
+      const aboveActiveEra = eras.filter((e) => e >= activeEra)
+      const belowActiveEra = eras.filter((e) => e < activeEra)
 
-      const failedEras$ = new Subject<number>();
-      const workerEras$ = concat(from(aboveActiveEra), failedEras$);
+      const failedEras$ = new Subject<number>()
+      const workerEras$ = concat(from(aboveActiveEra), failedEras$)
 
       const worker$ = sendToWorker<NominatorRewardsResult>(
         "getNominatorRewards",
         address,
-        workerEras$
-      );
+        workerEras$,
+      )
       const indexer$ = merge(
         ...belowActiveEra.map((era) =>
           from(isEraIndexed(era)).pipe(
             switchMap((isIndexed) => {
               if (!isIndexed) {
-                failedEras$.next(era);
-                return [];
+                failedEras$.next(era)
+                return []
               }
-              return getIndexerNominatorFile(address, era);
+              return getIndexerNominatorFile(address, era)
             }),
             map((result) => ({ era, result: result ? codec(result) : null })),
             catchError((ex) => {
-              console.error(ex);
-              failedEras$.next(era);
-              return [];
-            })
-          )
-        )
+              console.error(ex)
+              failedEras$.next(era)
+              return []
+            }),
+          ),
+        ),
       ).pipe(
         finalize(() => {
-          failedEras$.complete();
-        })
-      );
+          failedEras$.complete()
+        }),
+      )
 
-      return merge(worker$, indexer$);
-    })
-  );
+      return merge(worker$, indexer$)
+    }),
+  )
 
 const getNominatorValidatorsThroughIndexer = (
   address: SS58String,
-  eras: number[]
+  eras: number[],
 ) =>
   getNominatorRewardsThroughIndexer(address, eras).pipe(
     map(
@@ -251,8 +251,8 @@ const getNominatorValidatorsThroughIndexer = (
         era,
         result,
       }): {
-        era: number;
-        result: NominatorValidatorsResult | null;
+        era: number
+        result: NominatorValidatorsResult | null
       } => ({
         era,
         result: result
@@ -261,6 +261,6 @@ const getNominatorValidatorsThroughIndexer = (
               activeBond: bond,
             }))
           : null,
-      })
-    )
-  );
+      }),
+    ),
+  )

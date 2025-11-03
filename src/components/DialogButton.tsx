@@ -1,44 +1,44 @@
-import { codeSplit } from "@/util/codeSplit";
-import { Subscribe, useStateObservable, withDefault } from "@react-rxjs/core";
+import { codeSplit } from "@/util/codeSplit"
+import { Subscribe, useStateObservable, withDefault } from "@react-rxjs/core"
 import {
   useState,
   type FC,
   type PropsWithChildren,
   type ReactNode,
-} from "react";
-import { Button } from "./ui/button";
-import { selectedSignerAccount$ } from "@/state/account";
-import { map } from "rxjs";
-import { Eye } from "lucide-react";
-import { CardPlaceholder } from "./CardPlaceholder";
+} from "react"
+import { Button } from "./ui/button"
+import { selectedSignerAccount$ } from "@/state/account"
+import { map } from "rxjs"
+import { Eye } from "lucide-react"
+import { CardPlaceholder } from "./CardPlaceholder"
 
-const dialogModule = import("@/components/ui/dialog");
+const dialogModule = import("@/components/ui/dialog")
 
 export type DialogButtonProps = PropsWithChildren<{
-  title?: string;
-  content: (args: { isOpen: boolean; close: () => void }) => ReactNode;
-  needsSigner?: boolean;
-  disabled?: boolean;
-  dialogClassName?: string;
-}>;
+  title?: string
+  content: (args: { isOpen: boolean; close: () => void }) => ReactNode
+  needsSigner?: boolean
+  disabled?: boolean
+  dialogClassName?: string
+}>
 
 const hasSigner$ = selectedSignerAccount$.pipeState(
   map((v) => !!v),
-  withDefault(true)
-);
+  withDefault(true),
+)
 
 const Trigger: FC<
   PropsWithChildren<{ needsSigner?: boolean; disabled?: boolean }>
 > = ({ needsSigner, disabled, children, ...props }) => {
-  const hasSigner = useStateObservable(hasSigner$);
+  const hasSigner = useStateObservable(hasSigner$)
 
   return (
     <Button disabled={(needsSigner && !hasSigner) || disabled} {...props}>
       {children}
       {needsSigner && !hasSigner ? <Eye /> : null}
     </Button>
-  );
-};
+  )
+}
 
 export const DialogButton = codeSplit(
   dialogModule,
@@ -56,7 +56,7 @@ export const DialogButton = codeSplit(
     dialogClassName,
     content,
   }) => {
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(false)
 
     const {
       Dialog,
@@ -65,7 +65,7 @@ export const DialogButton = codeSplit(
       DialogHeader,
       DialogTitle,
       DialogTrigger,
-    } = payload;
+    } = payload
 
     return (
       <Dialog open={open} onOpenChange={setOpen}>
@@ -89,6 +89,6 @@ export const DialogButton = codeSplit(
           </DialogBody>
         </DialogContent>
       </Dialog>
-    );
-  }
-);
+    )
+  },
+)

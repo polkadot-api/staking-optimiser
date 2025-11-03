@@ -1,47 +1,47 @@
-import { selectedSignerAccount$ } from "@/state/account";
-import { createLocalStorageState } from "@/util/rxjs";
-import type { AsyncTransaction } from "@polkadot-api/sdk-staking";
-import { Checkbox } from "@polkahub/ui-components";
-import { shareLatest, useStateObservable } from "@react-rxjs/core";
-import { Eye, Loader2, Zap } from "lucide-react";
+import { selectedSignerAccount$ } from "@/state/account"
+import { createLocalStorageState } from "@/util/rxjs"
+import type { AsyncTransaction } from "@polkadot-api/sdk-staking"
+import { Checkbox } from "@polkahub/ui-components"
+import { shareLatest, useStateObservable } from "@react-rxjs/core"
+import { Eye, Loader2, Zap } from "lucide-react"
 import {
   InvalidTxError,
   type PolkadotSigner,
   type Transaction,
   type TxEvent,
-} from "polkadot-api";
+} from "polkadot-api"
 import {
   lazy,
   useState,
   type ComponentType,
   type FC,
   type PropsWithChildren,
-} from "react";
-import { from, lastValueFrom, switchMap, type Observable } from "rxjs";
-import { DialogButton } from "./DialogButton";
-import { Button } from "./ui/button";
+} from "react"
+import { from, lastValueFrom, switchMap, type Observable } from "rxjs"
+import { DialogButton } from "./DialogButton"
+import { Button } from "./ui/button"
 
-const toastModule = import("react-toastify");
+const toastModule = import("react-toastify")
 
 const ToastContainer = lazy(() =>
   toastModule.then((mod) => ({ default: mod.ToastContainer })),
-);
+)
 
 // Error invalid fee keeps the toast open
 function trackTransaction(tx$: Observable<TxEvent>) {
   return from(toastModule).pipe(
     switchMap(({ toast }) => {
-      const shared$ = tx$.pipe(shareLatest());
+      const shared$ = tx$.pipe(shareLatest())
 
       let id = toast.loading("Signing transaction…", {
         autoClose: false,
-      });
+      })
       shared$.subscribe({
         next: (res) => {
           if (res.type === "signed") {
             toast.update(id, {
               render: "Sending transaction…",
-            });
+            })
           } else if (res.type === "txBestBlocksState" && res.found) {
             toast.update(
               id,
@@ -54,10 +54,10 @@ function trackTransaction(tx$: Observable<TxEvent>) {
                       "Transaction included in a block but is failing: " +
                       JSON.stringify(res.dispatchError),
                   },
-            );
+            )
           } else if (res.type === "finalized") {
             // Can't toast.update the type of toast :(
-            toast.dismiss(id);
+            toast.dismiss(id)
 
             if (!res.ok) {
               id = toast.error(
@@ -65,88 +65,88 @@ function trackTransaction(tx$: Observable<TxEvent>) {
                 {
                   autoClose: false,
                 },
-              );
-              return;
+              )
+              return
             }
 
-            id = toast.success("Transaction succeeded!");
+            id = toast.success("Transaction succeeded!")
           }
         },
         error: (error) => {
-          toast.dismiss(id);
+          toast.dismiss(id)
           if (error instanceof InvalidTxError) {
             toast.error("Transaction failed: " + JSON.stringify(error.error), {
               autoClose: false,
-            });
+            })
           } else {
             toast.error("Transaction failed: " + error.message, {
               autoClose: false,
-            });
+            })
           }
         },
-      });
+      })
 
-      return shared$;
+      return shared$
     }),
-  );
+  )
 }
 
-export const Transactions = () => <ToastContainer position="bottom-right" />;
+export const Transactions = () => <ToastContainer position="bottom-right" />
 
 const useSingleTransaction = () => {
-  const [isPending, setIsPending] = useState(false);
+  const [isPending, setIsPending] = useState(false)
 
   const startTx = async (tx$: Observable<TxEvent>) => {
-    setIsPending(true);
+    setIsPending(true)
     try {
-      await lastValueFrom(trackTransaction(tx$));
+      await lastValueFrom(trackTransaction(tx$))
     } finally {
-      setIsPending(false);
+      setIsPending(false)
     }
-  };
+  }
 
-  return [isPending, startTx] as const;
-};
+  return [isPending, startTx] as const
+}
 
 const [hasAccepted$, setHasAccepted] = createLocalStorageState(
   "tos-accepted",
   false,
-);
+)
 
-type ButtonProps = typeof Button extends ComponentType<infer R> ? R : never;
+type ButtonProps = typeof Button extends ComponentType<infer R> ? R : never
 
-type Awaitable<T> = T | Promise<T>;
+type Awaitable<T> = T | Promise<T>
 
 export const TransactionButton: FC<
   ButtonProps & {
     createTx: () => Awaitable<
       Transaction<any, any, any, any> | AsyncTransaction | null
-    >;
-    onSuccess?: () => void;
-    onError?: (err: any) => void;
+    >
+    onSuccess?: () => void
+    onError?: (err: any) => void
   }
 > = ({ createTx, onSuccess, onError, disabled, ...props }) => {
-  const hasAccepted = useStateObservable(hasAccepted$);
-  const account = useStateObservable(selectedSignerAccount$);
-  const [isOngoing, trackTx] = useSingleTransaction();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasAccepted = useStateObservable(hasAccepted$)
+  const account = useStateObservable(selectedSignerAccount$)
+  const [isOngoing, trackTx] = useSingleTransaction()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const signer = account?.polkadotSigner;
+  const signer = account?.polkadotSigner
 
   const sign = async () => {
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
-      const tx = await createTx();
-      if (!tx) return;
-      await trackTx(tx.signSubmitAndWatch(signer!));
-      onSuccess?.();
+      const tx = await createTx()
+      if (!tx) return
+      await trackTx(tx.signSubmitAndWatch(signer!))
+      onSuccess?.()
     } catch (ex) {
-      console.error(ex);
-      onError?.(ex);
+      console.error(ex)
+      onError?.(ex)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return hasAccepted || disabled ? (
     <AcceptedTransactionButton
@@ -157,16 +157,16 @@ export const TransactionButton: FC<
     />
   ) : (
     <TermsOfServiceButton {...props} sign={sign} />
-  );
-};
+  )
+}
 
 const TermsOfServiceButton: FC<PropsWithChildren<{ sign: () => void }>> = ({
   children,
   sign,
 }) => {
-  const account = useStateObservable(selectedSignerAccount$);
-  const signer = account?.polkadotSigner;
-  const [accepted, setAccepted] = useState(false);
+  const account = useStateObservable(selectedSignerAccount$)
+  const signer = account?.polkadotSigner
+  const [accepted, setAccepted] = useState(false)
 
   return (
     <DialogButton
@@ -202,8 +202,8 @@ const TermsOfServiceButton: FC<PropsWithChildren<{ sign: () => void }>> = ({
             <Button
               disabled={!accepted}
               onClick={() => {
-                setHasAccepted(true);
-                sign();
+                setHasAccepted(true)
+                sign()
               }}
             >
               Accept
@@ -218,25 +218,25 @@ const TermsOfServiceButton: FC<PropsWithChildren<{ sign: () => void }>> = ({
       {children}
       <TxButtonLogo signer={signer} />
     </DialogButton>
-  );
-};
+  )
+}
 
 const AcceptedTransactionButton: FC<
   PropsWithChildren<ButtonProps & { isOngoing: boolean }>
 > = ({ children, isOngoing, ...props }) => {
-  const account = useStateObservable(selectedSignerAccount$);
-  const signer = account?.polkadotSigner;
+  const account = useStateObservable(selectedSignerAccount$)
+  const signer = account?.polkadotSigner
 
   return (
     <Button {...props} disabled={!signer || isOngoing || props.disabled}>
       {children}
       <TxButtonLogo isOngoing={isOngoing} signer={signer} />
     </Button>
-  );
-};
+  )
+}
 
 const TxButtonLogo: FC<{ isOngoing?: boolean; signer?: PolkadotSigner }> = ({
   isOngoing,
   signer,
 }) =>
-  isOngoing ? <Loader2 className="animate-spin" /> : signer ? <Zap /> : <Eye />;
+  isOngoing ? <Loader2 className="animate-spin" /> : signer ? <Zap /> : <Eye />

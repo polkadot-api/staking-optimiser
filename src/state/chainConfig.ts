@@ -11,42 +11,42 @@ import {
   wnd,
   wndAH,
   wndPpl,
-} from "@polkadot-api/descriptors";
-import { type ChainDefinition, type TypedApi } from "polkadot-api";
+} from "@polkadot-api/descriptors"
+import { type ChainDefinition, type TypedApi } from "polkadot-api"
 
-export const USE_CHOPSTICKS = import.meta.env.VITE_WITH_CHOPSTICKS;
+export const USE_CHOPSTICKS = import.meta.env.VITE_WITH_CHOPSTICKS
 
-export type KnownChains = "polkadot" | "kusama" | "westend" | "paseo";
+export type KnownChains = "polkadot" | "kusama" | "westend" | "paseo"
 export const knownChains: Array<KnownChains> = [
   "polkadot",
   "kusama",
   "paseo",
   "westend",
-];
+]
 
 export const tokenSymbolByChain: Record<KnownChains, string> = {
   polkadot: "DOT",
   kusama: "KSM",
   westend: "WND",
   paseo: "PAS",
-};
+}
 
 export const tokenDecimalsByChain: Record<KnownChains, number> = {
   polkadot: 10,
   kusama: 12,
   westend: 12,
   paseo: 12,
-};
+}
 
-const INDEXER_URI = "https://staking-eras.usepapi.app/";
+const INDEXER_URI = "https://staking-eras.usepapi.app/"
 export const indexerUrl: Record<KnownChains, string> = {
   polkadot: `${INDEXER_URI}dot`,
   kusama: `${INDEXER_URI}ksm`,
   westend: `${INDEXER_URI}wnd`,
   paseo: `${INDEXER_URI}pas`,
-};
+}
 
-export type ChainType = "relay" | "people" | "assetHub";
+export type ChainType = "relay" | "people" | "assetHub"
 
 export const rpcsByChain: Record<
   KnownChains,
@@ -149,10 +149,10 @@ export const rpcsByChain: Record<
       TurboFlakes: "wss://sys.turboflakes.io/asset-hub-paseo",
     },
   },
-};
+}
 
 const grabChainSpec = (module: Promise<{ chainSpec: string }>) =>
-  module.then((m) => m.chainSpec);
+  module.then((m) => m.chainSpec)
 export const chainSpecsByChain: Record<
   KnownChains,
   Record<ChainType, () => Promise<string>>
@@ -181,32 +181,32 @@ export const chainSpecsByChain: Record<
     assetHub: () =>
       grabChainSpec(import("polkadot-api/chains/paseo_asset_hub")),
   },
-};
+}
 
 export const stakingTypeByChain: Record<KnownChains, ChainType> = {
   polkadot: "relay",
   kusama: "assetHub",
   westend: "assetHub",
   paseo: "assetHub",
-};
+}
 
 export type RelayTypedApi =
   | TypedApi<typeof dot>
   | TypedApi<typeof ksm>
   | TypedApi<typeof wnd>
-  | TypedApi<typeof pas>;
+  | TypedApi<typeof pas>
 
 export type PeopleTypedApi =
   | TypedApi<typeof dotPpl>
   | TypedApi<typeof ksmPpl>
   | TypedApi<typeof wndPpl>
-  | TypedApi<typeof pasPpl>;
+  | TypedApi<typeof pasPpl>
 
 export type StakingTypedApi =
   | TypedApi<typeof dot>
   | TypedApi<typeof ksmAH>
   | TypedApi<typeof wndAH>
-  | TypedApi<typeof pasAH>;
+  | TypedApi<typeof pasAH>
 
 export const descriptorsByChain = {
   polkadot: {
@@ -229,4 +229,4 @@ export const descriptorsByChain = {
     people: pasPpl,
     assetHub: pasAH,
   },
-} satisfies Record<KnownChains, Record<ChainType, ChainDefinition>>;
+} satisfies Record<KnownChains, Record<ChainType, ChainDefinition>>

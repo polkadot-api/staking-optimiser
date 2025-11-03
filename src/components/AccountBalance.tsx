@@ -1,9 +1,9 @@
-import { cn } from "@/lib/utils";
-import { accountStatus$ } from "@/state/account";
-import { stakingApi$, stakingSdk$, tokenProps$ } from "@/state/chain";
-import { state, useStateObservable } from "@react-rxjs/core";
-import type { SS58String } from "polkadot-api";
-import { lazy, type FC } from "react";
+import { cn } from "@/lib/utils"
+import { accountStatus$ } from "@/state/account"
+import { stakingApi$, stakingSdk$, tokenProps$ } from "@/state/chain"
+import { state, useStateObservable } from "@react-rxjs/core"
+import type { SS58String } from "polkadot-api"
+import { lazy, type FC } from "react"
 import {
   combineLatest,
   filter,
@@ -11,22 +11,22 @@ import {
   map,
   merge,
   switchMap,
-} from "rxjs";
-import { TextHintTooltip } from "./HintTooltip";
-import { TokenValue } from "./TokenValue";
+} from "rxjs"
+import { TextHintTooltip } from "./HintTooltip"
+import { TokenValue } from "./TokenValue"
 
-const SectorChart = lazy(() => import("@/components/SectorChart"));
+const SectorChart = lazy(() => import("@/components/SectorChart"))
 
 export const accountBalance$ = accountStatus$.pipeState(
-  map((v) => v?.balance ?? null)
-);
+  map((v) => v?.balance ?? null),
+)
 
 export const getAddressTotalBalance = (addr: SS58String) =>
   firstValueFrom(
     combineLatest([
       stakingApi$.pipe(
         switchMap((api) => api.query.System.Account.getValue(addr)),
-        map((v) => v.data.free + v.data.reserved)
+        map((v) => v.data.free + v.data.reserved),
       ),
       tokenProps$.pipe(filter((v) => v != null)),
     ]).pipe(
@@ -34,67 +34,65 @@ export const getAddressTotalBalance = (addr: SS58String) =>
         value,
         decimals,
         symbol,
-      }))
-    )
-  );
+      })),
+    ),
+  )
 
 const bondedStatus$ = accountStatus$.pipeState(
   map((v) => {
-    if (!v) return null;
+    if (!v) return null
 
     if (v.nomination.totalLocked) {
       return {
         bond: v.nomination.currentBond,
         unlocks: v.nomination.unlocks,
-      };
+      }
     }
 
     if (v.nominationPool.pool) {
       return {
         bond: v.nominationPool.currentBond,
         unlocks: v.nominationPool.unlocks,
-      };
+      }
     }
 
-    return null;
-  })
-);
+    return null
+  }),
+)
 
 export interface AccountBalanceValue {
-  label: string;
-  value: bigint;
-  color: string;
-  tooltip: string;
+  label: string
+  value: bigint
+  color: string
+  tooltip: string
 }
 
 export const AccountBalance: FC<{
-  extraValues?: AccountBalanceValue[];
-  className?: string;
+  extraValues?: AccountBalanceValue[]
+  className?: string
 }> = ({ extraValues = [], className }) => {
-  const balance = useStateObservable(accountBalance$);
-  const currentBond = useStateObservable(bondedStatus$);
+  const balance = useStateObservable(accountBalance$)
+  const currentBond = useStateObservable(bondedStatus$)
 
   if (balance == null) {
-    return <div>No account selected</div>;
+    return <div>No account selected</div>
   }
 
   if (balance.total === 0n) {
-    return (
-      <div>This account has no balance. Deposit some to start staking</div>
-    );
+    return <div>This account has no balance. Deposit some to start staking</div>
   }
 
-  const bonded = currentBond?.bond ?? 0n;
+  const bonded = currentBond?.bond ?? 0n
   const unbonding =
-    currentBond?.unlocks.map((v) => v.value).reduce((a, b) => a + b, 0n) ?? 0n;
+    currentBond?.unlocks.map((v) => v.value).reduce((a, b) => a + b, 0n) ?? 0n
 
   // Locked balance that can't stack with staking
-  const reservedBalance = balance.raw.reserved - (bonded + unbonding);
+  const reservedBalance = balance.raw.reserved - (bonded + unbonding)
   // Locked balance that can be stacked with staking
   const unbondedLockedBalance =
     balance.total === 0n
       ? 0n
-      : balance.untouchable - balance.raw.existentialDeposit;
+      : balance.untouchable - balance.raw.existentialDeposit
 
   const data: AccountBalanceValue[] = [
     {
@@ -129,13 +127,13 @@ export const AccountBalance: FC<{
       tooltip: "Unlocked amount that can be transferred or used to pay fees.",
     },
     ...extraValues,
-  ].filter((v) => v.value > 0n);
+  ].filter((v) => v.value > 0n)
 
   return (
     <div
       className={cn(
         "flex gap-4 items-center justify-center flex-wrap",
-        className
+        className,
       )}
     >
       <SectorChart data={data} />
@@ -157,23 +155,23 @@ export const AccountBalance: FC<{
         ))}
       </ol>
     </div>
-  );
-};
+  )
+}
 
-export const accountBalanceSub$ = merge(accountBalance$, bondedStatus$);
+export const accountBalanceSub$ = merge(accountBalance$, bondedStatus$)
 
 const totalBalance$ = state(
   (addr: SS58String) =>
     stakingSdk$.pipe(
       switchMap((v) => v.getAccountStatus$(addr)),
-      map((v) => v.balance.total)
+      map((v) => v.balance.total),
     ),
-  null
-);
+  null,
+)
 
 export const TotalBalance: FC<{ addr: SS58String }> = ({ addr }) => {
-  const balance = useStateObservable(totalBalance$(addr));
-  if (!balance) return null;
+  const balance = useStateObservable(totalBalance$(addr))
+  if (!balance) return null
 
-  return <TokenValue value={balance} />;
-};
+  return <TokenValue value={balance} />
+}

@@ -1,16 +1,16 @@
-import type { PropsWithChildren } from "react";
-import { NominateButton } from "./NominateButton.tsx";
-import { ValidatorCard, EmptyValidatorSlot } from "./ValidatorCard.tsx";
-import { MAX_VALIDATORS } from "./pickValidators.state.ts";
+import type { PropsWithChildren } from "react"
+import { NominateButton } from "./NominateButton.tsx"
+import { ValidatorCard, EmptyValidatorSlot } from "./ValidatorCard.tsx"
+import { MAX_VALIDATORS } from "./pickValidators.state.ts"
 
 export interface Validator {
-  address: string;
-  apy: number;
+  address: string
+  apy: number
 }
 
 interface ValidatorGridProps {
-  selectedValidators: Validator[];
-  onRemove: (address: string) => void;
+  selectedValidators: Validator[]
+  onRemove: (address: string) => void
 }
 
 export const ValidatorGrid: React.FC<PropsWithChildren<ValidatorGridProps>> = ({
@@ -18,7 +18,7 @@ export const ValidatorGrid: React.FC<PropsWithChildren<ValidatorGridProps>> = ({
   onRemove,
   children,
 }) => {
-  const emptySlots = MAX_VALIDATORS - selectedValidators.length;
+  const emptySlots = MAX_VALIDATORS - selectedValidators.length
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -48,5 +48,5 @@ export const ValidatorGrid: React.FC<PropsWithChildren<ValidatorGridProps>> = ({
       )}
       {children}
     </div>
-  );
-};
+  )
+}

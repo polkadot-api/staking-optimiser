@@ -1,6 +1,6 @@
-import { HISTORY_DEPTH } from "@/constants";
-import { tokenProps$ } from "@/state/chain";
-import { useStateObservable } from "@react-rxjs/core";
+import { HISTORY_DEPTH } from "@/constants"
+import { tokenProps$ } from "@/state/chain"
+import { useStateObservable } from "@react-rxjs/core"
 import {
   Area,
   CartesianGrid,
@@ -11,7 +11,7 @@ import {
   YAxis,
   Line,
   Scatter,
-} from "recharts";
+} from "recharts"
 
 export default function EraChart({
   data,
@@ -19,19 +19,19 @@ export default function EraChart({
   height = 400,
 }: {
   data: {
-    era: number;
-    rewards?: number;
-    apy?: number | null;
-    isActive?: boolean;
-  }[];
-  activeEra: number;
-  height?: number;
+    era: number
+    rewards?: number
+    apy?: number | null
+    isActive?: boolean
+  }[]
+  activeEra: number
+  height?: number
 }) {
-  const tokenProps = useStateObservable(tokenProps$);
+  const tokenProps = useStateObservable(tokenProps$)
   const mappedData = data.map((v) => ({
     ...v,
     active: v.isActive ? (v.apy ?? v.rewards) : undefined,
-  }));
+  }))
 
   return (
     <ResponsiveContainer height={height} className="overflow-hidden">
@@ -56,23 +56,23 @@ export default function EraChart({
         <YAxis width={data[0]?.rewards ? 55 : 40} />
         <Tooltip
           labelFormatter={(label, payload) => {
-            const eraPayload = payload.find((p) => p.name === "era");
-            const apyPayload = payload.find((p) => p.name === "apy");
-            const rewardsPayload = payload.find((p) => p.name === "rewards");
+            const eraPayload = payload.find((p) => p.name === "era")
+            const apyPayload = payload.find((p) => p.name === "apy")
+            const rewardsPayload = payload.find((p) => p.name === "rewards")
 
-            if (!eraPayload?.value) return label;
+            if (!eraPayload?.value) return label
 
-            const era = eraPayload.value.toLocaleString();
-            const isActive = eraPayload.payload?.active;
+            const era = eraPayload.value.toLocaleString()
+            const isActive = eraPayload.payload?.active
 
             if (apyPayload?.value == null && rewardsPayload?.value == null)
-              return `Era ${era}`;
+              return `Era ${era}`
 
             const content = rewardsPayload?.value
               ? `${rewardsPayload.value.toLocaleString()} ${tokenProps?.symbol}`
-              : `${apyPayload?.value?.toLocaleString()}%`;
+              : `${apyPayload?.value?.toLocaleString()}%`
 
-            return `Era ${era}: ${content}${isActive ? " (Active)" : ""}`;
+            return `Era ${era}: ${content}${isActive ? " (Active)" : ""}`
           }}
         />
         <Area
@@ -109,5 +109,5 @@ export default function EraChart({
         />
       </ComposedChart>
     </ResponsiveContainer>
-  );
+  )
 }

@@ -1,20 +1,20 @@
-import { CardPlaceholder } from "@/components/CardPlaceholder";
-import { ContractableText, createSortByButton } from "@/components/SortBy";
-import { cn } from "@/lib/utils";
-import { useStateObservable } from "@react-rxjs/core";
-import { Pin } from "lucide-react";
-import type { SS58String } from "polkadot-api";
+import { CardPlaceholder } from "@/components/CardPlaceholder"
+import { ContractableText, createSortByButton } from "@/components/SortBy"
+import { cn } from "@/lib/utils"
+import { useStateObservable } from "@react-rxjs/core"
+import { Pin } from "lucide-react"
+import type { SS58String } from "polkadot-api"
 import {
   Suspense,
   useMemo,
   useState,
   type FC,
   type SetStateAction,
-} from "react";
-import { useMediaQuery } from "react-responsive";
-import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso";
-import { maParamsSub$, Params, SortBy } from "./Params";
-import { ValidatorCard, ValidatorRow } from "./Validator";
+} from "react"
+import { useMediaQuery } from "react-responsive"
+import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso"
+import { maParamsSub$, Params, SortBy } from "./Params"
+import { ValidatorCard, ValidatorRow } from "./Validator"
 import {
   setSortBy,
   sortBy$,
@@ -22,9 +22,9 @@ import {
   validatorPrefs$,
   type HistoricValidator,
   type PositionValidator,
-} from "./validatorList.state";
+} from "./validatorList.state"
 
-const SortByButton = createSortByButton(sortBy$, setSortBy);
+const SortByButton = createSortByButton(sortBy$, setSortBy)
 
 export default function ValidatorList() {
   return (
@@ -36,25 +36,25 @@ export default function ValidatorList() {
         <ValidatorsDisplay />
       </Suspense>
     </div>
-  );
+  )
 }
 
-export const validatorList$ = maParamsSub$;
+export const validatorList$ = maParamsSub$
 
 const ParamsSkeleton = () => (
   <div className="space-y-4 pb-2 md:space-y-0 md:flex gap-2 justify-stretch">
     <CardPlaceholder height={170} />
     <CardPlaceholder height={170} />
   </div>
-);
+)
 
 const ValidatorsDisplay = () => {
   const supportsTable = useMediaQuery({
     query: "(min-width: 768px)",
-  });
+  })
 
-  const [selection, setSelection] = useState<SS58String[]>([]);
-  const validators = useStateObservable(sortedValidators$);
+  const [selection, setSelection] = useState<SS58String[]>([])
+  const validators = useStateObservable(sortedValidators$)
 
   const sortedValidators = useMemo(() => {
     return validators.map(
@@ -62,13 +62,13 @@ const ValidatorsDisplay = () => {
         ...v,
         position: v.position ?? i,
         selected: selection.includes(v.address),
-      })
-    );
-  }, [selection, validators]);
+      }),
+    )
+  }, [selection, validators])
 
   const selectedList = selection.length
     ? sortedValidators.filter((v) => selection.includes(v.address))
-    : [];
+    : []
 
   return supportsTable ? (
     <>
@@ -86,17 +86,17 @@ const ValidatorsDisplay = () => {
     </>
   ) : (
     <ValidatorCards validators={sortedValidators} />
-  );
-};
+  )
+}
 
 const TableRow: FC<ItemProps<HistoricValidator & { selected: boolean }>> = ({
   item: validator,
   ...props
 }) => {
-  const prefs = useStateObservable(validatorPrefs$);
-  const vPrefs = prefs[validator.address];
+  const prefs = useStateObservable(validatorPrefs$)
+  const vPrefs = prefs[validator.address]
 
-  const idx = props["data-index"];
+  const idx = props["data-index"]
 
   return (
     <>
@@ -113,13 +113,13 @@ const TableRow: FC<ItemProps<HistoricValidator & { selected: boolean }>> = ({
         {props.children}
       </tr>
     </>
-  );
-};
+  )
+}
 
 const ValidatorTable: FC<{
-  validators: PositionValidator[];
-  setSelection: (value: SetStateAction<SS58String[]>) => void;
-  className?: string;
+  validators: PositionValidator[]
+  setSelection: (value: SetStateAction<SS58String[]>) => void
+  className?: string
 }> = ({ validators, setSelection, className }) => {
   return (
     <TableVirtuoso
@@ -167,8 +167,8 @@ const ValidatorTable: FC<{
       )}
       itemContent={(idx, v) => {
         if (!v) {
-          console.error("no validator!!", idx, validators.length);
-          return null;
+          console.error("no validator!!", idx, validators.length)
+          return null
         }
 
         return (
@@ -176,7 +176,7 @@ const ValidatorTable: FC<{
             validator={v}
             onSelectChange={(c) =>
               setSelection((p) =>
-                c ? [...p, v.address] : p.filter((addr) => addr != v.address)
+                c ? [...p, v.address] : p.filter((addr) => addr != v.address),
               )
             }
             selectIcon={(selected) => (
@@ -188,16 +188,16 @@ const ValidatorTable: FC<{
               />
             )}
           />
-        );
+        )
       }}
     />
-  );
-};
+  )
+}
 
-const Item = (props: ItemProps<any>) => <div {...props} className="p-4" />;
+const Item = (props: ItemProps<any>) => <div {...props} className="p-4" />
 
 const ValidatorCards: FC<{
-  validators: PositionValidator[];
+  validators: PositionValidator[]
 }> = ({ validators }) => {
   return (
     <div>
@@ -207,16 +207,16 @@ const ValidatorCards: FC<{
         totalCount={validators.length}
         components={{ Item }}
         itemContent={(idx) => {
-          const v = validators[idx];
+          const v = validators[idx]
 
           if (!v) {
-            console.error("no validator!!", idx, validators.length);
-            return null;
+            console.error("no validator!!", idx, validators.length)
+            return null
           }
 
-          return <ValidatorCard validator={v} />;
+          return <ValidatorCard validator={v} />
         }}
       />
     </div>
-  );
-};
+  )
+}

@@ -1,15 +1,15 @@
-import { cn } from "@/lib/utils";
-import type { FC } from "react";
+import { cn } from "@/lib/utils"
+import type { FC } from "react"
 
-const SIZE = 50;
-const STROKE_W = 3;
-const CENTER = SIZE / 2;
-const RADIUS = CENTER - STROKE_W;
-const PERIMTER = Math.PI * 2 * RADIUS;
+const SIZE = 50
+const STROKE_W = 3
+const CENTER = SIZE / 2
+const RADIUS = CENTER - STROKE_W
+const PERIMTER = Math.PI * 2 * RADIUS
 export const CircularProgress: FC<{
-  text?: string;
-  progress: number | null;
-  className?: string;
+  text?: string
+  progress: number | null
+  className?: string
 }> = ({ text, progress, className }) => {
   return (
     <svg
@@ -53,5 +53,5 @@ export const CircularProgress: FC<{
         {text}
       </text>
     </svg>
-  );
-};
+  )
+}

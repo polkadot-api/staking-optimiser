@@ -1,28 +1,28 @@
-import { AlertCard } from "@/components/AlertCard";
-import { TokenInput } from "@/components/TokenInput";
-import { TokenValue } from "@/components/TokenValue";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { accountStatus$ } from "@/state/account";
-import { tokenProps$ } from "@/state/chain";
-import type { TokenProperties } from "@polkadot-api/react-components";
-import type { AccountStatus } from "@polkadot-api/sdk-staking";
-import { state, useStateObservable } from "@react-rxjs/core";
-import { createSignal } from "@react-rxjs/utils";
-import { type FC } from "react";
-import { combineLatest, concat, filter, map, merge, take } from "rxjs";
-import { minBond$ } from "./MinBondingAmounts";
+import { AlertCard } from "@/components/AlertCard"
+import { TokenInput } from "@/components/TokenInput"
+import { TokenValue } from "@/components/TokenValue"
+import { Button } from "@/components/ui/button"
+import { Slider } from "@/components/ui/slider"
+import { accountStatus$ } from "@/state/account"
+import { tokenProps$ } from "@/state/chain"
+import type { TokenProperties } from "@polkadot-api/react-components"
+import type { AccountStatus } from "@polkadot-api/sdk-staking"
+import { state, useStateObservable } from "@react-rxjs/core"
+import { createSignal } from "@react-rxjs/utils"
+import { type FC } from "react"
+import { combineLatest, concat, filter, map, merge, take } from "rxjs"
+import { minBond$ } from "./MinBondingAmounts"
 
-const [bondChange$, setBond] = createSignal<bigint | null>();
+const [bondChange$, setBond] = createSignal<bigint | null>()
 
 const getStakingEffectiveFrozen = (
   accountStatus: AccountStatus,
-  token: TokenProperties
+  token: TokenProperties,
 ) => {
   const nonStakingReserves =
-    accountStatus.balance.raw.reserved - accountStatus.nomination.totalLocked;
+    accountStatus.balance.raw.reserved - accountStatus.nomination.totalLocked
 
-  const rounding = 10n ** BigInt(token.decimals - 2);
+  const rounding = 10n ** BigInt(token.decimals - 2)
 
   const stakingFrozen =
     rounding *
@@ -30,67 +30,67 @@ const getStakingEffectiveFrozen = (
       nonStakingReserves -
       accountStatus.balance.raw.existentialDeposit) /
       rounding +
-      1n);
-  return { stakingFrozen, nonStakingReserves };
-};
+      1n)
+  return { stakingFrozen, nonStakingReserves }
+}
 
 export const bond$ = state(
   concat(
     combineLatest([accountStatus$, tokenProps$.pipe(filter((v) => v !== null))])
       .pipe(
         map(([account, token]) => {
-          if (!account) return 0n;
+          if (!account) return 0n
           if (account.nomination.currentBond > 0)
-            return account.nomination.currentBond;
+            return account.nomination.currentBond
 
           // Default to frozen balance that's overlapping with the free balance
-          const { stakingFrozen } = getStakingEffectiveFrozen(account, token);
-          const minBond = account.nomination.minNominationBond;
-          return stakingFrozen < minBond ? minBond : stakingFrozen;
-        })
+          const { stakingFrozen } = getStakingEffectiveFrozen(account, token)
+          const minBond = account.nomination.minNominationBond
+          return stakingFrozen < minBond ? minBond : stakingFrozen
+        }),
       )
       .pipe(take(1)),
-    bondChange$
-  )
-);
+    bondChange$,
+  ),
+)
 
 export const BondInput: FC = () => {
-  const bond = useStateObservable(bond$);
-  const accountStatus = useStateObservable(accountStatus$);
-  const token = useStateObservable(tokenProps$);
-  const minBond = useStateObservable(minBond$);
+  const bond = useStateObservable(bond$)
+  const accountStatus = useStateObservable(accountStatus$)
+  const token = useStateObservable(tokenProps$)
+  const minBond = useStateObservable(minBond$)
 
-  if (!accountStatus || !token) return null;
-  const { decimals, symbol } = token;
-  const { nomination: nominationStatus } = accountStatus;
+  if (!accountStatus || !token) return null
+  const { decimals, symbol } = token
+  const { nomination: nominationStatus } = accountStatus
 
-  const tokenUnit = 10n ** BigInt(decimals);
-  const maxBond = nominationStatus.maxBond;
-  const maxSafeBond = maxBond - tokenUnit;
+  const tokenUnit = 10n ** BigInt(decimals)
+  const maxBond = nominationStatus.maxBond
+  const maxSafeBond = maxBond - tokenUnit
 
-  const showSafeMaxWarning = bond != null && bond > maxSafeBond;
+  const showSafeMaxWarning = bond != null && bond > maxSafeBond
 
   const { stakingFrozen, nonStakingReserves } = getStakingEffectiveFrozen(
     accountStatus,
-    token
-  );
+    token,
+  )
 
-  const { frozen, existentialDeposit } = accountStatus.balance.raw;
-  const reservedAfter = bond ? nonStakingReserves + bond : null;
+  const { frozen, existentialDeposit } = accountStatus.balance.raw
+  const reservedAfter = bond ? nonStakingReserves + bond : null
   const lockedAfter = reservedAfter
     ? reservedAfter + existentialDeposit > frozen
       ? reservedAfter + existentialDeposit
       : frozen
-    : null;
+    : null
   const spendableAfter =
     lockedAfter && bond
       ? bond > accountStatus.nomination.currentBond
         ? accountStatus.balance.total - lockedAfter
         : accountStatus.balance.spendable
-      : null;
+      : null
   const frozenRangePct = Math.round(
-    (100 * Number(stakingFrozen - minBond)) / Number(maxBond - minBond)
-  );
+    (100 * Number(stakingFrozen - minBond)) / Number(maxBond - minBond),
+  )
 
   return (
     <div className="space-y-4 rounded-lg border border-border/60 bg-background/90 p-4">
@@ -136,7 +136,7 @@ export const BondInput: FC = () => {
             variant="secondary"
             type="button"
             onClick={() => {
-              setBond(stakingFrozen);
+              setBond(stakingFrozen)
             }}
           >
             Eq to frozen
@@ -164,7 +164,7 @@ export const BondInput: FC = () => {
         </AlertCard>
       ) : null}
     </div>
-  );
-};
+  )
+}
 
-export const bondInputSub$ = merge(bond$, accountStatus$, minBond$);
+export const bondInputSub$ = merge(bond$, accountStatus$, minBond$)

@@ -1,20 +1,20 @@
-import { Card } from "@/components/Card";
-import { ContractableText, createSortByButton } from "@/components/SortBy";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { useStateObservable } from "@react-rxjs/core";
-import { Search, Square, SquareCheck } from "lucide-react";
-import { useMemo, type FC } from "react";
-import { useMediaQuery } from "react-responsive";
-import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso";
-import { merge } from "rxjs";
-import { MaParams, maParamsSub$, SortBy } from "../../Validators/Params";
+import { Card } from "@/components/Card"
+import { ContractableText, createSortByButton } from "@/components/SortBy"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
+import { useStateObservable } from "@react-rxjs/core"
+import { Search, Square, SquareCheck } from "lucide-react"
+import { useMemo, type FC } from "react"
+import { useMediaQuery } from "react-responsive"
+import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso"
+import { merge } from "rxjs"
+import { MaParams, maParamsSub$, SortBy } from "../../Validators/Params"
 import {
   validatorPrefs$,
   type HistoricValidator,
   type PositionValidator,
-} from "../../Validators/validatorList.state";
+} from "../../Validators/validatorList.state"
 import {
   MAX_VALIDATORS,
   search$,
@@ -25,14 +25,14 @@ import {
   sortedValidators$,
   toggleValidator,
   validatorsWithPreferences$,
-} from "./pickValidators.state";
-import { ValidatorCard, ValidatorRow } from "../../Validators/Validator";
-import { ValidatorGrid } from "./ValidatorGrid";
+} from "./pickValidators.state"
+import { ValidatorCard, ValidatorRow } from "../../Validators/Validator"
+import { ValidatorGrid } from "./ValidatorGrid"
 
-const SortByButton = createSortByButton(sortBy$, setSortBy);
+const SortByButton = createSortByButton(sortBy$, setSortBy)
 
 export default function PickValidators() {
-  const search = useStateObservable(search$);
+  const search = useStateObservable(search$)
 
   return (
     <div className="space-y-4">
@@ -53,7 +53,7 @@ export default function PickValidators() {
       </div>
       <ValidatorsDisplay />
     </div>
-  );
+  )
 }
 
 export const pickValidatorsSub$ = merge(
@@ -61,26 +61,26 @@ export const pickValidatorsSub$ = merge(
   selectedValidators$,
   validatorsWithPreferences$,
   sortedValidators$,
-);
+)
 
 const Selection = () => {
-  const selection = useStateObservable(selectedValidators$);
-  const selectionArr = Array.from(selection);
-  const validators = useStateObservable(validatorsWithPreferences$);
-  const sortedValidators = useStateObservable(sortedValidators$);
+  const selection = useStateObservable(selectedValidators$)
+  const selectionArr = Array.from(selection)
+  const validators = useStateObservable(validatorsWithPreferences$)
+  const sortedValidators = useStateObservable(sortedValidators$)
 
   const validatorByAddr = useMemo(
     () => Object.fromEntries(validators.map((v) => [v.address, v])),
     [validators],
-  );
+  )
 
   const selectedValidators = selectionArr.map((address) => {
-    const validator = validatorByAddr[address];
+    const validator = validatorByAddr[address]
     return {
       address,
       apy: validator?.prefs != null ? validator.nominatorApy : 0,
-    };
-  });
+    }
+  })
 
   return (
     <ValidatorGrid
@@ -91,16 +91,16 @@ const Selection = () => {
         <Button
           variant="secondary"
           onClick={() => {
-            const selected = new Set(selection);
+            const selected = new Set(selection)
             for (
               let i = 0;
               i < sortedValidators.length && selected.size < MAX_VALIDATORS;
               i++
             ) {
-              const addr = sortedValidators[i].address;
-              if (selected.has(addr)) continue;
-              selected.add(addr);
-              toggleValidator(addr);
+              const addr = sortedValidators[i].address
+              if (selected.has(addr)) continue
+              selected.add(addr)
+              toggleValidator(addr)
             }
           }}
         >
@@ -111,13 +111,13 @@ const Selection = () => {
           onClick={() => {
             const unselectedTop10 = sortedValidators
               .slice(0, Math.round(sortedValidators.length / 10))
-              .filter((v) => !selection.has(v.address));
+              .filter((v) => !selection.has(v.address))
             for (let i = 0; i < MAX_VALIDATORS - selection.size; i++) {
               const [pick] = unselectedTop10.splice(
                 Math.floor(Math.random() * unselectedTop10.length),
                 1,
-              );
-              toggleValidator(pick.address);
+              )
+              toggleValidator(pick.address)
             }
           }}
         >
@@ -126,15 +126,15 @@ const Selection = () => {
         <Button
           variant="secondary"
           onClick={() => {
-            if (selection.size === MAX_VALIDATORS) return;
+            if (selection.size === MAX_VALIDATORS) return
             const unselectedTop10 = sortedValidators
               .slice(0, Math.round(sortedValidators.length / 10))
-              .filter((v) => !selection.has(v.address));
+              .filter((v) => !selection.has(v.address))
             const pick =
               unselectedTop10[
                 Math.floor(Math.random() * unselectedTop10.length)
-              ];
-            toggleValidator(pick.address);
+              ]
+            toggleValidator(pick.address)
           }}
         >
           Pick random top 10%
@@ -143,7 +143,7 @@ const Selection = () => {
           variant="secondary"
           onClick={() => {
             for (const validator of selection) {
-              toggleValidator(validator);
+              toggleValidator(validator)
             }
           }}
         >
@@ -151,16 +151,16 @@ const Selection = () => {
         </Button>
       </div>
     </ValidatorGrid>
-  );
-};
+  )
+}
 
 const ValidatorsDisplay = () => {
   const supportsTable = useMediaQuery({
     query: "(min-width: 768px)",
-  });
+  })
 
-  const selection = useStateObservable(selectedValidators$);
-  const validators = useStateObservable(sortedValidators$);
+  const selection = useStateObservable(selectedValidators$)
+  const validators = useStateObservable(sortedValidators$)
 
   const sortedValidators = useMemo(() => {
     return validators.map(
@@ -169,24 +169,24 @@ const ValidatorsDisplay = () => {
         position: v.position ?? i,
         selected: selection.has(v.address),
       }),
-    );
-  }, [selection, validators]);
+    )
+  }, [selection, validators])
 
   return supportsTable ? (
     <ValidatorTable validators={sortedValidators} />
   ) : (
     <ValidatorCards validators={sortedValidators} />
-  );
-};
+  )
+}
 
 const TableRow: FC<ItemProps<HistoricValidator & { selected: boolean }>> = ({
   item: validator,
   ...props
 }) => {
-  const prefs = useStateObservable(validatorPrefs$);
-  const vPrefs = prefs[validator.address];
+  const prefs = useStateObservable(validatorPrefs$)
+  const vPrefs = prefs[validator.address]
 
-  const idx = props["data-index"];
+  const idx = props["data-index"]
 
   return (
     <>
@@ -203,12 +203,12 @@ const TableRow: FC<ItemProps<HistoricValidator & { selected: boolean }>> = ({
         {props.children}
       </tr>
     </>
-  );
-};
+  )
+}
 
 const ValidatorTable: FC<{
-  validators: PositionValidator[];
-  className?: string;
+  validators: PositionValidator[]
+  className?: string
 }> = ({ validators, className }) => {
   return (
     <TableVirtuoso
@@ -254,8 +254,8 @@ const ValidatorTable: FC<{
       )}
       itemContent={(idx, v) => {
         if (!v) {
-          console.error("no validator!!", idx, validators.length);
-          return null;
+          console.error("no validator!!", idx, validators.length)
+          return null
         }
 
         return (
@@ -271,16 +271,16 @@ const ValidatorTable: FC<{
             }
             hideValApy
           />
-        );
+        )
       }}
     />
-  );
-};
+  )
+}
 
-const Item = (props: ItemProps<any>) => <div {...props} className="p-4" />;
+const Item = (props: ItemProps<any>) => <div {...props} className="p-4" />
 
 const ValidatorCards: FC<{
-  validators: PositionValidator[];
+  validators: PositionValidator[]
 }> = ({ validators }) => {
   return (
     <div>
@@ -293,16 +293,16 @@ const ValidatorCards: FC<{
         totalCount={validators.length}
         components={{ Item }}
         itemContent={(idx) => {
-          const v = validators[idx];
+          const v = validators[idx]
 
           if (!v) {
-            console.error("no validator!!", idx, validators.length);
-            return null;
+            console.error("no validator!!", idx, validators.length)
+            return null
           }
 
-          return <ValidatorCard validator={v} />;
+          return <ValidatorCard validator={v} />
         }}
       />
     </div>
-  );
-};
+  )
+}

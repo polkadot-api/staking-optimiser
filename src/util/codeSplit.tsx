@@ -4,41 +4,41 @@ import {
   type ComponentType,
   type FC,
   type JSX,
-} from "react";
+} from "react"
 
 export const codeSplit = <Payload, Props>(
   promise: Promise<Payload>,
   NotReady: ComponentType<Props>,
   Ready: ComponentType<
     Props & {
-      payload: Payload;
+      payload: Payload
     }
-  >
+  >,
 ): FC<Props> => {
-  let loadedPayload: Payload | null = null;
+  let loadedPayload: Payload | null = null
   const loadedPromise = promise.then((payload) => {
-    loadedPayload = payload;
-    return payload;
-  });
+    loadedPayload = payload
+    return payload
+  })
 
   const usePayload = () => {
-    const [module, setModule] = useState(loadedPayload);
+    const [module, setModule] = useState(loadedPayload)
 
     useEffect(() => {
       if (module === null) {
-        loadedPromise.then(setModule);
+        loadedPromise.then(setModule)
       }
-    }, [module]);
+    }, [module])
 
-    return module;
-  };
+    return module
+  }
 
   return (props) => {
-    const payload = usePayload();
+    const payload = usePayload()
 
     if (payload === null) {
-      return <NotReady {...(props as Props & JSX.IntrinsicAttributes)} />;
+      return <NotReady {...(props as Props & JSX.IntrinsicAttributes)} />
     }
-    return <Ready {...props} payload={payload} />;
-  };
-};
+    return <Ready {...props} payload={payload} />
+  }
+}

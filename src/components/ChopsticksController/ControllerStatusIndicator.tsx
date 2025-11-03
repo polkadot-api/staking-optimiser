@@ -1,7 +1,7 @@
-import { Circle, CircleCheck, CircleX } from "lucide-react";
-import type { FC } from "react";
-import { Spinner } from "../Spinner";
-import type { ControllerStatus } from "./controllerAction";
+import { Circle, CircleCheck, CircleX } from "lucide-react"
+import type { FC } from "react"
+import { Spinner } from "../Spinner"
+import type { ControllerStatus } from "./controllerAction"
 
 export const ControllerStatusIndicator: FC<{ status: ControllerStatus }> = ({
   status,
@@ -14,4 +14,4 @@ export const ControllerStatusIndicator: FC<{ status: ControllerStatus }> = ({
     <CircleCheck className="shrink-0 text-green-600" />
   ) : (
     <CircleX className="shrink-0 text-red-600" />
-  );
+  )

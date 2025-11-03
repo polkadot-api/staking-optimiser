@@ -1,16 +1,16 @@
-import * as React from "react";
-import { cn } from "@/lib/utils";
+import * as React from "react"
+import { cn } from "@/lib/utils"
 
 interface EraRangeSliderProps {
-  minEra: number;
-  maxEra: number;
-  startEra: number;
-  endEra: number;
-  onRangeChange: (start: number, end: number) => void;
-  className?: string;
+  minEra: number
+  maxEra: number
+  startEra: number
+  endEra: number
+  onRangeChange: (start: number, end: number) => void
+  className?: string
 }
 
-type DragMode = "none" | "start" | "end" | "range";
+type DragMode = "none" | "start" | "end" | "range"
 
 export function EraRangeSlider({
   minEra,
@@ -20,97 +20,95 @@ export function EraRangeSlider({
   onRangeChange,
   className,
 }: EraRangeSliderProps) {
-  const [values, setValues] = React.useState([startEra, endEra]);
-  const [dragMode, setDragMode] = React.useState<DragMode>("none");
-  const [dragStartX, setDragStartX] = React.useState(0);
-  const [dragStartValues, setDragStartValues] = React.useState<number[]>([]);
-  const trackRef = React.useRef<HTMLDivElement>(null);
+  const [values, setValues] = React.useState([startEra, endEra])
+  const [dragMode, setDragMode] = React.useState<DragMode>("none")
+  const [dragStartX, setDragStartX] = React.useState(0)
+  const [dragStartValues, setDragStartValues] = React.useState<number[]>([])
+  const trackRef = React.useRef<HTMLDivElement>(null)
 
   // Update internal state when props change
   React.useEffect(() => {
-    setValues([startEra, endEra]);
-  }, [startEra, endEra]);
+    setValues([startEra, endEra])
+  }, [startEra, endEra])
 
   const getValueFromPosition = (clientX: number): number => {
-    if (!trackRef.current) return minEra;
+    if (!trackRef.current) return minEra
 
-    const rect = trackRef.current.getBoundingClientRect();
+    const rect = trackRef.current.getBoundingClientRect()
     const percentage = Math.max(
       0,
       Math.min(1, (clientX - rect.left) / rect.width),
-    );
-    return Math.round(minEra + percentage * (maxEra - minEra));
-  };
+    )
+    return Math.round(minEra + percentage * (maxEra - minEra))
+  }
 
   const getPositionPercentage = (value: number): number => {
-    return ((value - minEra) / (maxEra - minEra)) * 100;
-  };
+    return ((value - minEra) / (maxEra - minEra)) * 100
+  }
 
   const handleMouseDown = (e: React.MouseEvent, mode: DragMode) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragMode(mode);
-    setDragStartX(e.clientX);
-    setDragStartValues([...values]);
-  };
+    e.preventDefault()
+    e.stopPropagation()
+    setDragMode(mode)
+    setDragStartX(e.clientX)
+    setDragStartValues([...values])
+  }
 
   React.useEffect(() => {
-    if (dragMode === "none") return;
+    if (dragMode === "none") return
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!trackRef.current) return;
+      if (!trackRef.current) return
 
       if (dragMode === "start") {
         const newStart = Math.min(
           getValueFromPosition(e.clientX),
           values[1] - 1,
-        );
-        const newValues = [newStart, values[1]];
-        setValues(newValues);
-        onRangeChange(newValues[0], newValues[1]);
+        )
+        const newValues = [newStart, values[1]]
+        setValues(newValues)
+        onRangeChange(newValues[0], newValues[1])
       } else if (dragMode === "end") {
-        const newEnd = Math.max(getValueFromPosition(e.clientX), values[0] + 1);
-        const newValues = [values[0], newEnd];
-        setValues(newValues);
-        onRangeChange(newValues[0], newValues[1]);
+        const newEnd = Math.max(getValueFromPosition(e.clientX), values[0] + 1)
+        const newValues = [values[0], newEnd]
+        setValues(newValues)
+        onRangeChange(newValues[0], newValues[1])
       } else if (dragMode === "range") {
-        const rect = trackRef.current.getBoundingClientRect();
-        const deltaX = e.clientX - dragStartX;
-        const deltaValue = Math.round(
-          (deltaX / rect.width) * (maxEra - minEra),
-        );
+        const rect = trackRef.current.getBoundingClientRect()
+        const deltaX = e.clientX - dragStartX
+        const deltaValue = Math.round((deltaX / rect.width) * (maxEra - minEra))
 
-        const rangeSize = dragStartValues[1] - dragStartValues[0];
-        let newStart = dragStartValues[0] + deltaValue;
-        let newEnd = dragStartValues[1] + deltaValue;
+        const rangeSize = dragStartValues[1] - dragStartValues[0]
+        let newStart = dragStartValues[0] + deltaValue
+        let newEnd = dragStartValues[1] + deltaValue
 
         // Constrain to boundaries
         if (newStart < minEra) {
-          newStart = minEra;
-          newEnd = minEra + rangeSize;
+          newStart = minEra
+          newEnd = minEra + rangeSize
         }
         if (newEnd > maxEra) {
-          newEnd = maxEra;
-          newStart = maxEra - rangeSize;
+          newEnd = maxEra
+          newStart = maxEra - rangeSize
         }
 
-        const newValues = [newStart, newEnd];
-        setValues(newValues);
-        onRangeChange(newValues[0], newValues[1]);
+        const newValues = [newStart, newEnd]
+        setValues(newValues)
+        onRangeChange(newValues[0], newValues[1])
       }
-    };
+    }
 
     const handleMouseUp = () => {
-      setDragMode("none");
-    };
+      setDragMode("none")
+    }
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove)
+    document.addEventListener("mouseup", handleMouseUp)
 
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
+      document.removeEventListener("mousemove", handleMouseMove)
+      document.removeEventListener("mouseup", handleMouseUp)
+    }
   }, [
     dragMode,
     dragStartX,
@@ -119,11 +117,11 @@ export function EraRangeSlider({
     minEra,
     maxEra,
     onRangeChange,
-  ]);
+  ])
 
-  const startPercentage = getPositionPercentage(values[0]);
-  const endPercentage = getPositionPercentage(values[1]);
-  const rangeSize = values[1] - values[0];
+  const startPercentage = getPositionPercentage(values[0])
+  const endPercentage = getPositionPercentage(values[1])
+  const rangeSize = values[1] - values[0]
 
   return (
     <div className={cn("w-full", className)}>
@@ -178,5 +176,5 @@ export function EraRangeSlider({
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,48 +1,48 @@
-import { accountBalance$ } from "@/components/AccountBalance";
-import { AlertCard } from "@/components/AlertCard";
-import { TokenInput } from "@/components/TokenInput";
-import { TokenValue } from "@/components/TokenValue";
-import { TransactionButton } from "@/components/Transactions";
-import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import { accountStatus$, selectedSignerAccount$ } from "@/state/account";
+import { accountBalance$ } from "@/components/AccountBalance"
+import { AlertCard } from "@/components/AlertCard"
+import { TokenInput } from "@/components/TokenInput"
+import { TokenValue } from "@/components/TokenValue"
+import { TransactionButton } from "@/components/Transactions"
+import { Slider } from "@/components/ui/slider"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { cn } from "@/lib/utils"
+import { accountStatus$, selectedSignerAccount$ } from "@/state/account"
 import {
   stakingApi$,
   stakingSdk$,
   tokenDecimals$,
   tokenProps$,
-} from "@/state/chain";
+} from "@/state/chain"
 import {
   currentEra$,
   eraDurationInMs$,
   unbondDurationInDays$,
-} from "@/state/era";
-import { currentNominationPoolStatus$ } from "@/state/nominationPool";
+} from "@/state/era"
+import { currentNominationPoolStatus$ } from "@/state/nominationPool"
 import {
   MultiAddress,
   NominationPoolsBondExtra,
-} from "@polkadot-api/descriptors";
-import { state, useStateObservable } from "@react-rxjs/core";
-import { useState, type FC } from "react";
-import { firstValueFrom, switchMap } from "rxjs";
-import { format } from "timeago.js";
+} from "@polkadot-api/descriptors"
+import { state, useStateObservable } from "@react-rxjs/core"
+import { useState, type FC } from "react"
+import { firstValueFrom, switchMap } from "rxjs"
+import { format } from "timeago.js"
 
 const minBond$ = state(
   stakingApi$.pipe(
-    switchMap((api) => api.query.NominationPools.MinJoinBond.getValue())
-  )
-);
+    switchMap((api) => api.query.NominationPools.MinJoinBond.getValue()),
+  ),
+)
 
 export const ManageBond: FC<{ close?: () => void }> = ({ close }) => {
-  const poolStatus = useStateObservable(currentNominationPoolStatus$);
-  const balance = useStateObservable(accountBalance$);
-  const [mode, setMode] = useState<"bond" | "unbond" | "leave">("bond");
-  const [bond, setBond] = useState<bigint | null>(0n);
-  const [unbond, setUnbond] = useState<bigint | null>(0n);
+  const poolStatus = useStateObservable(currentNominationPoolStatus$)
+  const balance = useStateObservable(accountBalance$)
+  const [mode, setMode] = useState<"bond" | "unbond" | "leave">("bond")
+  const [bond, setBond] = useState<bigint | null>(0n)
+  const [unbond, setUnbond] = useState<bigint | null>(0n)
 
-  if (!balance) return null;
-  if (!poolStatus) return <div>TODO not in a pool</div>;
+  if (!balance) return null
+  if (!poolStatus) return <div>TODO not in a pool</div>
 
   return (
     <section className="space-y-5">
@@ -81,45 +81,45 @@ export const ManageBond: FC<{ close?: () => void }> = ({ close }) => {
         }
       />
     </section>
-  );
-};
+  )
+}
 
 const BondInput: FC<{
-  bond: bigint | null;
-  setBond: (bond: bigint | null) => void;
-  close?: () => void;
+  bond: bigint | null
+  setBond: (bond: bigint | null) => void
+  close?: () => void
 }> = ({ bond, setBond, close }) => {
-  const accountStatus = useStateObservable(accountStatus$);
-  const token = useStateObservable(tokenProps$);
-  const minBond = useStateObservable(minBond$);
+  const accountStatus = useStateObservable(accountStatus$)
+  const token = useStateObservable(tokenProps$)
+  const minBond = useStateObservable(minBond$)
 
-  if (!accountStatus || !token) return null;
-  const { decimals, symbol } = token;
-  const { balance, nominationPool: poolStatus } = accountStatus;
+  if (!accountStatus || !token) return null
+  const { decimals, symbol } = token
+  const { balance, nominationPool: poolStatus } = accountStatus
 
   const currentUnbonding = poolStatus.unlocks
     .map((v) => v.value)
-    .reduce((a, b) => a + b, 0n);
+    .reduce((a, b) => a + b, 0n)
 
   const maxBond =
-    balance.total - balance.raw.existentialDeposit - currentUnbonding;
-  const tokenUnit = 10n ** BigInt(decimals);
-  const maxSafeBond = maxBond - tokenUnit;
+    balance.total - balance.raw.existentialDeposit - currentUnbonding
+  const tokenUnit = 10n ** BigInt(decimals)
+  const maxSafeBond = maxBond - tokenUnit
 
-  const resultingBond = poolStatus.currentBond + (bond ?? 0n);
-  const showBelowMinWarning = resultingBond > 0n && resultingBond < minBond;
+  const resultingBond = poolStatus.currentBond + (bond ?? 0n)
+  const showBelowMinWarning = resultingBond > 0n && resultingBond < minBond
   const showSafeMaxWarning =
-    resultingBond > maxSafeBond + poolStatus.pendingRewards;
-  const isLeaving = !!poolStatus.pool && poolStatus.currentBond === 0n;
+    resultingBond > maxSafeBond + poolStatus.pendingRewards
+  const isLeaving = !!poolStatus.pool && poolStatus.currentBond === 0n
 
   const performBond = async () => {
-    if (bond == null) return null;
+    if (bond == null) return null
 
-    const api = await firstValueFrom(stakingApi$);
+    const api = await firstValueFrom(stakingApi$)
     return api.tx.NominationPools.bond_extra({
       extra: NominationPoolsBondExtra.FreeBalance(bond),
-    });
-  };
+    })
+  }
 
   return (
     <div className="space-y-4 rounded-lg border border-border/60 bg-background/90 p-4">
@@ -190,37 +190,37 @@ const BondInput: FC<{
         Add Stake
       </TransactionButton>
     </div>
-  );
-};
+  )
+}
 
 const UnbondInput: FC<{
-  bond: bigint | null;
-  setBond: (bond: bigint | null) => void;
-  close?: () => void;
+  bond: bigint | null
+  setBond: (bond: bigint | null) => void
+  close?: () => void
 }> = ({ bond, setBond, close }) => {
-  const poolStatus = useStateObservable(currentNominationPoolStatus$);
-  const accountStatus = useStateObservable(accountStatus$);
-  const token = useStateObservable(tokenProps$);
-  const minBond = useStateObservable(minBond$);
-  const selectedAccount = useStateObservable(selectedSignerAccount$);
+  const poolStatus = useStateObservable(currentNominationPoolStatus$)
+  const accountStatus = useStateObservable(accountStatus$)
+  const token = useStateObservable(tokenProps$)
+  const minBond = useStateObservable(minBond$)
+  const selectedAccount = useStateObservable(selectedSignerAccount$)
 
-  if (!accountStatus || !poolStatus || !token) return null;
-  const { symbol } = token;
-  const currentBond = accountStatus.nominationPool.currentBond;
-  const maxBond = currentBond - minBond;
+  if (!accountStatus || !poolStatus || !token) return null
+  const { symbol } = token
+  const currentBond = accountStatus.nominationPool.currentBond
+  const maxBond = currentBond - minBond
 
   const unbond = async () => {
-    if (!selectedAccount || bond == null) return null;
+    if (!selectedAccount || bond == null) return null
 
-    const sdk = await firstValueFrom(stakingSdk$);
+    const sdk = await firstValueFrom(stakingSdk$)
 
-    const resultingBond = currentBond - bond;
+    const resultingBond = currentBond - bond
 
     // Accounting for BigInt <-> Number error
     // assuming we're not letting the user unbond with an in-between value.
-    const unbonding = resultingBond < minBond ? maxBond : bond;
-    return sdk.unbondNominationPool(selectedAccount.address, unbonding);
-  };
+    const unbonding = resultingBond < minBond ? maxBond : bond
+    return sdk.unbondNominationPool(selectedAccount.address, unbonding)
+  }
 
   return (
     <div className="space-y-4 rounded-lg border border-border/60 bg-background/90 p-4">
@@ -272,23 +272,23 @@ const UnbondInput: FC<{
         Unbond
       </TransactionButton>
     </div>
-  );
-};
+  )
+}
 
 const Leave: FC<{ close?: () => void }> = ({ close }) => {
-  const accountStatus = useStateObservable(accountStatus$);
-  const selectedAccount = useStateObservable(selectedSignerAccount$);
+  const accountStatus = useStateObservable(accountStatus$)
+  const selectedAccount = useStateObservable(selectedSignerAccount$)
 
-  if (!accountStatus || !selectedAccount) return null;
+  if (!accountStatus || !selectedAccount) return null
 
   const leave = async () => {
-    const api = await firstValueFrom(stakingApi$);
+    const api = await firstValueFrom(stakingApi$)
 
     return api.tx.NominationPools.unbond({
       member_account: MultiAddress.Id(selectedAccount.address),
       unbonding_points: accountStatus.nominationPool.points,
-    });
-  };
+    })
+  }
 
   return (
     <div className="space-y-4 rounded-lg border border-border/60 bg-background/90 p-4">
@@ -308,19 +308,19 @@ const Leave: FC<{ close?: () => void }> = ({ close }) => {
         Leave pool
       </TransactionButton>
     </div>
-  );
-};
+  )
+}
 
 const Stats = () => {
-  const poolStatus = useStateObservable(currentNominationPoolStatus$);
-  const balance = useStateObservable(accountBalance$);
-  const minBond = useStateObservable(minBond$);
+  const poolStatus = useStateObservable(currentNominationPoolStatus$)
+  const balance = useStateObservable(accountBalance$)
+  const minBond = useStateObservable(minBond$)
 
-  if (!poolStatus || !balance) return null;
+  if (!poolStatus || !balance) return null
 
   const currentUnbonding = poolStatus.unlocks
     .map((v) => v.value)
-    .reduce((a, b) => a + b, 0n);
+    .reduce((a, b) => a + b, 0n)
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
@@ -355,19 +355,19 @@ const Stats = () => {
         description="Drop to zero if you want to leave the pool"
       />
     </div>
-  );
-};
+  )
+}
 
 const StatTile: FC<{
-  label: string;
-  value: bigint;
-  description?: string;
-  highlight?: boolean;
+  label: string
+  value: bigint
+  description?: string
+  highlight?: boolean
 }> = ({ label, value, description, highlight = false }) => (
   <div
     className={cn(
       "rounded-md border border-border/60 bg-muted/30 p-3 text-sm transition-colors",
-      highlight && "border-primary/70 bg-primary/5"
+      highlight && "border-primary/70 bg-primary/5",
     )}
   >
     <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -380,20 +380,20 @@ const StatTile: FC<{
       <p className="mt-1 text-[11px] text-muted-foreground/80">{description}</p>
     ) : null}
   </div>
-);
+)
 
 const Result: FC<{ bond: bigint }> = ({ bond }) => {
-  const account = useStateObservable(accountStatus$);
-  const decimals = useStateObservable(tokenDecimals$);
-  const currentEra = useStateObservable(currentEra$);
-  const eraDuration = useStateObservable(eraDurationInMs$);
+  const account = useStateObservable(accountStatus$)
+  const decimals = useStateObservable(tokenDecimals$)
+  const currentEra = useStateObservable(currentEra$)
+  const eraDuration = useStateObservable(eraDurationInMs$)
 
-  if (!account || decimals == null || currentEra == null) return null;
-  const { balance, nominationPool: poolStatus } = account;
+  if (!account || decimals == null || currentEra == null) return null
+  const { balance, nominationPool: poolStatus } = account
 
   const spendableAfter =
-    balance.spendable - (bond < 0n ? 0n : bond) + poolStatus.pendingRewards;
-  const resultingBond = poolStatus.currentBond + bond;
+    balance.spendable - (bond < 0n ? 0n : bond) + poolStatus.pendingRewards
+  const resultingBond = poolStatus.currentBond + bond
 
   const unlocks =
     bond < 0n
@@ -404,12 +404,12 @@ const Result: FC<{ bond: bigint }> = ({ bond }) => {
             value: -bond,
           },
         ]
-      : poolStatus.unlocks;
-  const totalUnlocks = unlocks.map((v) => v.value).reduce((a, b) => a + b, 0n);
+      : poolStatus.unlocks
+  const totalUnlocks = unlocks.map((v) => v.value).reduce((a, b) => a + b, 0n)
   const unlocksByEra = unlocks.reduce((acc: Record<number, bigint>, v) => {
-    acc[v.era] = (acc[v.era] ?? 0n) + v.value;
-    return acc;
-  }, {});
+    acc[v.era] = (acc[v.era] ?? 0n) + v.value
+    return acc
+  }, {})
 
   return (
     <div className="space-y-4 rounded-lg border border-dashed border-border/60 bg-muted/20 p-4 text-sm">
@@ -457,7 +457,7 @@ const Result: FC<{ bond: bigint }> = ({ bond }) => {
           </div>
           <div className="max-h-40 space-y-2 overflow-auto pr-1">
             {Object.entries(unlocksByEra).map(([era, value]) => {
-              const unlocking = eraDuration * (Number(era) - currentEra);
+              const unlocking = eraDuration * (Number(era) - currentEra)
               return (
                 <div
                   key={era}
@@ -478,11 +478,11 @@ const Result: FC<{ bond: bigint }> = ({ bond }) => {
                     value={value}
                   />
                 </div>
-              );
+              )
             })}
           </div>
         </div>
       )}
     </div>
-  );
-};
+  )
+}

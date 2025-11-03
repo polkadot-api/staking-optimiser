@@ -1,31 +1,31 @@
-import { selectedChain$, setUseSmoldot, useSmoldot$ } from "@/state/chain";
-import { knownChains, type KnownChains } from "@/state/chainConfig";
-import { withSubscribe } from "@/util/rxjs";
-import { useStateObservable } from "@react-rxjs/core";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { codeSplit } from "@/util/codeSplit";
-import { Checkbox } from "@polkahub/ui-components";
+import { selectedChain$, setUseSmoldot, useSmoldot$ } from "@/state/chain"
+import { knownChains, type KnownChains } from "@/state/chainConfig"
+import { withSubscribe } from "@/util/rxjs"
+import { useStateObservable } from "@react-rxjs/core"
+import { Button } from "@/components/ui/button"
+import { useNavigate } from "react-router-dom"
+import { codeSplit } from "@/util/codeSplit"
+import { Checkbox } from "@polkahub/ui-components"
 
 export const chainNameByChain: Record<KnownChains, string> = {
   polkadot: "Polkadot",
   kusama: "Kusama",
   westend: "Westend",
   paseo: "Paseo",
-};
+}
 
 export const chainLogoByChain: Record<KnownChains, string> = {
   polkadot: import.meta.env.BASE_URL + "polkadot.svg",
   kusama: import.meta.env.BASE_URL + "kusama.webp",
   westend: import.meta.env.BASE_URL + "westend.webp",
   paseo: import.meta.env.BASE_URL + "paseo.webp",
-};
+}
 
 export const ChainSelector = withSubscribe(
   codeSplit(
     import("@/components/ui/popover"),
     () => {
-      const chain = useStateObservable(selectedChain$);
+      const chain = useStateObservable(selectedChain$)
 
       return (
         <Button variant="outline" className="cursor-wait">
@@ -35,13 +35,13 @@ export const ChainSelector = withSubscribe(
             className="size-6 rounded"
           />
         </Button>
-      );
+      )
     },
     ({ payload }) => {
-      const { Popover, PopoverContent, PopoverTrigger } = payload;
-      const chain = useStateObservable(selectedChain$);
-      const navigate = useNavigate();
-      const usingSmoldot = useStateObservable(useSmoldot$);
+      const { Popover, PopoverContent, PopoverTrigger } = payload
+      const chain = useStateObservable(selectedChain$)
+      const navigate = useNavigate()
+      const usingSmoldot = useStateObservable(useSmoldot$)
 
       return (
         <Popover>
@@ -102,7 +102,7 @@ export const ChainSelector = withSubscribe(
             </div>
           </PopoverContent>
         </Popover>
-      );
-    }
-  )
-);
+      )
+    },
+  ),
+)

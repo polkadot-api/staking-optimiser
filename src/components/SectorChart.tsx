@@ -1,22 +1,22 @@
-import { tokenProps$ } from "@/state/chain";
-import { amountToNumber } from "@/util/format";
-import { useStateObservable } from "@react-rxjs/core";
-import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
-import type { PieSectorDataItem } from "recharts/types/polar/Pie";
+import { tokenProps$ } from "@/state/chain"
+import { amountToNumber } from "@/util/format"
+import { useStateObservable } from "@react-rxjs/core"
+import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts"
+import type { PieSectorDataItem } from "recharts/types/polar/Pie"
 
-const DEFAULT_COLOR = "var(--primary)";
+const DEFAULT_COLOR = "var(--primary)"
 
 export default function SectorChart({
   data,
 }: {
   data: {
-    label: string;
-    value: bigint;
-    color?: string;
-  }[];
+    label: string
+    value: bigint
+    color?: string
+  }[]
 }) {
-  const tokenProps = useStateObservable(tokenProps$);
-  if (!tokenProps) return null;
+  const tokenProps = useStateObservable(tokenProps$)
+  if (!tokenProps) return null
 
   return (
     <ResponsiveContainer height={300} className="overflow-hidden max-w-[500px]">
@@ -45,7 +45,7 @@ export default function SectorChart({
         </Pie>
       </PieChart>
     </ResponsiveContainer>
-  );
+  )
 }
 
 const ActiveShape = ({
@@ -61,24 +61,24 @@ const ActiveShape = ({
   percent,
   value,
 }: PieSectorDataItem) => {
-  const tokenProps = useStateObservable(tokenProps$);
-  if (!tokenProps) return <></>;
+  const tokenProps = useStateObservable(tokenProps$)
+  if (!tokenProps) return <></>
 
-  const RADIAN = Math.PI / 180;
-  const sin = Math.sin(-RADIAN * (midAngle ?? 1));
-  const cos = Math.cos(-RADIAN * (midAngle ?? 1));
-  const sx = (cx ?? 0) + ((outerRadius ?? 0) + 10) * cos;
-  const sy = (cy ?? 0) + ((outerRadius ?? 0) + 10) * sin;
-  const mx = (cx ?? 0) + ((outerRadius ?? 0) + 30) * cos;
-  const my = (cy ?? 0) + ((outerRadius ?? 0) + 30) * sin;
-  const ex = mx + (cos >= 0 ? 1 : -1) * 22;
-  const ey = my;
-  const textAnchor = cos >= 0 ? "start" : "end";
+  const RADIAN = Math.PI / 180
+  const sin = Math.sin(-RADIAN * (midAngle ?? 1))
+  const cos = Math.cos(-RADIAN * (midAngle ?? 1))
+  const sx = (cx ?? 0) + ((outerRadius ?? 0) + 10) * cos
+  const sy = (cy ?? 0) + ((outerRadius ?? 0) + 10) * sin
+  const mx = (cx ?? 0) + ((outerRadius ?? 0) + 30) * cos
+  const my = (cy ?? 0) + ((outerRadius ?? 0) + 30) * sin
+  const ex = mx + (cos >= 0 ? 1 : -1) * 22
+  const ey = my
+  const textAnchor = cos >= 0 ? "start" : "end"
 
   const fillWithoutTransparency = fill?.replace(
     /transparent \d+%/,
-    "transparent 0%"
-  );
+    "transparent 0%",
+  )
 
   return (
     <g>
@@ -133,5 +133,5 @@ const ActiveShape = ({
         {`(${((percent ?? 1) * 100).toFixed(2)}%)`}
       </text>
     </g>
-  );
-};
+  )
+}

@@ -1,73 +1,73 @@
-import { cn } from "@/lib/utils";
-import { tokenProps$ } from "@/state/chain";
-import { amountToParts } from "@/util/format";
-import type { TokenProperties } from "@polkadot-api/react-components";
-import { useStateObservable } from "@react-rxjs/core";
-import type { FC } from "react";
+import { cn } from "@/lib/utils"
+import { tokenProps$ } from "@/state/chain"
+import { amountToParts } from "@/util/format"
+import type { TokenProperties } from "@polkadot-api/react-components"
+import { useStateObservable } from "@react-rxjs/core"
+import type { FC } from "react"
 
-const decimalPoint = (0.1).toLocaleString().slice(1, 2);
+const decimalPoint = (0.1).toLocaleString().slice(1, 2)
 
 export const significantDigitsDecimals =
   (significantDigits: number, min: number = 0) =>
   (value: bigint, tokenDecimals: number) => {
-    const TOKEN_UNIT = 10n ** BigInt(tokenDecimals);
+    const TOKEN_UNIT = 10n ** BigInt(tokenDecimals)
     const integerLength =
-      value / TOKEN_UNIT === 0n ? 0 : (value / TOKEN_UNIT).toString().length;
-    return Math.max(min, significantDigits - integerLength);
-  };
+      value / TOKEN_UNIT === 0n ? 0 : (value / TOKEN_UNIT).toString().length
+    return Math.max(min, significantDigits - integerLength)
+  }
 
-export const fixedDecimals = (decimals: number) => () => decimals;
+export const fixedDecimals = (decimals: number) => () => decimals
 export const allDecimals = () => (_: bigint, tokenDecimals: number) =>
-  tokenDecimals;
+  tokenDecimals
 
 export function formatToken(
   value: bigint,
   tokenProps: TokenProperties,
   decimalsFn: (
     integerPart: bigint,
-    tokenDecimals: number
-  ) => number = significantDigitsDecimals(3, 2)
+    tokenDecimals: number,
+  ) => number = significantDigitsDecimals(3, 2),
 ) {
-  const { decimals: tokenDecimals, symbol } = tokenProps;
+  const { decimals: tokenDecimals, symbol } = tokenProps
 
-  const { integer, fraction } = amountToParts(value, tokenDecimals);
+  const { integer, fraction } = amountToParts(value, tokenDecimals)
 
-  const decimals = decimalsFn(value, tokenDecimals);
+  const decimals = decimalsFn(value, tokenDecimals)
   const decimalPart =
     decimals > 0
       ? `${decimalPoint}${fraction
           .slice(0, decimals)
           .replace(/0+$/, "")
           .padEnd(decimals, "0")}`
-      : null;
-  return Number(integer).toLocaleString() + (decimalPart || "") + " " + symbol;
+      : null
+  return Number(integer).toLocaleString() + (decimalPart || "") + " " + symbol
 }
 
 export const TokenValue: FC<{
-  value: bigint;
-  decimalsFn?: (integerPart: bigint, tokenDecimals: number) => number;
-  className?: string;
-  colored?: boolean;
+  value: bigint
+  decimalsFn?: (integerPart: bigint, tokenDecimals: number) => number
+  className?: string
+  colored?: boolean
 }> = ({
   value,
   decimalsFn = significantDigitsDecimals(3, 2),
   className,
   colored = true,
 }) => {
-  const tokenProps = useStateObservable(tokenProps$);
-  if (!tokenProps) return null;
-  const { decimals: tokenDecimals, symbol } = tokenProps;
+  const tokenProps = useStateObservable(tokenProps$)
+  if (!tokenProps) return null
+  const { decimals: tokenDecimals, symbol } = tokenProps
 
-  const { integer, fraction } = amountToParts(value, tokenDecimals);
+  const { integer, fraction } = amountToParts(value, tokenDecimals)
 
-  const decimals = decimalsFn(value, tokenDecimals);
+  const decimals = decimalsFn(value, tokenDecimals)
   const decimalPart =
     decimals > 0
       ? `${decimalPoint}${fraction
           .slice(0, decimals)
           .replace(/0+$/, "")
           .padEnd(decimals, "0")}`
-      : null;
+      : null
 
   return (
     <span className={cn(colored ? "text-foreground" : "", className)}>
@@ -79,5 +79,5 @@ export const TokenValue: FC<{
       )}
       <span> {symbol}</span>
     </span>
-  );
-};
+  )
+}
