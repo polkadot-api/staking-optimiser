@@ -126,6 +126,10 @@
   button {
     cursor: pointer;
   }
+
+  svg, svg * {
+    outline: none;
+  }
 }
 
 .data-table table {

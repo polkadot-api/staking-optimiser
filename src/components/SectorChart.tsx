@@ -1,10 +1,14 @@
 import { tokenProps$ } from "@/state/chain"
 import { amountToNumber } from "@/util/format"
 import { useStateObservable } from "@react-rxjs/core"
-import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts"
+import { Cell, Pie, PieChart, Sector } from "recharts"
 import type { PieSectorDataItem } from "recharts/types/polar/Pie"
 
 const DEFAULT_COLOR = "var(--primary)"
+
+const CHART_SIZE = 220
+const CHART_MARGINS = 20
+const SECTOR_WIDTH = 32
 
 export default function SectorChart({
   data,
@@ -18,62 +22,49 @@ export default function SectorChart({
   const tokenProps = useStateObservable(tokenProps$)
   if (!tokenProps) return null
 
+  const outerRadius = CHART_SIZE / 2 - CHART_MARGINS
   return (
-    <ResponsiveContainer height={300} className="overflow-hidden max-w-[500px]">
-      <PieChart>
-        <Pie
-          activeShape={ActiveShape}
-          data={data.map((v) => ({
-            ...v,
-            value: amountToNumber(v.value, tokenProps.decimals),
-          }))}
-          cx="50%"
-          cy="50%"
-          innerRadius={50}
-          outerRadius={90}
-          fill={DEFAULT_COLOR}
-          dataKey="value"
-          startAngle={90}
-          endAngle={90 - 360}
-        >
-          {data.map((entry) => (
-            <Cell
-              key={`cell-${entry.label}`}
-              fill={entry.color ?? DEFAULT_COLOR}
-            />
-          ))}
-        </Pie>
-      </PieChart>
-    </ResponsiveContainer>
+    <PieChart width={CHART_SIZE} height={CHART_SIZE}>
+      <Pie
+        activeShape={ActiveShape}
+        data={data.map((v) => ({
+          ...v,
+          value: amountToNumber(v.value, tokenProps.decimals),
+        }))}
+        cx="50%"
+        cy="50%"
+        innerRadius={outerRadius - SECTOR_WIDTH}
+        outerRadius={outerRadius}
+        fill={DEFAULT_COLOR}
+        dataKey="value"
+        paddingAngle={1}
+        startAngle={90}
+        endAngle={90 - 360}
+      >
+        {data.map((entry) => (
+          <Cell
+            key={`cell-${entry.label}`}
+            fill={entry.color ?? DEFAULT_COLOR}
+          />
+        ))}
+      </Pie>
+    </PieChart>
   )
 }
 
 const ActiveShape = ({
   cx,
   cy,
-  midAngle,
   innerRadius,
   outerRadius,
   startAngle,
   endAngle,
   fill,
   payload,
-  percent,
   value,
 }: PieSectorDataItem) => {
   const tokenProps = useStateObservable(tokenProps$)
   if (!tokenProps) return <></>
-
-  const RADIAN = Math.PI / 180
-  const sin = Math.sin(-RADIAN * (midAngle ?? 1))
-  const cos = Math.cos(-RADIAN * (midAngle ?? 1))
-  const sx = (cx ?? 0) + ((outerRadius ?? 0) + 10) * cos
-  const sy = (cy ?? 0) + ((outerRadius ?? 0) + 10) * sin
-  const mx = (cx ?? 0) + ((outerRadius ?? 0) + 30) * cos
-  const my = (cy ?? 0) + ((outerRadius ?? 0) + 30) * sin
-  const ex = mx + (cos >= 0 ? 1 : -1) * 22
-  const ey = my
-  const textAnchor = cos >= 0 ? "start" : "end"
 
   const fillWithoutTransparency = fill?.replace(
     /transparent \d+%/,
@@ -84,12 +75,24 @@ const ActiveShape = ({
     <g>
       <text
         x={cx}
-        y={cy}
+        y={cy - 8}
         dy={8}
         textAnchor="middle"
         fill={fillWithoutTransparency}
       >
         {payload.label}
+      </text>
+      <text
+        x={cx}
+        y={cy + 8}
+        dy={8}
+        textAnchor="middle"
+        fill="#333a"
+        fontSize="0.9rem"
+      >
+        {value?.toLocaleString(undefined, {
+          maximumFractionDigits: 2,
+        })}
       </text>
       <Sector
         cx={cx}
@@ -109,29 +112,6 @@ const ActiveShape = ({
         outerRadius={(outerRadius ?? 0) + 10}
         fill={fill}
       />
-      <path
-        d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
-        stroke={fill}
-        fill="none"
-      />
-      <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-      <text
-        x={ex + (cos >= 0 ? 1 : -1) * 12}
-        y={ey}
-        textAnchor={textAnchor}
-        fill="#333"
-      >{`${value?.toLocaleString(undefined, {
-        maximumFractionDigits: 2,
-      })} ${tokenProps.symbol}`}</text>
-      <text
-        x={ex + (cos >= 0 ? 1 : -1) * 12}
-        y={ey}
-        dy={18}
-        textAnchor={textAnchor}
-        fill="#999"
-      >
-        {`(${((percent ?? 1) * 100).toFixed(2)}%)`}
-      </text>
     </g>
   )
 }
