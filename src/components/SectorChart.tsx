@@ -1,5 +1,5 @@
 import { tokenProps$ } from "@/state/chain"
-import { amountToNumber } from "@/util/format"
+import { amountToNumber, formatPercentage } from "@/util/format"
 import { useStateObservable } from "@react-rxjs/core"
 import { Cell, Pie, PieChart, Sector } from "recharts"
 import type { PieSectorDataItem } from "recharts/types/polar/Pie"
@@ -40,6 +40,8 @@ export default function SectorChart({
         paddingAngle={1}
         startAngle={90}
         endAngle={90 - 360}
+        animationDuration={500}
+        animationBegin={300}
       >
         {data.map((entry) => (
           <Cell
@@ -61,7 +63,7 @@ const ActiveShape = ({
   endAngle,
   fill,
   payload,
-  value,
+  percent,
 }: PieSectorDataItem) => {
   const tokenProps = useStateObservable(tokenProps$)
   if (!tokenProps) return <></>
@@ -82,18 +84,18 @@ const ActiveShape = ({
       >
         {payload.label}
       </text>
-      <text
-        x={cx}
-        y={cy + 8}
-        dy={8}
-        textAnchor="middle"
-        fill="#333a"
-        fontSize="0.9rem"
-      >
-        {value?.toLocaleString(undefined, {
-          maximumFractionDigits: 2,
-        })}
-      </text>
+      {percent ? (
+        <text
+          x={cx}
+          y={cy + 8}
+          dy={8}
+          textAnchor="middle"
+          fill="#333a"
+          fontSize="0.9rem"
+        >
+          {formatPercentage(percent)}
+        </text>
+      ) : null}
       <Sector
         cx={cx}
         cy={cy}

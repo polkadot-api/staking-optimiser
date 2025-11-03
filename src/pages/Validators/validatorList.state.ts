@@ -124,7 +124,7 @@ const aggregateHistoricValidators = (
   ) as any
 }
 
-const validatorRewardsToHistoric = (
+export const validatorRewardsToHistoric = (
   validator: ValidatorRewards,
 ): HistoricValidator => {
   return {
