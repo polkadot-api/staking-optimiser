@@ -2,8 +2,8 @@ import { stakingApi$ } from "@/state/chain"
 import { activeEra$ } from "@/state/era"
 import { useStateObservable, withDefault } from "@react-rxjs/core"
 import { combineLatest, map, switchMap } from "rxjs"
-import { Card } from "../Card"
 import { CircularProgress } from "../CircularProgress"
+import { InfoCard } from "./InfoCard"
 
 const validators$ = stakingApi$.pipeState(
   switchMap((api) =>
@@ -26,7 +26,7 @@ export const ActiveValidators = () => {
   const validators = useStateObservable(validators$)
 
   return (
-    <Card title="Active Validators">
+    <InfoCard title="Active Validators">
       <div className="flex flex-col items-center">
         <div className="text-xs text-chart-2">
           <CircularProgress
@@ -37,7 +37,7 @@ export const ActiveValidators = () => {
           {validators ? `${validators.ideal}/${validators.ideal}` : `…`}
         </div>
       </div>
-    </Card>
+    </InfoCard>
   )
 }
 
@@ -45,7 +45,7 @@ export const TotalValidators = () => {
   const validators = useStateObservable(validators$)
 
   return (
-    <Card title="Total Validators">
+    <InfoCard title="Total Validators" className="hidden lg:flex">
       <div className="flex flex-col items-center">
         <div className="text-xs text-chart-2">
           <CircularProgress
@@ -58,6 +58,6 @@ export const TotalValidators = () => {
             : (validators?.count ?? `…`)}
         </div>
       </div>
-    </Card>
+    </InfoCard>
   )
 }

@@ -1,67 +1,68 @@
 import { AddressIdentity } from "@/components/AddressIdentity"
-import { ContractableText } from "@/components/SortBy"
-import { cn } from "@/lib/utils"
+import { activeEraNumber$ } from "@/state/era"
+import { validatorsEra$ } from "@/state/validators"
 import { formatPercentage } from "@/util/format"
-import { useStateObservable } from "@react-rxjs/core"
-import { sortedValidators$, validatorPrefs$ } from "./validatorList.state"
+import { state, useStateObservable } from "@react-rxjs/core"
 import { Link } from "react-router-dom"
+import { combineLatest, filter, map, switchMap } from "rxjs"
+import { validatorPrefs$ } from "./validatorList.state"
+
+const topValidators$ = state(
+  combineLatest([
+    activeEraNumber$.pipe(
+      switchMap((era) => validatorsEra$(era - 1)),
+      map((v) => [...v].sort((a, b) => b.nominatorApy - a.nominatorApy)),
+    ),
+    validatorPrefs$.pipe(filter((prefs) => Object.keys(prefs).length > 0)),
+  ]).pipe(
+    map(([validators, prefs]) =>
+      validators
+        .filter((v) => prefs[v.address]?.blocked === false)
+        .slice(0, 10),
+    ),
+  ),
+)
 
 export default function TopValidators() {
-  const validators = useStateObservable(sortedValidators$).slice(0, 10)
-  const prefs = useStateObservable(validatorPrefs$)
+  const validators = useStateObservable(topValidators$)
 
   return (
-    <div className="data-table compact">
-      <table>
-        <thead>
-          <tr className="bg-background">
-            <th>Validator</th>
-            <th>APY</th>
-            <th>
-              <ContractableText smol="Comm.">Commission</ContractableText>
-            </th>
-            <th>
-              <ContractableText smol="# Nom.">Nominators</ContractableText>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {validators.map((validator, idx) => {
-            const vPrefs = prefs[validator.address]
-
-            return (
-              <tr
-                key={validator.address}
-                className={cn({
-                  "bg-muted": idx % 2 === 0,
-                  "bg-destructive/5": !vPrefs || vPrefs.blocked,
-                  "bg-destructive/10":
-                    (!vPrefs || vPrefs.blocked) && idx % 2 === 0,
-                })}
-              >
-                <td>
-                  <Link to={`../validators/${validator.address}`}>
-                    <AddressIdentity addr={validator.address} />
-                  </Link>
-                </td>
-                <td
-                  className={cn("text-right font-bold", {
-                    "text-positive": validator.nominatorApy > 0,
-                  })}
-                >
-                  {formatPercentage(validator.nominatorApy)}
-                </td>
-                <td className="text-right">
-                  {formatPercentage(validator.commission)}
-                </td>
-                <td className="text-right">
-                  {Math.round(validator.nominatorQuantity).toLocaleString()}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
+    <ol className="space-y-4">
+      {validators.map((v) => (
+        <li key={v.address} className="shadow rounded-xl p-2 space-y-2">
+          <Link to={"../validators/" + v.address}>
+            <AddressIdentity addr={v.address} />
+          </Link>
+          <div className="flex gap-4 justify-center">
+            <div>
+              <h4 className="font-bold text-center text-muted-foreground">
+                APY
+              </h4>
+              <div className="text-center">
+                {formatPercentage(v.nominatorApy)}
+              </div>
+            </div>
+            <div>
+              <h4 className="font-bold text-center text-muted-foreground">
+                Commission
+              </h4>
+              <div className="text-center">
+                {formatPercentage(v.commission)}
+              </div>
+            </div>
+            <div>
+              <h4 className="font-bold text-center text-muted-foreground">
+                Nominators
+              </h4>
+              <div className="text-center">
+                {v.nominatorCount.toLocaleString()}
+              </div>
+            </div>
+          </div>
+        </li>
+      ))}
+    </ol>
   )
 }
+
+export const topValidatorsSub$ = topValidators$

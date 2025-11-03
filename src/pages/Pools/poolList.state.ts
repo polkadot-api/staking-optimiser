@@ -4,9 +4,12 @@ import { createState } from "@/util/rxjs"
 import { type NominationPool as SdkNominationPool } from "@polkadot-api/sdk-staking"
 import { state } from "@react-rxjs/core"
 import { combineLatest, combineLatestWith, map, switchMap } from "rxjs"
-import { aggregatedValidators$ } from "../Validators/validatorList.state"
+import {
+  aggregatedValidators$,
+  type HistoricValidator,
+} from "../Validators/validatorList.state"
 
-const pools$ = state(
+export const pools$ = state(
   stakingSdk$.pipe(switchMap((sdk) => sdk.getNominationPools())),
 )
 
@@ -14,6 +17,28 @@ export interface NominationPool extends SdkNominationPool {
   minApy: number
   maxApy: number
   avgApy: number
+}
+
+export function calculatePoolApy(
+  pool: SdkNominationPool,
+  validators: Record<string, HistoricValidator>,
+): NominationPool {
+  const nominations = pool.nominations
+    .map((v) => validators[v])
+    .filter((v) => v != null)
+  const apys = nominations.map((v) => v.nominatorApy)
+  const commissionMul = 1 - pool.commission.current
+
+  return {
+    ...pool,
+    minApy: apys.length
+      ? apys.reduce((a, b) => Math.min(a, b)) * commissionMul
+      : 0,
+    maxApy: apys.reduce((a, b) => Math.max(a, b), 0) * commissionMul,
+    avgApy: apys.length
+      ? (apys.reduce((a, b) => a + b) / apys.length) * commissionMul
+      : 0,
+  }
 }
 
 const poolNominations$ = state(
@@ -26,24 +51,7 @@ const poolNominations$ = state(
     ),
   ]).pipe(
     map(([pools, validators]) =>
-      pools.map((pool): NominationPool => {
-        const nominations = pool.nominations
-          .map((v) => validators[v])
-          .filter((v) => v != null)
-        const apys = nominations.map((v) => v.nominatorApy)
-        const commissionMul = 1 - pool.commission.current
-
-        return {
-          ...pool,
-          minApy: apys.length
-            ? apys.reduce((a, b) => Math.min(a, b)) * commissionMul
-            : 0,
-          maxApy: apys.reduce((a, b) => Math.max(a, b), 0) * commissionMul,
-          avgApy: apys.length
-            ? (apys.reduce((a, b) => a + b) / apys.length) * commissionMul
-            : 0,
-        }
-      }),
+      pools.map((pool): NominationPool => calculatePoolApy(pool, validators)),
     ),
   ),
 )

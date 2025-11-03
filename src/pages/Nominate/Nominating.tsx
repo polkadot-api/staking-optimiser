@@ -1,23 +1,22 @@
-import { AccountBalance, accountBalanceSub$ } from "@/components/AccountBalance"
 import { AddressIdentity } from "@/components/AddressIdentity"
 import { Card } from "@/components/Card"
 import { CardPlaceholder } from "@/components/CardPlaceholder"
-import { DialogButton } from "@/components/DialogButton"
 import { PERBILL } from "@/constants"
 import { cn } from "@/lib/utils"
-import { accountStatus$, selectedAccountAddr$ } from "@/state/account"
+import { selectedAccountAddr$ } from "@/state/account"
 import { stakingApi$ } from "@/state/chain"
 import { activeEraNumber$ } from "@/state/era"
 import {
-  currentNominatorBond$,
   currentNominatorStatus$,
   rewardHistory$,
   validatorActive$,
 } from "@/state/nominate"
+import { validatorPerformance$ } from "@/state/validators"
 import { roundToDecimalPlaces } from "@/util/format"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { type SS58String } from "polkadot-api"
 import { lazy, Suspense, type FC } from "react"
+import { Link } from "react-router-dom"
 import {
   combineLatest,
   debounceTime,
@@ -27,21 +26,15 @@ import {
   merge,
   switchMap,
 } from "rxjs"
-import { ManageNomination } from "./ManageNomination"
+import { AccountStatus, accountStatusSub$ } from "../AccountStatus"
 import { MinBondingAmounts, minBondingAmountsSub$ } from "./MinBondingAmounts"
-import { NominateLocks, nominateLocksSub$ } from "./NominateLocks"
-import { StopNominating } from "./StopNominating"
-import { validatorPerformance$ } from "@/state/validators"
-import { Link } from "react-router-dom"
 
 const EraChart = lazy(() => import("@/components/EraChart"))
 
 export const NominatingContent = () => (
   <div className="space-y-4">
     <MinBondingAmounts />
-    <Suspense fallback={<CardPlaceholder height={350} />}>
-      <StatusCard />
-    </Suspense>
+    <AccountStatus />
     <NominateRewards />
     <SelectedValidators />
   </div>
@@ -50,54 +43,10 @@ export const NominatingContent = () => (
 export const nominatingContentSub$ = defer(() =>
   merge(
     minBondingAmountsSub$,
-    statusCardSub$,
+    accountStatusSub$,
     nominateRewardsSub$,
     selectedValidatorsSub$,
   ),
-)
-
-export const ManageNominationBtn = () => (
-  <DialogButton
-    title="Manage nomination"
-    content={() => <ManageNomination />}
-    dialogClassName="md:max-w-3xl lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl"
-    needsSigner
-  >
-    Manage nomination
-  </DialogButton>
-)
-
-const StatusCard = () => {
-  const currentBond = useStateObservable(currentNominatorBond$)
-  const status = useStateObservable(accountStatus$)
-
-  return (
-    <Card title="Status">
-      <div className="flex flex-wrap gap-2 items-start">
-        <AccountBalance className="grow-2" />
-        {currentBond?.unlocks.length ? <NominateLocks /> : null}
-      </div>
-      <div className="mt-4 space-x-2">
-        <ManageNominationBtn />
-        {status?.nomination.currentBond ? (
-          <DialogButton
-            title="Stop nominating"
-            content={({ close }) => <StopNominating close={close} />}
-            needsSigner
-          >
-            Stop nominating
-          </DialogButton>
-        ) : null}
-      </div>
-    </Card>
-  )
-}
-
-const statusCardSub$ = merge(
-  currentNominatorBond$,
-  accountStatus$,
-  accountBalanceSub$,
-  nominateLocksSub$,
 )
 
 const selectedValidators$ = state(

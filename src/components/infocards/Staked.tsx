@@ -3,8 +3,8 @@ import { activeEra$ } from "@/state/era"
 import { formatPercentage } from "@/util/format"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { combineLatest, switchMap } from "rxjs"
-import { Card } from "../Card"
 import { CircularProgress } from "../CircularProgress"
+import { InfoCard } from "./InfoCard"
 
 const staked$ = state(
   combineLatest({
@@ -26,13 +26,13 @@ export const Staked = () => {
   const pct = staked ? Number(staked.staked) / Number(staked.issuance) : null
 
   return (
-    <Card title="Staked" className="flex flex-col">
+    <InfoCard title="Staked">
       <div className="flex-1 flex flex-col items-center justify-center text-xs text-chart-2">
         <CircularProgress
           progress={pct ?? 0}
           text={pct ? formatPercentage(pct) : ""}
         />
       </div>
-    </Card>
+    </InfoCard>
   )
 }

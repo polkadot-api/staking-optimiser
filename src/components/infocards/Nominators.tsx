@@ -1,8 +1,8 @@
 import { stakingApi$ } from "@/state/chain"
 import { useStateObservable, withDefault } from "@react-rxjs/core"
 import { combineLatest, switchMap } from "rxjs"
-import { Card } from "../Card"
 import { CircularProgress } from "../CircularProgress"
+import { InfoCard } from "./InfoCard"
 
 const validators$ = stakingApi$.pipeState(
   switchMap((api) =>
@@ -18,7 +18,7 @@ export const ActiveNominators = () => {
   const nominators = useStateObservable(validators$)
 
   return (
-    <Card title="Nominators">
+    <InfoCard title="Nominators" className="hidden sm:flex">
       <div className="flex flex-col items-center">
         <div className="text-xs text-chart-2">
           <CircularProgress
@@ -31,6 +31,6 @@ export const ActiveNominators = () => {
             : (nominators?.count.toLocaleString() ?? `…`)}
         </div>
       </div>
-    </Card>
+    </InfoCard>
   )
 }

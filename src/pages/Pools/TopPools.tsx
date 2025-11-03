@@ -1,59 +1,76 @@
 import { AddressIdentity } from "@/components/AddressIdentity"
-import { cn } from "@/lib/utils"
+import { activeEraNumber$ } from "@/state/era"
+import { validatorsEra$ } from "@/state/validators"
 import { formatPercentage } from "@/util/format"
-import { useStateObservable } from "@react-rxjs/core"
+import { state, useStateObservable } from "@react-rxjs/core"
+import { combineLatest, map, switchMap } from "rxjs"
+import { validatorRewardsToHistoric } from "../Validators/validatorList.state"
+import { calculatePoolApy, pools$ } from "./poolList.state"
 import { Link } from "react-router-dom"
-import { sortedPools$ } from "./poolList.state"
+
+const topPools$ = state(
+  combineLatest([
+    activeEraNumber$.pipe(
+      switchMap((era) => validatorsEra$(era - 1)),
+      map((validators) => validators.map(validatorRewardsToHistoric)),
+      map((validators) =>
+        Object.fromEntries(validators.map((v) => [v.address, v])),
+      ),
+    ),
+    pools$,
+  ]).pipe(
+    map(([validators, pools]) =>
+      pools
+        .map((pool) => calculatePoolApy(pool, validators))
+        .sort((a, b) => b.avgApy - a.avgApy)
+        .slice(0, 10),
+    ),
+  ),
+)
 
 export default function TopPools() {
-  const pools = useStateObservable(sortedPools$).slice(0, 10)
+  const pools = useStateObservable(topPools$)
 
   return (
-    <div className="data-table compact">
-      <table>
-        <thead>
-          <tr className="bg-background">
-            <th></th>
-            <th className="w-full">Pool</th>
-            <th>Avg APY</th>
-            <th>Commission</th>
-            <th>Members</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pools.map((pool, idx) => (
-            <tr
-              key={pool.id}
-              className={cn({
-                "bg-muted": idx % 2 === 0,
-                "bg-destructive/5": pool.state !== "Open",
-                "bg-destructive/10": pool.state !== "Open" && idx % 2 === 0,
-              })}
-            >
-              <td>{(pool.position ?? idx) + 1}</td>
-              <td>
-                <Link to={"../pools/" + pool.id}>
-                  <AddressIdentity
-                    addr={pool.addresses.pool}
-                    name={pool.name}
-                  />
-                </Link>
-              </td>
-              <td
-                className={cn("text-right font-bold", {
-                  "text-positive": pool.avgApy > 0,
-                })}
-              >
-                {formatPercentage(pool.avgApy)}
-              </td>
-              <td>{formatPercentage(pool.commission.current)}</td>
-              <td>{pool.memberCount}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <ol className="space-y-4">
+      {pools.map((p) => (
+        <li key={p.id} className="shadow rounded-xl p-2 space-y-2">
+          <Link to={"../pools/" + p.id} className="flex items-center gap-2">
+            <div>#{p.id}</div>
+            <AddressIdentity
+              className="whitespace-nowrap"
+              addr={p.addresses.pool}
+              name={p.name}
+            />
+          </Link>
+          <div className="flex gap-4 justify-center">
+            <div>
+              <h4 className="font-bold text-center text-muted-foreground">
+                APY
+              </h4>
+              <div className="text-center">{formatPercentage(p.avgApy)}</div>
+            </div>
+            <div>
+              <h4 className="font-bold text-center text-muted-foreground">
+                Commission
+              </h4>
+              <div className="text-center">
+                {formatPercentage(p.commission.current)}
+              </div>
+            </div>
+            <div>
+              <h4 className="font-bold text-center text-muted-foreground">
+                Members
+              </h4>
+              <div className="text-center">
+                {p.memberCount.toLocaleString()}
+              </div>
+            </div>
+          </div>
+        </li>
+      ))}
+    </ol>
   )
 }
 
-export const topPoolsSub$ = sortedPools$
+export const topPoolsSub$ = topPools$

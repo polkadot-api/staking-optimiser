@@ -35,9 +35,9 @@ export const NominateLocks = () => {
   const locks = useStateObservable(locks$)
 
   return (
-    <div className="grow">
+    <div className="mb-2">
       <h3 className="font-medium text-muted-foreground">Active Unlocks</h3>
-      <ol>
+      <ol className="pl-4 text-sm">
         {locks.map(({ unlocked, estimatedUnlock, value }, i) => (
           <li key={i}>
             <span className="text-muted-foreground">

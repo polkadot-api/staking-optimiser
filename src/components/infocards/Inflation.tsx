@@ -5,8 +5,8 @@ import type { Dot } from "@polkadot-api/descriptors"
 import { useStateObservable, withDefault } from "@react-rxjs/core"
 import { CompatibilityLevel, type TypedApi } from "polkadot-api"
 import { switchMap } from "rxjs"
-import { Card } from "../Card"
 import { CircularProgress } from "../CircularProgress"
+import { InfoCard } from "./InfoCard"
 
 type InflationApi = TypedApi<Dot>
 const inflation$ = relayApi$.pipeState(
@@ -26,15 +26,17 @@ const inflation$ = relayApi$.pipeState(
 
 export const Inflation = () => {
   const inflation = useStateObservable(inflation$)
-  if (!inflation) return null
 
-  const pct = Number(inflation.inflation) / PERQUINT
+  const pct = inflation ? Number(inflation.inflation) / PERQUINT : null
 
   return (
-    <Card title="Inflation" className="flex flex-col">
+    <InfoCard title="Inflation" className="hidden lg:flex">
       <div className="flex-1 flex flex-col items-center justify-center text-xs text-chart-2">
-        <CircularProgress progress={pct} text={formatPercentage(pct)} />
+        <CircularProgress
+          progress={pct}
+          text={pct ? formatPercentage(pct) : ""}
+        />
       </div>
-    </Card>
+    </InfoCard>
   )
 }
