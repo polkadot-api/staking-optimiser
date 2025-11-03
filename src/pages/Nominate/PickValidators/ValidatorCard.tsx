@@ -22,7 +22,7 @@ export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
   const name =
     identity && identity.value + (identity.subId ? `/${identity.subId}` : "")
   return (
-    <Card className="group relative transition-all hover:shadow-md p-2 border rounded-lg shadow-sm ring-primary/50 bg-primary/5 ">
+    <Card className="group relative transition-all hover:shadow-md px-2 py-0 -mb-1 border rounded-lg shadow-sm ring-primary/50 bg-primary/5 ">
       <button
         onClick={(e) => {
           e.stopPropagation()
@@ -34,19 +34,17 @@ export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
         <X className="size-3.5" />
       </button>
 
-      <div className="flex items-center gap-2">
-        <div className="size-8 rounded-full shrink-0 AccountDisplay">
+      <div className="flex items-center gap-1.5 mt-2.5">
+        <div className="size-7 flex justify-center">
           <CopyText
             text={address}
             copiedIndicator={
-              <div className="AccountDisplay_copied">
-                <CheckCircle size={18} className="text-positive shrink-0" />
-              </div>
+                <CheckCircle size={18} className="text-positive" />
             }
           >
             <PolkadotIdenticon
-              className="Identicon"
               publicKey={getPublicKey(address)}
+              size={30}
             />
           </CopyText>
         </div>
@@ -77,7 +75,7 @@ export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
 
 export function EmptyValidatorSlot() {
   return (
-    <Card className="p-2 border-dashed border-2 border-border/30 bg-muted/10 flex items-center justify-center min-h-[52px]">
+    <Card className="px-2 py-0 -mb-1 border-dashed border-2 border-border/30 bg-muted/10 flex items-center justify-center min-h-[52px]">
       <Plus className="size-4 text-muted-foreground/30" />
     </Card>
   )
