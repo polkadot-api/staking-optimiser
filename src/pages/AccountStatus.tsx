@@ -87,7 +87,7 @@ const NotNominatingContent = () => {
 
   return (
     <div className="grow space-y-1">
-      <div className="text-muted-foreground">Currently not nominating.</div>
+      <div className="text-muted-foreground">Currently not nominating</div>
       {canJoinPool && canNominate ? (
         <div>
           You have enough funds to either{" "}

@@ -74,12 +74,8 @@ export const AccountBalance: FC<{
   const balance = useStateObservable(accountBalance$)
   const currentBond = useStateObservable(bondedStatus$)
 
-  if (balance == null) {
-    return <div>No account selected</div>
-  }
-
-  if (balance.total === 0n) {
-    return <div>This account has no balance. Deposit some to start staking</div>
+  if (balance == null || balance.total === 0n) {
+    return null
   }
 
   const bonded = currentBond?.bond ?? 0n

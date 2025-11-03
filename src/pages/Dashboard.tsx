@@ -1,4 +1,5 @@
 import { Card } from "@/components/Card"
+import { CardPlaceholder } from "@/components/CardPlaceholder"
 import {
   ActiveEra,
   activeEraSub$,
@@ -9,7 +10,6 @@ import {
   TotalValidators,
 } from "@/components/infocards"
 import { NavMenu } from "@/components/NavMenu/NavMenu"
-import { CardPlaceholder } from "@polkahub/ui-components"
 import { Suspense } from "react"
 import { defer, merge } from "rxjs"
 import { AccountStatus, accountStatusSub$ } from "./AccountStatus"
@@ -31,7 +31,14 @@ export const Dashboard = () => {
         </div>
         <AccountStatus />
         <div className="flex gap-4 flex-col lg:flex-row">
-          <Suspense fallback={<CardPlaceholder height={1240} />}>
+          <Suspense
+            fallback={
+              <CardPlaceholder
+                className="basis-4 grow shrink-0"
+                height={1240}
+              />
+            }
+          >
             <Card
               title="Top Validators of the last era"
               className="basis-4 grow shrink-0"
@@ -39,7 +46,14 @@ export const Dashboard = () => {
               <TopValidators />
             </Card>
           </Suspense>
-          <Suspense fallback={<CardPlaceholder height={1240} />}>
+          <Suspense
+            fallback={
+              <CardPlaceholder
+                className="basis-4 grow shrink-0"
+                height={1240}
+              />
+            }
+          >
             <Card
               title="Top Pools of the last era"
               className="basis-4 grow shrink-0"
