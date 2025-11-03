@@ -1,4 +1,4 @@
-import { X, Plus, CheckCircle2, CheckCircle } from "lucide-react"
+import { X, Plus, CheckCircle } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { CopyText, PolkadotIdenticon } from "@polkadot-api/react-components"
 import { getPublicKey } from "@/util/ss58"
@@ -22,7 +22,7 @@ export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
   const name =
     identity && identity.value + (identity.subId ? `/${identity.subId}` : "")
   return (
-    <Card className="group relative transition-all hover:shadow-md px-2 py-0 -mb-1 border rounded-lg shadow-sm ring-primary/50 bg-primary/5 ">
+    <Card className="group relative transition-all hover:shadow-md px-2 py-0 -mb-1 border rounded-lg shadow-sm bg-primary/5 min-h-[44px]">
       <button
         onClick={(e) => {
           e.stopPropagation()
@@ -34,7 +34,7 @@ export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
         <X className="size-3.5" />
       </button>
 
-      <div className="flex items-center gap-1.5 mt-2.5">
+      <div className="flex items-center gap-1.5 mt-1.5">
         <div className="size-7 flex justify-center">
           <CopyText
             text={address}
@@ -52,7 +52,7 @@ export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
               {name || truncateMiddle(address)}
             </p>
             {identity?.verified && (
-              <CheckCircle2 className="size-3 text-green-500 shrink-0" />
+              <CheckCircle className="size-3.5 text-green-500 shrink-0" />
             )}
           </div>
         </div>
@@ -72,7 +72,7 @@ export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
 
 export function EmptyValidatorSlot() {
   return (
-    <Card className="px-2 py-0 -mb-1 border-dashed border-2 border-border/30 bg-muted/10 flex items-center justify-center min-h-[52px]">
+    <Card className="px-2 py-0 -mb-1 border-dashed border-2 border-border/30 bg-muted/10 flex items-center justify-center min-h-[44px]">
       <Plus className="size-4 text-muted-foreground/30" />
     </Card>
   )
