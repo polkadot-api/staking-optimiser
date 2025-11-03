@@ -7,8 +7,9 @@ export const Card: FC<
     title?: ReactNode
     hint?: string
     className?: string
+    titleClassName?: string
   }>
-> = ({ title, hint, className, children }) => {
+> = ({ title, hint, className, titleClassName, children }) => {
   const titleId = useId()
 
   return (
@@ -21,7 +22,10 @@ export const Card: FC<
       aria-labelledby={titleId}
     >
       <div className="flex justify-between">
-        <h3 id={titleId} className="font-medium text-muted-foreground">
+        <h3
+          id={titleId}
+          className={cn("font-medium text-muted-foreground", titleClassName)}
+        >
           {title}
         </h3>
         {hint ? <TextHintTooltip hint={hint} /> : null}
