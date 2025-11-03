@@ -1,0 +1,6 @@
+ignoredBuiltDependencies:
+  - esbuild
+
+onlyBuiltDependencies:
+  - bun
+  - sqlite3
