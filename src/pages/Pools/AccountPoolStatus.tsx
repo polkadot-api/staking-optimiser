@@ -9,7 +9,7 @@ import { formatPercentage } from "@/util/format"
 import { NominationPoolsBondExtra } from "@polkadot-api/descriptors"
 import { liftSuspense, useStateObservable } from "@react-rxjs/core"
 import type { FC } from "react"
-import { Link } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import { merge } from "rxjs"
 import { ManageBond } from "./ManageBond"
 import { ManageLocks, UnlockPoolBonds } from "./ManageUnlocks"
@@ -19,12 +19,13 @@ export const AccountPoolStatus = () => {
   const poolStatus = useStateObservable(currentNominationPoolStatus$)
   const activeEra = useStateObservable(activeEra$)
   const eraDuration = useStateObservable(eraDurationInMs$)
+  const { chain } = useParams<{ chain: string }>()
 
   // This should not happen
   if (!poolStatus?.pool) return null
 
   const poolLink = (
-    <Link to={"../pools/" + poolStatus.pool.id}>
+    <Link to={`/${chain}/pools/${poolStatus.pool.id}`}>
       <span className="text-accent-foreground">#{poolStatus.pool.id}</span>{" "}
       <span className="font-medium">{poolStatus.pool.name}</span>
     </Link>

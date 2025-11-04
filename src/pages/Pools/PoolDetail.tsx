@@ -1,10 +1,13 @@
 import { AddressIdentity } from "@/components/AddressIdentity"
 import { Card } from "@/components/Card"
+import { CardPlaceholder } from "@/components/CardPlaceholder"
 import { Loading } from "@/components/Spinner"
 import { TokenValue } from "@/components/TokenValue"
 import { cn } from "@/lib/utils"
 import { accountStatus$ } from "@/state/account"
 import { stakingSdk$ } from "@/state/chain"
+import { activeEraNumber$ } from "@/state/era"
+import { nominatorRewardHistory$ } from "@/state/nominate"
 import { formatPercentage } from "@/util/format"
 import { state, useStateObservable, withDefault } from "@react-rxjs/core"
 import {
@@ -17,6 +20,9 @@ import {
 } from "lucide-react"
 import {
   Fragment,
+  lazy,
+  Suspense,
+  useMemo,
   type FC,
   type PropsWithChildren,
   type ReactElement,
@@ -26,6 +32,7 @@ import { Link, useParams } from "react-router-dom"
 import { combineLatest, map, merge, switchMap } from "rxjs"
 import { aggregatedValidators$ } from "../Validators/validatorList.state"
 import { JoinPool, joinPoolSub$ } from "./JoinPool"
+import type { NominationPool } from "./poolList.state"
 
 const pool$ = state((id: number) =>
   combineLatest([
@@ -183,6 +190,12 @@ export const PoolDetail = () => {
             />
           </Card>
 
+          {!isNominating && pool.state === "Open" ? (
+            <JoinPool poolId={Number(poolId)} className="lg:hidden" />
+          ) : null}
+
+          <PoolRewards pool={pool} />
+
           <Card title="Nominated validators" className="space-y-3">
             {pool.nominations.length === 0 ? (
               <p className="text-sm text-muted-foreground">
@@ -211,7 +224,7 @@ export const PoolDetail = () => {
 
         <aside className="space-y-4">
           {!isNominating && pool.state === "Open" ? (
-            <JoinPool poolId={Number(poolId)} />
+            <JoinPool poolId={Number(poolId)} className="hidden lg:block" />
           ) : null}
           <Card title="Pool addresses" className="space-y-4">
             <DefinitionList
@@ -261,7 +274,8 @@ export const PoolDetail = () => {
   )
 }
 
-export const poolDetailSub$ = (id: number) => merge(pool$(id), joinPoolSub$)
+export const poolDetailSub$ = (id: number) =>
+  merge(pool$(id), joinPoolSub$, activeEraNumber$)
 
 export const Stat: FC<
   PropsWithChildren<{
@@ -303,3 +317,30 @@ const DefinitionList = ({
     ))}
   </dl>
 )
+
+const EraChart = lazy(() => import("@/components/EraChart"))
+const PoolRewards: FC<{
+  pool: Pick<NominationPool, "addresses" | "commission">
+}> = ({ pool }) => {
+  const rewardHistory = useStateObservable(
+    nominatorRewardHistory$(pool.addresses.pool),
+  )
+  const activeEra = useStateObservable(activeEraNumber$)
+
+  const apyHistory = useMemo(
+    () =>
+      rewardHistory.map(({ era, apy }) => ({
+        era,
+        apy: apy * (1 - pool.commission.current),
+      })),
+    [rewardHistory],
+  )
+
+  return (
+    <Suspense fallback={<CardPlaceholder />}>
+      <Card title="APY History">
+        <EraChart data={apyHistory} activeEra={activeEra} />
+      </Card>
+    </Suspense>
+  )
+}

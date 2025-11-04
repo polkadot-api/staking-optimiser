@@ -6,6 +6,7 @@ import { TokenValue } from "@/components/TokenValue"
 import { TransactionButton } from "@/components/Transactions"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
+import { cn } from "@/lib/utils"
 import { accountStatus$, selectedSignerAccount$ } from "@/state/account"
 import { stakingApi$, stakingSdk$, tokenProps$ } from "@/state/chain"
 import { formatPercentage } from "@/util/format"
@@ -17,7 +18,10 @@ export const minPoolJoin$ = stakingApi$.pipeState(
   switchMap((api) => api.query.NominationPools.MinJoinBond.getValue()),
 )
 
-export const JoinPool: FC<{ poolId: number }> = ({ poolId }) => {
+export const JoinPool: FC<{ poolId: number; className?: string }> = ({
+  poolId,
+  className,
+}) => {
   const accountStatus = useStateObservable(accountStatus$)
   const signer = useStateObservable(selectedSignerAccount$)
   const minBond = useStateObservable(minPoolJoin$)
@@ -32,7 +36,7 @@ export const JoinPool: FC<{ poolId: number }> = ({ poolId }) => {
   return (
     <Card
       title="Join this pool"
-      className="space-y-4 border-primary/40 bg-primary/5"
+      className={cn("space-y-4 border-primary/40 bg-primary/5", className)}
     >
       <p className="text-sm text-muted-foreground">
         You can join a nomination pool with a minimum bond of{" "}

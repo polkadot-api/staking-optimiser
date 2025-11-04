@@ -35,12 +35,11 @@ export default function TopPools() {
     <ol className="space-y-4">
       {pools.map((p) => (
         <li key={p.id} className="shadow rounded-xl p-2 space-y-2">
-          <Link to={"../pools/" + p.id} className="flex items-center gap-2">
-            <div>#{p.id}</div>
+          <Link to={"../pools/" + p.id}>
             <AddressIdentity
               className="whitespace-nowrap"
               addr={p.addresses.pool}
-              name={p.name}
+              name={`${p.name} (#${p.id})`}
             />
           </Link>
           <div className="flex gap-4 justify-center">

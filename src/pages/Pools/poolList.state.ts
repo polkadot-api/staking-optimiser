@@ -98,6 +98,13 @@ export const sortedPools$ = state(
   ),
 )
 
+export const getPoolMemberRewards = (
+  pool: SdkNominationPool,
+  rewards: bigint,
+) =>
+  (rewards * BigInt(Math.round((1 - pool.commission.current) * PERBILL))) /
+  BigInt(PERBILL)
+
 export const lastEraRewards$ = state(
   (id: number) =>
     combineLatest([
@@ -111,10 +118,7 @@ export const lastEraRewards$ = state(
         return getNominatorRewards(pool.addresses.pool, [era - 1]).pipe(
           map(({ result }) => {
             if (!result) return null
-            const poolMembers =
-              (result.total *
-                BigInt(Math.round((1 - pool.commission.current) * PERBILL))) /
-              BigInt(PERBILL)
+            const poolMembers = getPoolMemberRewards(pool, result.total)
             return {
               poolNominator: result.total,
               validator: result.totalCommission,

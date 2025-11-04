@@ -95,7 +95,7 @@ const PoolsTable = () => {
       )}
       itemContent={(idx, pool) => {
         if (!pool) {
-          console.error("no validator!!", idx, pools.length)
+          console.error("no pool!!", idx, pools.length)
           return null
         }
 
@@ -104,13 +104,10 @@ const PoolsTable = () => {
             <td>{(pool.position ?? idx) + 1}</td>
             <td>
               <Link to={pool.id.toString()}>
-                <div className="flex items-center gap-2">
-                  <div className="text-sm">#{pool.id}</div>
-                  <AddressIdentity
-                    addr={pool.addresses.pool}
-                    name={pool.name}
-                  />
-                </div>
+                <AddressIdentity
+                  addr={pool.addresses.pool}
+                  name={`${pool.name} (#${pool.id})`}
+                />
               </Link>
             </td>
             <td

@@ -16,6 +16,7 @@ import {
   combineLatest,
   concat,
   distinct,
+  distinctUntilChanged,
   map,
   mergeAll,
   mergeMap,
@@ -48,6 +49,10 @@ export const selectedEraAndPeriod$ = state(
           map((era) => ({ era, period: 2 })),
         ),
         eraPeriodChange$,
+      ).pipe(
+        distinctUntilChanged(
+          (a, b) => a.era === b.era && a.period === b.period,
+        ),
       ),
     ),
   ),

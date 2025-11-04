@@ -5,6 +5,7 @@ import { state } from "@react-rxjs/core"
 import type { SS58String } from "polkadot-api"
 import {
   combineLatest,
+  combineLatestWith,
   debounceTime,
   filter,
   map,
@@ -57,30 +58,43 @@ export const lastReward$ = state(
   ),
 )
 
+export const nominatorRewardHistory$ = state(
+  (addr: SS58String) =>
+    selectedChain$.pipe(
+      switchMap(() =>
+        allEras$(REWARD_HISTORY_DEPTH).pipe(
+          mergeMap((eras) => getNominatorRewards(addr, eras)),
+          combineLatestWith(tokenDecimals$, eraDurationInMs$),
+          map(([v, decimals, eraDuration]) =>
+            v.result
+              ? {
+                  era: v.era,
+                  rewards: amountToNumber(v.result.total, decimals),
+                  apy:
+                    getEraApy(
+                      v.result.total,
+                      v.result.activeBond,
+                      eraDuration,
+                    ) * 100,
+                }
+              : null,
+          ),
+          accumulateChart(),
+          debounceTime(100),
+          // Exclude empty values
+          map((v) => v.filter((v) => !!v)),
+        ),
+      ),
+    ),
+  [],
+)
+
 export const rewardHistory$ = state(
-  combineLatest([
-    selectedAccountAddr$,
-    // Even though this is unused, we need to reset the state of the inner
-    // observable when the chain changes
-    selectedChain$,
-  ]).pipe(
-    switchMap(([addr]) =>
+  selectedAccountAddr$.pipe(
+    switchMap((addr) =>
       addr
-        ? allEras$(REWARD_HISTORY_DEPTH).pipe(
-            mergeMap((eras) => getNominatorRewards(addr, eras)),
-            withLatestFrom(tokenDecimals$),
-            map(([v, decimals]) =>
-              v.result
-                ? {
-                    era: v.era,
-                    rewards: amountToNumber(v.result.total, decimals),
-                  }
-                : null,
-            ),
-            accumulateChart(),
-            debounceTime(100),
-            // Exclude empty values
-            map((v) => v.filter((v) => !!v)),
+        ? nominatorRewardHistory$(addr).pipe(
+            map((v) => v.map(({ era, rewards }) => ({ era, rewards }))),
           )
         : [[]],
     ),
