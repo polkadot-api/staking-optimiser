@@ -1,5 +1,8 @@
 import { genericSort, type SortBy } from "@/components/SortBy"
+import { PERBILL } from "@/constants"
 import { stakingSdk$ } from "@/state/chain"
+import { activeEraNumber$, eraDurationInMs$, getEraApy } from "@/state/era"
+import { getNominatorRewards } from "@/state/nominatorInfo"
 import { createState } from "@/util/rxjs"
 import { type NominationPool as SdkNominationPool } from "@polkadot-api/sdk-staking"
 import { state } from "@react-rxjs/core"
@@ -93,4 +96,35 @@ export const sortedPools$ = state(
           : sorted,
     ),
   ),
+)
+
+export const lastEraRewards$ = state(
+  (id: number) =>
+    combineLatest([
+      stakingSdk$.pipe(switchMap((sdk) => sdk.getNominationPool$(id))),
+      activeEraNumber$,
+      eraDurationInMs$,
+    ]).pipe(
+      switchMap(([pool, era, eraDurationInMs]) => {
+        if (!pool) return [null]
+
+        return getNominatorRewards(pool.addresses.pool, [era - 1]).pipe(
+          map(({ result }) => {
+            if (!result) return null
+            const poolMembers =
+              (result.total *
+                BigInt(Math.round((1 - pool.commission.current) * PERBILL))) /
+              BigInt(PERBILL)
+            return {
+              poolNominator: result.total,
+              validator: result.totalCommission,
+              poolMembers,
+              activeBond: result.activeBond,
+              apy: getEraApy(poolMembers, result.activeBond, eraDurationInMs),
+            }
+          }),
+        )
+      }),
+    ),
+  null,
 )

@@ -1,6 +1,6 @@
 import { HISTORY_DEPTH as REWARD_HISTORY_DEPTH } from "@/constants"
 import { accountStatus$, selectedAccountAddr$ } from "@/state/account"
-import { amountToNumber, roundToDecimalPlaces } from "@/util/format"
+import { amountToNumber } from "@/util/format"
 import { state } from "@react-rxjs/core"
 import type { SS58String } from "polkadot-api"
 import {
@@ -49,18 +49,11 @@ export const lastReward$ = state(
         },
     ),
     withLatestFrom(eraDurationInMs$),
-    map(([{ total, totalCommission, activeBond }, eraDurationInMs]) => {
-      const apy = roundToDecimalPlaces(
-        getEraApy(total, activeBond, eraDurationInMs) * 100,
-        2,
-      )
-
-      return {
-        total,
-        totalCommission,
-        apy,
-      }
-    }),
+    map(([{ total, totalCommission, activeBond }, eraDurationInMs]) => ({
+      total,
+      totalCommission,
+      apy: getEraApy(total, activeBond, eraDurationInMs),
+    })),
   ),
 )
 

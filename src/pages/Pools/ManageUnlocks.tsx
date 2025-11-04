@@ -37,7 +37,7 @@ export const ManageLocks = () => {
   const locks = useStateObservable(locks$)
 
   return (
-    <div className="grow">
+    <div className="grow mb-1">
       <h3 className="font-medium text-muted-foreground">Active Unlocks</h3>
       <ol>
         {locks.map(({ unlocked, estimatedUnlock, value }, i) => (

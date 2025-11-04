@@ -1,15 +1,19 @@
 import { DialogButton } from "@/components/DialogButton"
+import { TokenValue } from "@/components/TokenValue"
 import { TransactionButton } from "@/components/Transactions"
 import { stakingApi$ } from "@/state/chain"
 import { activeEra$, eraDurationInMs$ } from "@/state/era"
 import { currentNominationPoolStatus$ } from "@/state/nominationPool"
 import { estimatedFuture } from "@/util/date"
+import { formatPercentage } from "@/util/format"
 import { NominationPoolsBondExtra } from "@polkadot-api/descriptors"
 import { liftSuspense, useStateObservable } from "@react-rxjs/core"
+import type { FC } from "react"
 import { Link } from "react-router-dom"
 import { merge } from "rxjs"
 import { ManageBond } from "./ManageBond"
 import { ManageLocks, UnlockPoolBonds } from "./ManageUnlocks"
+import { lastEraRewards$ } from "./poolList.state"
 
 export const AccountPoolStatus = () => {
   const poolStatus = useStateObservable(currentNominationPoolStatus$)
@@ -62,10 +66,12 @@ export const AccountPoolStatus = () => {
   }
 
   return (
-    <div className="grow">
-      <div>Member of pool {poolLink}</div>
+    <div className="grow flex flex-col">
+      <div className="mb-1">Member of pool {poolLink}</div>
+      <LastEraRewards poolId={poolStatus.pool.id} bond={poolStatus.bond} />
       {poolStatus.unlocks.length ? <ManageLocks /> : null}
-      <div className="space-x-2 mt-2">
+      <div className="grow" />
+      <div className="space-x-2">
         <DialogButton
           title="Manage bond"
           content={({ close }) => <ManageBond close={close} />}
@@ -74,6 +80,32 @@ export const AccountPoolStatus = () => {
         </DialogButton>
         {poolStatus.pendingRewards > 0n ? <ClaimRewards /> : null}
       </div>
+    </div>
+  )
+}
+
+const LastEraRewards: FC<{ poolId: number; bond: bigint }> = ({
+  poolId,
+  bond,
+}) => {
+  const lastEraRewards = useStateObservable(lastEraRewards$(poolId))
+
+  if (!lastEraRewards) {
+    return <div>Last era reward with current bond: …</div>
+  }
+  if (!lastEraRewards.activeBond) {
+    return <div>Last era reward with current bond: N/A</div>
+  }
+
+  const selfReward =
+    (lastEraRewards.poolMembers * bond) / lastEraRewards.activeBond
+
+  return (
+    <div>
+      Last era reward with current bond: <TokenValue value={selfReward} />{" "}
+      <span className="text-muted-foreground">
+        ({formatPercentage(lastEraRewards.apy)} APY)
+      </span>
     </div>
   )
 }
