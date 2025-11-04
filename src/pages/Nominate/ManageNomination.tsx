@@ -9,11 +9,18 @@ const PickValidators = lazy(async () => {
   return module
 })
 
+const ManageNominationParams = lazy(async () => {
+  const module = await import("./ManageNominationParams")
+  // module.pickValidatorsSub$.subscribe()
+  return module
+})
+
 export const ManageNomination = () => {
   return (
     <Suspense fallback={<ManageNominationSkeleton />}>
       <div className="space-y-2">
         <BondInput />
+        <ManageNominationParams />
         <PickValidators />
       </div>
     </Suspense>

@@ -1,4 +1,5 @@
 import { Card } from "@/components/Card"
+import { LoadingTable } from "@/components/LoadingTable"
 import { ContractableText, createSortByButton } from "@/components/SortBy"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +11,12 @@ import { useMediaQuery } from "react-responsive"
 import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso"
 import { merge } from "rxjs"
 import { MaParams, maParamsSub$, SortBy } from "../../Validators/Params"
+import {
+  ValidatorCard,
+  ValidatorCardSkeleton,
+  ValidatorRow,
+  ValidatorRowSkeleton,
+} from "../../Validators/Validator"
 import {
   percentLoaded$,
   validatorPrefs$,
@@ -27,14 +34,7 @@ import {
   toggleValidator,
   validatorsWithPreferences$,
 } from "./pickValidators.state"
-import {
-  ValidatorCard,
-  ValidatorCardSkeleton,
-  ValidatorRow,
-  ValidatorRowSkeleton,
-} from "../../Validators/Validator"
 import { ValidatorGrid } from "./ValidatorGrid"
-import { LoadingTable } from "@/components/LoadingTable"
 
 const SortByButton = createSortByButton(sortBy$, setSortBy)
 

@@ -1,6 +1,5 @@
 import type { PropsWithChildren } from "react"
-import { NominateButton } from "./NominateButton.tsx"
-import { ValidatorCard, EmptyValidatorSlot } from "./ValidatorCard.tsx"
+import { EmptyValidatorSlot, ValidatorCard } from "./ValidatorCard.tsx"
 import { MAX_VALIDATORS } from "./pickValidators.state.ts"
 
 export interface Validator {
@@ -21,10 +20,9 @@ export const ValidatorGrid: React.FC<PropsWithChildren<ValidatorGridProps>> = ({
   const emptySlots = MAX_VALIDATORS - selectedValidators.length
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Select up to 16 validators</h3>
-        <NominateButton />
-      </div>
+      <h3 className="text-lg font-semibold">
+        Select up to {MAX_VALIDATORS} validators
+      </h3>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {selectedValidators.map((validator) => (
