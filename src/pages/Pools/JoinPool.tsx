@@ -197,14 +197,10 @@ const JoinPoolModal: FC<{
       <section className="space-y-4 rounded-lg border border-dashed border-border/60 bg-muted/10 p-4 text-sm">
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground">Spendable after submit</span>
-          {spendableAfter != null ? (
-            <TokenValue
-              className="tabular-nums font-semibold"
-              value={spendableAfter}
-            />
-          ) : (
-            "-"
-          )}
+          <TokenValue
+            className="tabular-nums font-semibold"
+            value={spendableAfter}
+          />
         </div>
         {showSafeMaxWarning ? (
           <AlertCard type="warning">

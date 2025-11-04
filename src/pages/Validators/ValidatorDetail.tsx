@@ -133,14 +133,10 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
               {lastRewards?.nominatorCount.toLocaleString() ?? "-"}
             </Stat>
             <Stat icon={<ShieldCheck className="size-4" />} label="Active bond">
-              {lastRewards ? (
-                <TokenValue value={lastRewards.activeBond} />
-              ) : (
-                "-"
-              )}
+              <TokenValue value={lastRewards?.activeBond} />
             </Stat>
             <Stat icon={<Crown className="size-4" />} label="Self stake">
-              {lastRewards ? <TokenValue value={lastRewards.selfStake} /> : "-"}
+              {<TokenValue value={lastRewards?.selfStake} />}
             </Stat>
             <Stat icon={<PieChart className="size-4" />} label="Commission">
               {formatPercentage(validatorPrefs.commission)}
@@ -166,7 +162,7 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
               <DollarSign className="size-4" />
               <span>Total payout</span>
             </div>
-            {lastRewards ? <TokenValue value={lastRewards.reward} /> : "-"}
+            {<TokenValue value={lastRewards?.reward} />}
           </div>
 
           {lastRewards ? (

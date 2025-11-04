@@ -44,7 +44,7 @@ export function formatToken(
 }
 
 export const TokenValue: FC<{
-  value: bigint
+  value: bigint | null | undefined
   decimalsFn?: (integerPart: bigint, tokenDecimals: number) => number
   className?: string
   colored?: boolean
@@ -55,7 +55,8 @@ export const TokenValue: FC<{
   colored = true,
 }) => {
   const tokenProps = useStateObservable(tokenProps$)
-  if (!tokenProps) return null
+  if (value == null) return `-`
+  if (!tokenProps) return `…`
   const { decimals: tokenDecimals, symbol } = tokenProps
 
   const { integer, fraction } = amountToParts(value, tokenDecimals)

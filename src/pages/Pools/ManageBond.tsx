@@ -130,11 +130,7 @@ const BondInput: FC<{
             Added immediately to your pool stake.
           </p>
         </div>
-        {bond != null ? (
-          <TokenValue className="text-base font-semibold" value={bond} />
-        ) : (
-          "-"
-        )}
+        <TokenValue className="text-base font-semibold" value={bond} />
       </div>
       <Slider
         value={[Number(bond)]}
@@ -231,11 +227,7 @@ const UnbondInput: FC<{
             Starts the unbonding period (about {unbondDurationInDays$} days).
           </p>
         </div>
-        {bond != null ? (
-          <TokenValue className="text-base font-semibold" value={bond} />
-        ) : (
-          "-"
-        )}
+        <TokenValue className="text-base font-semibold" value={bond} />
       </div>
       <Slider
         value={[Number(bond)]}

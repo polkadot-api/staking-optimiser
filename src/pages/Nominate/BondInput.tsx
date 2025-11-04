@@ -146,14 +146,10 @@ export const BondInput: FC = () => {
         )}
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">Spendable after submit:</span>
-          {spendableAfter != null ? (
-            <TokenValue
-              className="tabular-nums font-semibold"
-              value={spendableAfter}
-            />
-          ) : (
-            "-"
-          )}
+          <TokenValue
+            className="tabular-nums font-semibold"
+            value={spendableAfter}
+          />
         </div>
       </div>
 

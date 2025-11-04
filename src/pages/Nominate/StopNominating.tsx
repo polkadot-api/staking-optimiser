@@ -151,11 +151,19 @@ const FastUnstake = () => {
         ).
       </p>
       {eligibility.isEligible ? (
-        <TransactionButton
-          createTx={() => fastUnstakeApi.tx.FastUnstake.register_fast_unstake()}
-        >
-          Fast Unstake
-        </TransactionButton>
+        <>
+          <p>
+            You are eligible for fast unstaking, as you haven't been nominating
+            for the last bonding period.
+          </p>
+          <TransactionButton
+            createTx={() =>
+              fastUnstakeApi.tx.FastUnstake.register_fast_unstake()
+            }
+          >
+            Fast Unstake
+          </TransactionButton>
+        </>
       ) : eligibility.isEligible === false ? (
         <p>
           It looks like you were an active nominator in era {eligibility.era},
