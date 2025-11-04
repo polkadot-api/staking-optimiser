@@ -184,7 +184,7 @@ export const chainSpecsByChain: Record<
 }
 
 export const stakingTypeByChain: Record<KnownChains, ChainType> = {
-  polkadot: "relay",
+  polkadot: "assetHub",
   kusama: "assetHub",
   westend: "assetHub",
   paseo: "assetHub",
@@ -203,7 +203,7 @@ export type PeopleTypedApi =
   | TypedApi<typeof pasPpl>
 
 export type StakingTypedApi =
-  | TypedApi<typeof dot>
+  | TypedApi<typeof dotAH>
   | TypedApi<typeof ksmAH>
   | TypedApi<typeof wndAH>
   | TypedApi<typeof pasAH>
