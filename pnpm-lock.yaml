@@ -72,8 +72,8 @@ importers:
         specifier: ^1.20.1
         version: 1.20.1(jiti@2.6.1)(postcss@8.5.6)(rxjs@7.8.2)
       polkahub:
-        specifier: 0.1.0-pre.8
-        version: 0.1.0-pre.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rxjs@7.8.2)(typescript@5.9.3)(zod@3.25.76)
+        specifier: 0.1.0-pre.9
+        version: 0.1.0-pre.9(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rxjs@7.8.2)(typescript@5.9.3)(zod@3.25.76)
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -741,8 +741,8 @@ packages:
       '@types/react': ^19.2.2
       react: ^19.2.0
 
-  '@polkahub/pjs-wallet@0.1.0-pre.8':
-    resolution: {integrity: sha512-YIFL7WpGZzwLh8XRHYwa7wfYCAyziSr4P6/iRI+koegndlyuLMc7g4asrwcW0GnKoUINs+Ge8PPI2a9uLCCPCQ==}
+  '@polkahub/pjs-wallet@0.1.0-pre.9':
+    resolution: {integrity: sha512-JgHhtHfRaqvmo9pM0YCBpOAZdBuT67U0YEZR09jmu0mxbS3ac3MIiJ8ZZ5mw0WFVr1cMVbWVsuoxGpLEfsKk1g==}
     peerDependencies:
       '@types/react': ^19.2.2
       react: ^19.2.0
@@ -2703,8 +2703,8 @@ packages:
     peerDependencies:
       rxjs: '>=7.8.0'
 
-  polkahub@0.1.0-pre.8:
-    resolution: {integrity: sha512-vxisOZAnYzcUMcaYOfhCPpak3VMGA3X1/DYv7ghPXr05HbARIrRxLA0+kSwFMNVl/AN8BMxoC2sNTcYCe4gCvA==}
+  polkahub@0.1.0-pre.9:
+    resolution: {integrity: sha512-RCjYHsd6HSiiulPQVET0AwU3wk9yp8dfv1AMwn7uHg5vVIPJd11nMCrTZ25kiMkMPjYMP2GOMwvOxdJQEAs+Ow==}
     peerDependencies:
       '@types/react': ^19.2.2
       react: ^19.2.0
@@ -4183,7 +4183,7 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  '@polkahub/pjs-wallet@0.1.0-pre.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@polkahub/pjs-wallet@0.1.0-pre.9(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@polkadot-api/pjs-signer': 0.6.17
       '@polkahub/context': 0.1.0-pre.8(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -6785,13 +6785,13 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  polkahub@0.1.0-pre.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rxjs@7.8.2)(typescript@5.9.3)(zod@3.25.76):
+  polkahub@0.1.0-pre.9(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(rxjs@7.8.2)(typescript@5.9.3)(zod@3.25.76):
     dependencies:
       '@polkahub/context': 0.1.0-pre.8(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@polkahub/ledger': 0.1.0-pre.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@polkahub/mimir': 0.1.0-pre.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@polkahub/multisig': 0.1.0-pre.8(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
-      '@polkahub/pjs-wallet': 0.1.0-pre.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@polkahub/pjs-wallet': 0.1.0-pre.9(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@polkahub/plugin': 0.1.0-pre.8(@react-rxjs/core@0.10.8(react@19.2.0)(rxjs@7.8.2))(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@polkahub/proxy': 0.1.0-pre.8(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react@19.2.0)
       '@polkahub/read-only': 0.1.0-pre.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(jiti@2.6.1)(postcss@8.5.6)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
