@@ -188,7 +188,7 @@ const JoinPoolModal: FC<{
                 setBond(stakingFrozen)
               }}
             >
-              Eq to frozen
+              Set to frozen
             </Button>
           ) : null}
         </div>

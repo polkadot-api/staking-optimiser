@@ -139,7 +139,7 @@ export const BondInput: FC = () => {
               setBond(stakingFrozen)
             }}
           >
-            Eq to frozen
+            Set to frozen
           </Button>
         ) : (
           <div />
