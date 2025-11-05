@@ -23,7 +23,7 @@ export const chainLogoByChain: Record<KnownChains, string> = {
 
 export const ChainSelector = withSubscribe(
   codeSplit(
-    import("@/components/ui/popover"),
+    import("@polkahub/ui-components"),
     () => {
       const chain = useStateObservable(selectedChain$)
 
