@@ -26,7 +26,7 @@ import {
   switchMap,
   take,
 } from "rxjs"
-import { selectedChain$, stakingApi$ } from "./chain"
+import { selectedChain$, stakingApi$, useSmoldot$ } from "./chain"
 import { indexerUrl } from "./chainConfig"
 import { activeEraNumber$ } from "./era"
 import {
@@ -49,13 +49,6 @@ export interface NominatorRequest {
     era: number
   }
 }
-
-export const getNominatorRewards = (address: SS58String, eras: number[]) =>
-  // already falls back to worker if the era isn't indexed
-  getNominatorRewardsThroughIndexer(address, eras)
-
-export const getNominatorValidators = (address: SS58String, eras: number[]) =>
-  getNominatorValidatorsThroughIndexer(address, eras)
 
 /// worker
 let activated = false
@@ -192,27 +185,34 @@ const isEraIndexed = (era: number) => {
   return eraIndexedCache.get(era)!
 }
 
-const getNominatorRewardsThroughIndexer = (
+const getNominatorRewardsFromWorker = (address: SS58String, eras$: Observable<number>) =>
+  sendToWorker<NominatorRewardsResult>(
+    "getNominatorRewards",
+    address,
+    eras$
+  )
+
+export const getNominatorRewards = (
   address: SS58String,
   eras: number[],
 ): Observable<{
   era: number
   result: NominatorRewardsResult | null
 }> =>
-  combineLatest([activeEraNumber$, indexerCodec$]).pipe(
+  combineLatest([activeEraNumber$, useSmoldot$, indexerCodec$]).pipe(
     take(1),
-    switchMap(([activeEra, codec]) => {
+    switchMap(([activeEra, useSmoldot, codec]) => {
+      if (useSmoldot) return getNominatorRewardsFromWorker(
+        address,
+        from(eras.filter(e => e <= activeEra))
+      )
+
       const aboveActiveEra = eras.filter((e) => e >= activeEra)
       const belowActiveEra = eras.filter((e) => e < activeEra)
 
       const failedEras$ = new Subject<number>()
-      const workerEras$ = concat(from(aboveActiveEra), failedEras$)
+      const worker$ = getNominatorRewardsFromWorker(address, concat(from(aboveActiveEra), failedEras$))
 
-      const worker$ = sendToWorker<NominatorRewardsResult>(
-        "getNominatorRewards",
-        address,
-        workerEras$,
-      )
       const indexer$ = merge(
         ...belowActiveEra.map((era) =>
           from(isEraIndexed(era)).pipe(
@@ -241,11 +241,11 @@ const getNominatorRewardsThroughIndexer = (
     }),
   )
 
-const getNominatorValidatorsThroughIndexer = (
+export const getNominatorValidators = (
   address: SS58String,
   eras: number[],
 ) =>
-  getNominatorRewardsThroughIndexer(address, eras).pipe(
+  getNominatorRewards(address, eras).pipe(
     map(
       ({
         era,
