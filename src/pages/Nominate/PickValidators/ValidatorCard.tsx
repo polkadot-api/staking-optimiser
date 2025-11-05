@@ -1,9 +1,10 @@
-import { X, Plus, CheckCircle } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { CopyText, PolkadotIdenticon } from "@polkadot-api/react-components"
-import { getPublicKey } from "@/util/ss58"
-import { useStateObservable } from "@react-rxjs/core"
 import { identity$ } from "@/state/identity"
+import { getPublicKey } from "@/util/ss58"
+import { CopyText, PolkadotIdenticon } from "@polkadot-api/react-components"
+import { state, useStateObservable } from "@react-rxjs/core"
+import { CheckCircle, Plus, X } from "lucide-react"
+import type { SS58String } from "polkadot-api"
 
 interface ValidatorCardProps {
   address: string
@@ -17,8 +18,13 @@ const truncateMiddle = (text: string, maxLength = 14) => {
   return `${text.slice(0, start)}...${text.slice(-(start - 1))}`
 }
 
+const identityWithDefault$ = state(
+  (address: SS58String) => identity$(address),
+  null,
+)
+
 export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
-  let identity = useStateObservable(identity$(address))
+  let identity = useStateObservable(identityWithDefault$(address))
   const name =
     identity &&
     identity.displayName + (identity.subId ? `/${identity.subId}` : "")

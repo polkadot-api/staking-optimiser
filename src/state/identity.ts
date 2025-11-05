@@ -30,9 +30,9 @@ export const identity$ = state((address: SS58String) => {
       }
       localStorage.setItem(CACHE_KEY, JSON.stringify(cache))
     }),
-    startWith(defaultValue),
+    defaultValue ? startWith(defaultValue) : (v) => v,
   )
-}, null)
+})
 
 export const getAddressIdentity = (address: SS58String) =>
   firstValueFrom(
