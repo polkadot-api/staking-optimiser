@@ -20,7 +20,8 @@ const truncateMiddle = (text: string, maxLength = 14) => {
 export function ValidatorCard({ address, apy, onRemove }: ValidatorCardProps) {
   let identity = useStateObservable(identity$(address))
   const name =
-    identity && identity.value + (identity.subId ? `/${identity.subId}` : "")
+    identity &&
+    identity.displayName + (identity.subId ? `/${identity.subId}` : "")
   return (
     <Card className="group relative transition-all hover:shadow-md px-2 py-0 -mb-1 border rounded-lg shadow-sm bg-primary/5 min-h-[44px]">
       <button

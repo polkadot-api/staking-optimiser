@@ -13,7 +13,7 @@ export const AddressIdentity: FC<{
 
   if (name && !identity) {
     identity = {
-      value: name,
+      displayName: name,
       verified: false,
     }
   }
@@ -22,7 +22,7 @@ export const AddressIdentity: FC<{
     <AccountDisplay
       account={{
         address: addr,
-        name: identity?.value ?? name,
+        name: identity?.displayName ?? name,
         subId: identity?.subId,
         verified: identity?.verified,
       }}

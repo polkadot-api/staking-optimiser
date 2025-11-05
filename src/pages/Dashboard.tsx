@@ -5,7 +5,6 @@ import {
   activeEraSub$,
   ActiveNominators,
   ActiveValidators,
-  Inflation,
   Staked,
   TotalValidators,
 } from "@/components/infocards"
@@ -27,7 +26,7 @@ export const Dashboard = () => {
           <TotalValidators />
           <ActiveNominators />
           <Staked />
-          <Inflation />
+          {/* <Inflation /> */}
         </div>
         <AccountStatus />
         <div className="flex gap-4 flex-col lg:flex-row">

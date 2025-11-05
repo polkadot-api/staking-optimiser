@@ -182,6 +182,7 @@ const ResetBalance = () => {
       )
 
       const amount = BigInt(Math.round(value * 10 ** tokenDecimals))
+      accountValue.providers = Math.max(accountValue.providers, 1)
       accountValue.data.free = amount
 
       await client._request("dev_setStorage", [
