@@ -1,16 +1,16 @@
+import { selectedSignerAccount$ } from "@/state/account"
 import { codeSplit } from "@/util/codeSplit"
 import { Subscribe, useStateObservable, withDefault } from "@react-rxjs/core"
+import { Eye } from "lucide-react"
 import {
   useState,
   type FC,
   type PropsWithChildren,
   type ReactNode,
 } from "react"
-import { Button } from "./ui/button"
-import { selectedSignerAccount$ } from "@/state/account"
 import { map } from "rxjs"
-import { Eye } from "lucide-react"
 import { CardPlaceholder } from "./CardPlaceholder"
+import { Button } from "./ui/button"
 
 const dialogModule = import("@/components/ui/dialog")
 
@@ -30,6 +30,7 @@ export type DialogButtonProps = PropsWithChildren<{
   needsSigner?: boolean
   disabled?: boolean
   dialogClassName?: string
+  contentClassName?: string
 }>
 
 const hasSigner$ = selectedSignerAccount$.pipeState(
@@ -77,6 +78,7 @@ export const DialogButton = codeSplit(
     title,
     children,
     dialogClassName,
+    contentClassName,
     content,
   }) => {
     const [open, setOpen] = useState(false)
@@ -110,7 +112,7 @@ export const DialogButton = codeSplit(
           ) : (
             <div className="pt-4" />
           )}
-          <DialogBody id="dialog-content">
+          <DialogBody id="dialog-content" className={contentClassName}>
             <Subscribe fallback={<CardPlaceholder />}>
               {content({ isOpen: open, close: () => setOpen(false) })}
             </Subscribe>

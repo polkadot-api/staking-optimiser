@@ -1,8 +1,9 @@
+import { cn } from "@/lib/utils"
 import type { PropsWithChildren } from "react"
 
 export const LoadingTable: React.FC<
-  PropsWithChildren<{ progress: number }>
-> = ({ progress, children }) => {
+  PropsWithChildren<{ progress: number; className?: string }>
+> = ({ progress, className, children }) => {
   const displayProgress = progress * 100
   const innerProgress =
     progress < 1 ? (
@@ -26,7 +27,7 @@ export const LoadingTable: React.FC<
     ) : null
 
   return (
-    <div className="relative">
+    <div className={cn("relative", className)}>
       {innerProgress}
       {children}
     </div>

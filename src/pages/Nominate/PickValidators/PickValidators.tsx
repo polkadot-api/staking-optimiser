@@ -106,7 +106,8 @@ export const Nominations = () => {
           className="group relative overflow-hidden border-blue-200 bg-blue-50 text-blue-700 transition-all hover:border-blue-300 hover:bg-blue-100 hover:shadow-sm dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300 dark:hover:border-blue-700 dark:hover:bg-blue-900"
           title={`Pick up to 16 validators (${selection.size}/16)`}
           content={() => <PickValidators />}
-          dialogClassName="md:max-w-3xl max-h-9/10 lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl"
+          dialogClassName="md:max-w-3xl max-h-9/10 lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl h-full"
+          contentClassName="flex-1 flex flex-col"
         >
           <Table2 className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
           Pick from table
@@ -186,7 +187,7 @@ const ValidatorsDisplay = () => {
     : emptyList
 
   return (
-    <LoadingTable progress={percentLoaded}>
+    <LoadingTable progress={percentLoaded} className="h-full">
       <ValidatorTable validators={actualValidators} />
     </LoadingTable>
   )
@@ -225,11 +226,7 @@ const ValidatorTable: FC<{
 }> = ({ validators, className }) => {
   return (
     <TableVirtuoso
-      className={cn("data-table", className)}
-      customScrollParent={
-        document.getElementById("dialog-content") ??
-        document.getElementById("app-content")!
-      }
+      className={cn("data-table h-full", className)}
       data={validators}
       components={{ TableRow }}
       fixedHeaderContent={() => (
