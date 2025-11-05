@@ -7,22 +7,22 @@ const pages = [
   {
     path: "/:chain/dashboard",
     label: "Dashboard",
-    icon: <Home className="size-7 md:size-5" />,
+    icon: <Home className="size-4 min-[435px]:size-7 md:size-5" />,
   },
   {
     path: "/:chain/nominate",
     label: "Nominate",
-    icon: <Star className="size-7 md:size-5" />,
+    icon: <Star className="size-4 min-[435px]:size-7 md:size-5" />,
   },
   {
     path: "/:chain/pools",
     label: "Pools",
-    icon: <GitFork className="size-7 md:size-5" />,
+    icon: <GitFork className="size-4 min-[435px]:size-7 md:size-5" />,
   },
   {
     path: "/:chain/validators",
     label: "Validators",
-    icon: <ShieldCheck className="size-7 md:size-5" />,
+    icon: <ShieldCheck className="size-4 min-[435px]:size-7 md:size-5" />,
   },
 ]
 

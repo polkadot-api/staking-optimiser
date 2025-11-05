@@ -65,6 +65,9 @@ export const [sortBy$, setSortBy] = createState<SortBy<NominationPool>>({
 })
 export const [search$, setSearch] = createState("")
 
+export interface PositionedPool extends NominationPool {
+  position?: number
+}
 export const sortedPools$ = state(
   combineLatest([poolNominations$, sortBy$]).pipe(
     map(([pools, sortBy]) => {
@@ -79,7 +82,7 @@ export const sortedPools$ = state(
     }),
     combineLatestWith(search$),
     map(
-      ([sorted, search]): Array<NominationPool & { position?: number }> =>
+      ([sorted, search]): Array<PositionedPool> =>
         search
           ? sorted
               .map((v, i) => ({ ...v, position: i }))
