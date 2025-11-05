@@ -1,6 +1,5 @@
 import { Card } from "@/components/Card"
 import { CardPlaceholder } from "@/components/CardPlaceholder"
-import { NavMenu } from "@/components/NavMenu/NavMenu"
 import { location$ } from "@/router"
 import { isNominating$ } from "@/state/nominate"
 import { currentNominationPoolStatus$ } from "@/state/nominationPool"
@@ -19,23 +18,20 @@ const PoolList = lazy(async () => {
 
 export const Pools = () => {
   return (
-    <div>
-      <NavMenu />
-      <Suspense fallback={<PoolsSkeleton />}>
-        <Routes>
-          <Route path=":poolId" Component={PoolDetail} />
-          <Route
-            path="*"
-            element={
-              <div className="space-y-4">
-                <CurrentStatus />
-                <PoolList />
-              </div>
-            }
-          />
-        </Routes>
-      </Suspense>
-    </div>
+    <Suspense fallback={<PoolsSkeleton />}>
+      <Routes>
+        <Route path=":poolId" Component={PoolDetail} />
+        <Route
+          path="*"
+          element={
+            <div className="space-y-4">
+              <CurrentStatus />
+              <PoolList />
+            </div>
+          }
+        />
+      </Routes>
+    </Suspense>
   )
 }
 

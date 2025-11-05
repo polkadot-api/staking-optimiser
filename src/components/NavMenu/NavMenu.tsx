@@ -1,40 +1,34 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { cn } from "@polkahub/ui-components"
 import { GitFork, Home, ShieldCheck, Star } from "lucide-react"
 import { type FC, type PropsWithChildren } from "react"
-import {
-  matchPath,
-  useLocation,
-  useNavigate,
-  useParams,
-} from "react-router-dom"
+import { Link, matchPath, useLocation, useParams } from "react-router-dom"
 
 const pages = [
   {
     path: "/:chain/dashboard",
     label: "Dashboard",
-    icon: <Home />,
+    icon: <Home className="size-7 md:size-5" />,
   },
   {
     path: "/:chain/nominate",
     label: "Nominate",
-    icon: <Star />,
+    icon: <Star className="size-7 md:size-5" />,
   },
   {
     path: "/:chain/pools",
     label: "Pools",
-    icon: <GitFork />,
+    icon: <GitFork className="size-7 md:size-5" />,
   },
   {
     path: "/:chain/validators",
     label: "Validators",
-    icon: <ShieldCheck />,
+    icon: <ShieldCheck className="size-7 md:size-5" />,
   },
 ]
 
-export const NavMenu: FC<PropsWithChildren> = ({ children }) => {
+export const NavMenu: FC<PropsWithChildren> = () => {
   const location = useLocation()
   const params = useParams<{ chain: string }>()
-  const navigate = useNavigate()
 
   const chainPages = pages.map((v) => ({
     ...v,
@@ -45,23 +39,22 @@ export const NavMenu: FC<PropsWithChildren> = ({ children }) => {
   )
 
   return (
-    <Tabs
-      value={matchedPath?.path}
-      onValueChange={navigate}
-      className="p-2 pt-4"
-    >
-      <TabsList>
-        {chainPages.map((page) => (
-          <TabsTrigger
-            key={page.path}
-            value={page.path}
-            onClick={() => navigate(page.path)}
-          >
-            {page.icon} {page.label}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-      <TabsContent value="dashboard">{children}</TabsContent>
-    </Tabs>
+    <nav className="flex gap-4">
+      {chainPages.map((page, i) => (
+        <Link
+          key={page.path}
+          to={page.path}
+          className={cn(
+            "flex gap-1 text-muted-foreground hover:text-foreground items-center",
+            {
+              "font-bold text-foreground": matchedPath === page,
+              "hidden md:flex": i === 0,
+            },
+          )}
+        >
+          {page.icon} <span className="hidden md:block">{page.label}</span>
+        </Link>
+      ))}
+    </nav>
   )
 }

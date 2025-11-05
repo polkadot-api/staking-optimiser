@@ -1,39 +1,35 @@
-import { Navigate, Route, Routes } from "react-router-dom"
 import { CardPlaceholder } from "@/components/CardPlaceholder"
-import { NavMenu } from "@/components/NavMenu/NavMenu"
 import { isNominating$ } from "@/state/nominate"
 import { useStateObservable } from "@react-rxjs/core"
 import { Suspense } from "react"
+import { Navigate, Route, Routes } from "react-router-dom"
+import { merge } from "rxjs"
 import { NominatingContent, nominatingContentSub$ } from "./Nominating"
 import {
   UpsertNomination,
   upsertNomination$,
 } from "./UpsertNomination/UpsertNomination"
-import { merge } from "rxjs"
 
 export const Nominate = () => {
   return (
-    <div>
-      <NavMenu />
-      <Routes>
-        <Route
-          path="/config"
-          element={
-            <Suspense fallback={<NominateSkeleton />}>
-              <UpsertNomination />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/*"
-          element={
-            <Suspense fallback={<NominateSkeleton />}>
-              <NominateContent />
-            </Suspense>
-          }
-        />
-      </Routes>
-    </div>
+    <Routes>
+      <Route
+        path="/config"
+        element={
+          <Suspense fallback={<NominateSkeleton />}>
+            <UpsertNomination />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/*"
+        element={
+          <Suspense fallback={<NominateSkeleton />}>
+            <NominateContent />
+          </Suspense>
+        }
+      />
+    </Routes>
   )
 }
 

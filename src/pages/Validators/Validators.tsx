@@ -1,5 +1,4 @@
 import { CardPlaceholder } from "@/components/CardPlaceholder"
-import { NavMenu } from "@/components/NavMenu/NavMenu"
 import { location$ } from "@/router"
 import { lazy, Suspense } from "react"
 import { matchPath, Route, Routes } from "react-router-dom"
@@ -14,15 +13,12 @@ const ValidatorList = lazy(async () => {
 
 export const Validators = () => {
   return (
-    <div className="space-y-4">
-      <NavMenu />
-      <Suspense fallback={<ValidatorsSkeleton />}>
-        <Routes>
-          <Route path=":address" Component={ValidatorDetailPage} />
-          <Route path="*" element={<ValidatorList />} />
-        </Routes>
-      </Suspense>
-    </div>
+    <Suspense fallback={<ValidatorsSkeleton />}>
+      <Routes>
+        <Route path=":address" Component={ValidatorDetailPage} />
+        <Route path="*" element={<ValidatorList />} />
+      </Routes>
+    </Suspense>
   )
 }
 

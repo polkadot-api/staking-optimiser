@@ -22,7 +22,10 @@ createRoot(document.getElementById("root")!).render(
       <Router>
         <Routes>
           <Route path="/:chain/*" element={<App />} />
-          <Route path="/" element={<Navigate to="/polkadot" replace />} />
+          <Route
+            path="/"
+            element={<Navigate to="/polkadot/dashboard" replace />}
+          />
         </Routes>
         <LazyVaultModal />
         <Transactions />
