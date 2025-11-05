@@ -16,6 +16,16 @@ const dialogModule = import("@/components/ui/dialog")
 
 export type DialogButtonProps = PropsWithChildren<{
   title?: string
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link"
+    | null
+    | undefined
+  className?: string
   content: (args: { isOpen: boolean; close: () => void }) => ReactNode
   needsSigner?: boolean
   disabled?: boolean
@@ -28,7 +38,20 @@ const hasSigner$ = selectedSignerAccount$.pipeState(
 )
 
 const Trigger: FC<
-  PropsWithChildren<{ needsSigner?: boolean; disabled?: boolean }>
+  PropsWithChildren<{
+    className?: string
+    needsSigner?: boolean
+    disabled?: boolean
+    variant?:
+      | "default"
+      | "destructive"
+      | "outline"
+      | "secondary"
+      | "ghost"
+      | "link"
+      | null
+      | undefined
+  }>
 > = ({ needsSigner, disabled, children, ...props }) => {
   const hasSigner = useStateObservable(hasSigner$)
 
@@ -42,12 +65,12 @@ const Trigger: FC<
 
 export const DialogButton = codeSplit(
   dialogModule,
-  ({ children, needsSigner, disabled }: DialogButtonProps) => (
-    <Trigger needsSigner={needsSigner} disabled={disabled}>
-      {children}
-    </Trigger>
+  ({ children, ...props }: DialogButtonProps) => (
+    <Trigger {...props}>{children}</Trigger>
   ),
   ({
+    variant,
+    className,
     payload,
     disabled,
     needsSigner,
@@ -70,7 +93,12 @@ export const DialogButton = codeSplit(
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Trigger needsSigner={needsSigner} disabled={disabled}>
+          <Trigger
+            className={className}
+            variant={variant}
+            needsSigner={needsSigner}
+            disabled={disabled}
+          >
             {children}
           </Trigger>
         </DialogTrigger>

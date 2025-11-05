@@ -1,31 +1,64 @@
+import { Navigate, Route, Routes } from "react-router-dom"
 import { CardPlaceholder } from "@/components/CardPlaceholder"
 import { NavMenu } from "@/components/NavMenu/NavMenu"
 import { isNominating$ } from "@/state/nominate"
 import { useStateObservable } from "@react-rxjs/core"
 import { Suspense } from "react"
 import { NominatingContent, nominatingContentSub$ } from "./Nominating"
-import { NotNominatingContent, notNominatingContentSub$ } from "./NotNominating"
-import { switchMap } from "rxjs"
+import {
+  UpsertNomination,
+  upsertNomination$,
+} from "./UpsertNomination/UpsertNomination"
+import { merge } from "rxjs"
 
 export const Nominate = () => {
   return (
     <div>
       <NavMenu />
-      <Suspense fallback={<NominateSkeleton />}>
-        <NominateContent />
-      </Suspense>
+      <Routes>
+        <Route
+          path="/config"
+          element={
+            <Suspense fallback={<NominateSkeleton />}>
+              <UpsertNomination />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/*"
+          element={
+            <Suspense fallback={<NominateSkeleton />}>
+              <NominateContent />
+            </Suspense>
+          }
+        />
+      </Routes>
     </div>
   )
 }
 
-export const nominateSub$ = isNominating$.pipe(
-  switchMap((v) => (v ? nominatingContentSub$ : notNominatingContentSub$)),
+export const nominateSub$ = merge(
+  isNominating$,
+  nominatingContentSub$,
+  upsertNomination$,
 )
 
 const NominateContent = () => {
   const isNominating = useStateObservable(isNominating$)
-
-  return isNominating ? <NominatingContent /> : <NotNominatingContent />
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          isNominating ? (
+            <NominatingContent />
+          ) : (
+            <Navigate to="config" replace />
+          )
+        }
+      />
+    </Routes>
+  )
 }
 
 const NominateSkeleton = () => (

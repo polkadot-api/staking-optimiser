@@ -1,3 +1,4 @@
+import { Table2, Sparkles, Shuffle, Trash2 } from "lucide-react"
 import { Card } from "@/components/Card"
 import { LoadingTable } from "@/components/LoadingTable"
 import { ContractableText, createSortByButton } from "@/components/SortBy"
@@ -7,16 +8,10 @@ import { cn } from "@/lib/utils"
 import { useStateObservable } from "@react-rxjs/core"
 import { Search, Square, SquareCheck } from "lucide-react"
 import { useMemo, type FC } from "react"
-import { useMediaQuery } from "react-responsive"
-import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso"
-import { merge } from "rxjs"
-import { MaParams, maParamsSub$, SortBy } from "../../Validators/Params"
-import {
-  ValidatorCard,
-  ValidatorCardSkeleton,
-  ValidatorRow,
-  ValidatorRowSkeleton,
-} from "../../Validators/Validator"
+import { TableVirtuoso, type ItemProps } from "react-virtuoso"
+import { map, merge } from "rxjs"
+import { MaParams, maParamsSub$ } from "../../Validators/Params"
+import { ValidatorRow, ValidatorRowSkeleton } from "../../Validators/Validator"
 import {
   percentLoaded$,
   validatorPrefs$,
@@ -35,15 +30,15 @@ import {
   validatorsWithPreferences$,
 } from "./pickValidators.state"
 import { ValidatorGrid } from "./ValidatorGrid"
+import { DialogButton } from "@/components/DialogButton"
 
 const SortByButton = createSortByButton(sortBy$, setSortBy)
 
-export default function PickValidators() {
+function PickValidators() {
   const search = useStateObservable(search$)
 
   return (
-    <div className="space-y-4">
-      <Selection />
+    <>
       <div className="space-y-4 pb-2 md:space-y-0 md:flex gap-2 justify-stretch">
         <Card title="Data Options" className="basis-xl grow">
           <MaParams />
@@ -59,18 +54,29 @@ export default function PickValidators() {
         </Card>
       </div>
       <ValidatorsDisplay />
-    </div>
+    </>
   )
 }
 
+export const customSquare$ = selectedValidators$.pipeState(
+  map((x) => (
+    <Square
+      className={cn("text-muted-foreground", {
+        "cursor-not-allowed": x.size >= MAX_VALIDATORS,
+      })}
+    />
+  )),
+)
+
 export const pickValidatorsSub$ = merge(
+  customSquare$,
   maParamsSub$,
   selectedValidators$,
   validatorsWithPreferences$,
   sortedValidators$,
 )
 
-const Selection = () => {
+export const Nominations = () => {
   const selection = useStateObservable(selectedValidators$)
   const selectionArr = Array.from(selection)
   const validators = useStateObservable(validatorsWithPreferences$)
@@ -95,26 +101,19 @@ const Selection = () => {
       onRemove={toggleValidator}
     >
       <div className="flex flex-wrap gap-2 justify-center">
-        <Button
-          variant="secondary"
-          onClick={() => {
-            const selected = new Set(selection)
-            for (
-              let i = 0;
-              i < sortedValidators.length && selected.size < MAX_VALIDATORS;
-              i++
-            ) {
-              const addr = sortedValidators[i].address
-              if (selected.has(addr)) continue
-              selected.add(addr)
-              toggleValidator(addr)
-            }
-          }}
+        <DialogButton
+          variant="outline"
+          className="group relative overflow-hidden border-blue-200 bg-blue-50 text-blue-700 transition-all hover:border-blue-300 hover:bg-blue-100 hover:shadow-sm dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300 dark:hover:border-blue-700 dark:hover:bg-blue-900"
+          title={`Pick up to 16 validators (${selection.size}/16)`}
+          content={() => <PickValidators />}
+          dialogClassName="md:max-w-3xl max-h-9/10 lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl"
         >
-          Fill with top
-        </Button>
+          <Table2 className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
+          Pick from table
+        </DialogButton>
         <Button
-          variant="secondary"
+          variant="outline"
+          className="group relative overflow-hidden border-emerald-200 bg-emerald-50 text-emerald-700 transition-all hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-sm dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-900"
           onClick={() => {
             const unselectedTop10 = sortedValidators
               .slice(0, Math.round(sortedValidators.length / 10))
@@ -128,10 +127,12 @@ const Selection = () => {
             }
           }}
         >
+          <Sparkles className="mr-2 h-4 w-4 transition-transform group-hover:rotate-12 group-hover:scale-110" />
           Fill with random top 10%
         </Button>
         <Button
-          variant="secondary"
+          variant="outline"
+          className="group relative overflow-hidden border-amber-200 bg-amber-50 text-amber-700 transition-all hover:border-amber-300 hover:bg-amber-100 hover:shadow-sm dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300 dark:hover:border-amber-700 dark:hover:bg-amber-900"
           onClick={() => {
             if (selection.size === MAX_VALIDATORS) return
             const unselectedTop10 = sortedValidators
@@ -144,16 +145,20 @@ const Selection = () => {
             toggleValidator(pick.address)
           }}
         >
+          <Shuffle className="mr-2 h-4 w-4 transition-transform group-hover:rotate-180" />
           Pick random top 10%
         </Button>
+
         <Button
-          variant="secondary"
+          variant="outline"
+          className="group relative overflow-hidden border-red-200 bg-red-50 text-red-700 transition-all hover:border-red-300 hover:bg-red-100 hover:shadow-sm dark:border-red-800 dark:bg-red-950 dark:text-red-300 dark:hover:border-red-700 dark:hover:bg-red-900"
           onClick={() => {
             for (const validator of selection) {
               toggleValidator(validator)
             }
           }}
         >
+          <Trash2 className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
           Remove all
         </Button>
       </div>
@@ -163,10 +168,6 @@ const Selection = () => {
 
 const emptyList: Array<null> = Array(1000).fill(null)
 const ValidatorsDisplay = () => {
-  const supportsTable = useMediaQuery({
-    query: "(min-width: 768px)",
-  })
-
   const selection = useStateObservable(selectedValidators$)
   const validators = useStateObservable(sortedValidators$)
   const percentLoaded = useStateObservable(percentLoaded$)
@@ -186,11 +187,7 @@ const ValidatorsDisplay = () => {
 
   return (
     <LoadingTable progress={percentLoaded}>
-      {supportsTable ? (
-        <ValidatorTable validators={actualValidators} />
-      ) : (
-        <ValidatorCards validators={actualValidators} />
-      )}
+      <ValidatorTable validators={actualValidators} />
     </LoadingTable>
   )
 }
@@ -277,7 +274,7 @@ const ValidatorTable: FC<{
               selected ? (
                 <SquareCheck className="text-positive" />
               ) : (
-                <Square className="text-muted-foreground" />
+                customSquare$
               )
             }
             hideValApy
@@ -287,29 +284,5 @@ const ValidatorTable: FC<{
         )
       }}
     />
-  )
-}
-
-const Item = (props: ItemProps<any>) => <div {...props} className="p-4" />
-
-const ValidatorCards: FC<{
-  validators: PositionValidator[] | null[]
-}> = ({ validators }) => {
-  return (
-    <div>
-      <SortBy />
-      <Virtuoso
-        customScrollParent={
-          document.getElementById("dialog-content") ??
-          document.getElementById("app-content")!
-        }
-        totalCount={validators.length}
-        components={{ Item }}
-        itemContent={(idx) => {
-          const v = validators[idx]
-          return v ? <ValidatorCard validator={v} /> : <ValidatorCardSkeleton />
-        }}
-      />
-    </div>
   )
 }

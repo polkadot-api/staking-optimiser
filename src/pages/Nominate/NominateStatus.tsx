@@ -7,13 +7,16 @@ import { formatPercentage } from "@/util/format"
 import { useStateObservable } from "@react-rxjs/core"
 import type { FC } from "react"
 import { merge } from "rxjs"
-import { ManageNomination } from "./ManageNomination"
 import { NominateLocks, nominateLocksSub$ } from "./NominateLocks"
 import { StopNominating } from "./StopNominating"
+import { useNavigate, useParams } from "react-router-dom"
+import { Button } from "@polkahub/ui-components"
 
 export const NominateStatus = () => {
   const accountStatus = useStateObservable(accountStatus$)!
   const lastEraReward = useStateObservable(lastReward$)
+  const { chain } = useParams()
+  const navigate = useNavigate()
 
   return (
     <div className="grow flex flex-col">
@@ -33,14 +36,9 @@ export const NominateStatus = () => {
       {accountStatus.nomination.unlocks.length ? <NominateLocks /> : null}
       <div className="grow" />
       <div className="space-x-2">
-        <DialogButton
-          title="Manage nomination"
-          content={() => <ManageNomination />}
-          dialogClassName="md:max-w-3xl lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl"
-          needsSigner
-        >
+        <Button onClick={() => navigate(`/${chain}/nominate/config`)}>
           Manage nomination
-        </DialogButton>
+        </Button>
         {accountStatus.nomination.currentBond ? (
           <DialogButton
             title="Stop nominating"

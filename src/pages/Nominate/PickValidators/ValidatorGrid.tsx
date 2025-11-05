@@ -20,16 +20,13 @@ export const ValidatorGrid: React.FC<PropsWithChildren<ValidatorGridProps>> = ({
   const emptySlots = MAX_VALIDATORS - selectedValidators.length
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">
-        Select up to {MAX_VALIDATORS} validators
-      </h3>
-
+      {children}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {selectedValidators.map((validator) => (
           <ValidatorCard
             key={validator.address}
             address={validator.address}
-            apy={validator.apy}
+            apy={validator.apy * 100}
             onRemove={onRemove}
           />
         ))}
@@ -38,13 +35,6 @@ export const ValidatorGrid: React.FC<PropsWithChildren<ValidatorGridProps>> = ({
           <EmptyValidatorSlot key={`empty-${index}`} />
         ))}
       </div>
-
-      {selectedValidators.length === MAX_VALIDATORS && (
-        <p className="text-sm text-muted-foreground text-center">
-          Maximum validators selected. Remove one to select another.
-        </p>
-      )}
-      {children}
     </div>
   )
 }

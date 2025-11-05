@@ -1,1 +1,1 @@
-export { default, pickValidatorsSub$ } from "./PickValidators"
+export { pickValidatorsSub$ } from "./PickValidators"

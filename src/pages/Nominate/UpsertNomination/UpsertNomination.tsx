@@ -1,17 +1,24 @@
-import { Card } from "@/components/Card"
 import { currentNominationPoolStatus$ } from "@/state/nominationPool"
 import { liftSuspense, useStateObservable } from "@react-rxjs/core"
 import { Link } from "react-router-dom"
-import { ManageNomination, manageNominationSub$ } from "./ManageNomination"
 import {
   bondableAmount$,
   minBond$,
   MinBondingAmounts,
   minBondingAmountsSub$,
-} from "./MinBondingAmounts"
+} from "../MinBondingAmounts"
 import { merge } from "rxjs"
+import { CardPlaceholder } from "@/components/CardPlaceholder"
+import { lazy, Suspense } from "react"
 
-export const NotNominatingContent = () => {
+const manageNominationModule = import("./ManageNomination")
+const ManageNomination = lazy(async () => {
+  const module = await manageNominationModule
+  module.manageNomination$.subscribe()
+  return module
+})
+
+export const UpsertNomination = () => {
   const minBond = useStateObservable(minBond$)
   const poolStatus = useStateObservable(currentNominationPoolStatus$)
   const bondableAmount = useStateObservable(bondableAmount$)
@@ -44,25 +51,35 @@ export const NotNominatingContent = () => {
   return (
     <div className="space-y-4">
       <MinBondingAmounts />
-      <Card title="Start nominating" className="space-y-4">
-        {bondableAmount == null ? (
-          "Select an account to start nominating"
-        ) : poolStatus?.pool ? (
-          renderInPools()
-        ) : bondableAmount <= minBond ? (
-          renderNotEnough()
-        ) : (
+      {bondableAmount == null ? (
+        "Select an account to start nominating"
+      ) : poolStatus?.pool ? (
+        renderInPools()
+      ) : bondableAmount <= minBond ? (
+        renderNotEnough()
+      ) : (
+        <Suspense fallback={<ManageNominationSkeleton />}>
           <ManageNomination />
-        )}
-      </Card>
+        </Suspense>
+      )}
     </div>
   )
 }
 
-export const notNominatingContentSub$ = merge(
+const ManageNominationSkeleton = () => {
+  return (
+    <div className="space-y-2">
+      <CardPlaceholder height={165} />
+      <CardPlaceholder height={430} />
+      <CardPlaceholder height={150} />
+      <CardPlaceholder />
+    </div>
+  )
+}
+
+export const upsertNomination$ = merge(
   minBondingAmountsSub$,
   minBond$,
   currentNominationPoolStatus$.pipe(liftSuspense()),
   bondableAmount$,
-  manageNominationSub$,
 )

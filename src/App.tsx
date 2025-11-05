@@ -19,7 +19,7 @@ function App() {
         <div className="container m-auto">
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/nominate" element={<Nominate />} />
+            <Route path="/nominate/*" element={<Nominate />} />
             <Route path="/pools/*" element={<Pools />} />
             <Route path="/validators/*" element={<Validators />} />
             <Route path="/" element={<Navigate to="dashboard" replace />} />

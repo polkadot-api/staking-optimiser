@@ -22,8 +22,6 @@ let idx = 1
 const logs: Record<string, string[]> = {}
 ;(globalThis as any).__logs = logs
 
-const logsEnabled =
-  import.meta.env.DEV || localStorage.getItem("rpc-logs") === "true"
 export const getGetWsProvider: (name: string) => typeof _getWsProvider = (
   name,
 ) => {
@@ -35,7 +33,6 @@ export const getGetWsProvider: (name: string) => typeof _getWsProvider = (
   return (endpoints, config) =>
     withLogsRecorder(
       (log) => {
-        if (logsEnabled) console.debug(name, log)
         dataOut.push(log)
       },
       withPolkadotSdkCompat(

@@ -52,7 +52,11 @@ export const NavMenu: FC<PropsWithChildren> = ({ children }) => {
     >
       <TabsList>
         {chainPages.map((page) => (
-          <TabsTrigger key={page.path} value={page.path}>
+          <TabsTrigger
+            key={page.path}
+            value={page.path}
+            onClick={() => navigate(page.path)}
+          >
             {page.icon} {page.label}
           </TabsTrigger>
         ))}

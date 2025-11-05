@@ -43,6 +43,7 @@ const hintedAccounts$ = polkaHub.availableAccounts$.pipeState(
   ),
   map((map) => [...map.values()]),
 )
+hintedAccounts$.subscribe()
 
 export const AccountInput: FC<{
   value: SS58String | null

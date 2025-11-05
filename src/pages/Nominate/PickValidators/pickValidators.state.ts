@@ -32,11 +32,8 @@ export const selectedValidators$ = onChainSelectedValidators$.pipeState(
     toggleValidator$.pipe(
       scan((acc, addr) => {
         const res = new Set(acc)
-        if (res.has(addr)) {
-          res.delete(addr)
-        } else {
-          res.add(addr)
-        }
+        if (res.has(addr)) res.delete(addr)
+        else if (res.size < MAX_VALIDATORS) res.add(addr)
         return res
       }, initialValidators),
       startWith(initialValidators),

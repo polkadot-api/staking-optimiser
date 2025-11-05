@@ -11,7 +11,7 @@ import { state, useStateObservable } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { type FC } from "react"
 import { combineLatest, concat, filter, map, merge, take } from "rxjs"
-import { minBond$ } from "./MinBondingAmounts"
+import { minBond$ } from "../MinBondingAmounts"
 
 const [bondChange$, setBond] = createSignal<bigint | null>()
 
@@ -93,7 +93,7 @@ export const BondInput: FC = () => {
   )
 
   return (
-    <div className="space-y-4 rounded-lg border border-border/60 bg-background/90 p-4">
+    <>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div>
           <p className="text-sm font-medium">Manage bond</p>
@@ -159,7 +159,7 @@ export const BondInput: FC = () => {
           transaction fees, which could lock you out.
         </AlertCard>
       ) : null}
-    </div>
+    </>
   )
 }
 
