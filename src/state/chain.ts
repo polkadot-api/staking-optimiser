@@ -106,7 +106,7 @@ const createClients = (chain: KnownChains, useSmoldoge: boolean) => {
     if (useSmoldoge) {
       if (!smoldot) {
         smoldot = import("polkadot-api/smoldot/from-worker").then((module) =>
-          module.startFromWorker(new SmWorker(), {forbidWs: true}),
+          module.startFromWorker(new SmWorker(), { forbidWs: true }),
         )
       }
 

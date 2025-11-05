@@ -185,12 +185,10 @@ const isEraIndexed = (era: number) => {
   return eraIndexedCache.get(era)!
 }
 
-const getNominatorRewardsFromWorker = (address: SS58String, eras$: Observable<number>) =>
-  sendToWorker<NominatorRewardsResult>(
-    "getNominatorRewards",
-    address,
-    eras$
-  )
+const getNominatorRewardsFromWorker = (
+  address: SS58String,
+  eras$: Observable<number>,
+) => sendToWorker<NominatorRewardsResult>("getNominatorRewards", address, eras$)
 
 export const getNominatorRewards = (
   address: SS58String,
@@ -202,16 +200,20 @@ export const getNominatorRewards = (
   combineLatest([activeEraNumber$, useSmoldot$, indexerCodec$]).pipe(
     take(1),
     switchMap(([activeEra, useSmoldot, codec]) => {
-      if (useSmoldot) return getNominatorRewardsFromWorker(
-        address,
-        from(eras.filter(e => e <= activeEra))
-      )
+      if (useSmoldot)
+        return getNominatorRewardsFromWorker(
+          address,
+          from(eras.filter((e) => e <= activeEra)),
+        )
 
       const aboveActiveEra = eras.filter((e) => e >= activeEra)
       const belowActiveEra = eras.filter((e) => e < activeEra)
 
       const failedEras$ = new Subject<number>()
-      const worker$ = getNominatorRewardsFromWorker(address, concat(from(aboveActiveEra), failedEras$))
+      const worker$ = getNominatorRewardsFromWorker(
+        address,
+        concat(from(aboveActiveEra), failedEras$),
+      )
 
       const indexer$ = merge(
         ...belowActiveEra.map((era) =>
@@ -241,10 +243,7 @@ export const getNominatorRewards = (
     }),
   )
 
-export const getNominatorValidators = (
-  address: SS58String,
-  eras: number[],
-) =>
+export const getNominatorValidators = (address: SS58String, eras: number[]) =>
   getNominatorRewards(address, eras).pipe(
     map(
       ({

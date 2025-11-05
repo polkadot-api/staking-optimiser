@@ -22,9 +22,19 @@ let idx = 1
 const logs: Record<string, string[]> = {}
 ;(globalThis as any).__logs = logs
 
+const logsLevel = import.meta.env.DEV
+  ? localStorage.getItem("logs-console") === "true"
+    ? 2
+    : 1
+  : 0
+
 export const getGetWsProvider: (name: string) => typeof _getWsProvider = (
   name,
 ) => {
+  if (!logsLevel)
+    return (endpoints, config) =>
+      withPolkadotSdkCompat(_getWsProvider(endpoints, config))
+
   const dataIn: Array<string> = []
   const dataOut: Array<string> = []
   logs[name + "_in_" + ++idx] = dataIn
@@ -33,6 +43,7 @@ export const getGetWsProvider: (name: string) => typeof _getWsProvider = (
   return (endpoints, config) =>
     withLogsRecorder(
       (log) => {
+        if (logsLevel > 1) console.debug(log)
         dataOut.push(log)
       },
       withPolkadotSdkCompat(
