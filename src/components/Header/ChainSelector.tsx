@@ -87,7 +87,10 @@ export const ChainSelector = withSubscribe(
                       <Button
                         variant="secondary"
                         className="w-full"
-                        onClick={() => navigate("/" + chain)}
+                        onClick={() => {
+                          navigate("/" + chain)
+                          window.location.reload()
+                        }}
                       >
                         <img
                           src={chainLogoByChain[chain]}
