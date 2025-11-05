@@ -178,7 +178,7 @@ const TermsOfServiceButton: FC<PropsWithChildren<{ sign: () => void }>> = ({
             <a
               className="underline"
               target="blank"
-              href="https://github.com/polkadot-api/staking-optimiser/blob/main/LICENSE"
+              href="https://gist.githubusercontent.com/voliva/d3e1f4357826e7d3aa9d05012058de7d/raw/1c5d05e53d72eddff62bdf68dad45a4604d6002e/LICENSE"
             >
               its license
             </a>
