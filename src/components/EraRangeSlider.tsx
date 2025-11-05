@@ -127,14 +127,14 @@ export function EraRangeSlider({
     <div className={cn("w-full", className)}>
       <div className="mb-2 flex justify-between text-sm font-medium">
         <div className="text-foreground">
-          Start Era: <span className="font-bold">{values[0]}</span>
+          From Era: <span className="font-bold">{values[0] + 1}</span>
         </div>
         <div className="text-foreground text-center">
           Range: <span className="font-bold">{rangeSize}</span>{" "}
           {rangeSize === 1 ? "era" : "eras"}
         </div>
         <div className="text-foreground">
-          End Era: <span className="font-bold">{values[1]}</span>
+          To Era: <span className="font-bold">{values[1]}</span>
         </div>
       </div>
 

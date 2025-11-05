@@ -129,16 +129,32 @@ const ValidatorDetail: FC<{ address: string }> = ({ address }) => {
             </span>
           </div>
           <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat icon={<Users className="size-4" />} label="Nominators">
+            <Stat
+              icon={<Users className="size-4" />}
+              label="Nominators"
+              hint="Number of nominators actively backing this validator in the current era."
+            >
               {lastRewards?.nominatorCount.toLocaleString() ?? "-"}
             </Stat>
-            <Stat icon={<ShieldCheck className="size-4" />} label="Active bond">
+            <Stat
+              icon={<ShieldCheck className="size-4" />}
+              label="Active bond"
+              hint="Total amount of tokens currently staked in support of this validator."
+            >
               <TokenValue value={lastRewards?.activeBond} />
             </Stat>
-            <Stat icon={<Crown className="size-4" />} label="Self stake">
+            <Stat
+              icon={<Crown className="size-4" />}
+              label="Self stake"
+              hint="Amount of tokens the validator has personally bonded in the current era."
+            >
               {<TokenValue value={lastRewards?.selfStake} />}
             </Stat>
-            <Stat icon={<PieChart className="size-4" />} label="Commission">
+            <Stat
+              icon={<PieChart className="size-4" />}
+              label="Commission"
+              hint="Current commission rate configured by the validator."
+            >
               {formatPercentage(validatorPrefs.commission)}
             </Stat>
           </div>

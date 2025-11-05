@@ -1,3 +1,4 @@
+import { cn } from "@polkahub/ui-components"
 import {
   Suspense,
   type FC,
@@ -6,17 +7,28 @@ import {
 } from "react"
 import { Card } from "../Card"
 import { CircularProgress } from "../CircularProgress"
-import { cn } from "@polkahub/ui-components"
+import { TextHintTooltip } from "../HintTooltip"
 
 export const InfoCard: FC<
-  PropsWithChildren<{ title: string; className?: string; fallback?: ReactNode }>
-> = ({ title, children, className, fallback }) => (
+  PropsWithChildren<{
+    title: string
+    tooltip?: string
+    className?: string
+    fallback?: ReactNode
+  }>
+> = ({ title, children, className, tooltip, fallback }) => (
   <Card
     title={title}
-    className={cn("text-sm flex flex-col w-36", className)}
+    className={cn("text-sm flex flex-col w-36 relative group", className)}
     titleClassName="w-full text-center"
   >
     <Suspense fallback={fallback ?? <InfoPlaceholder />}>{children}</Suspense>
+    {tooltip ? (
+      <TextHintTooltip
+        hint={tooltip}
+        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+      />
+    ) : null}
   </Card>
 )
 

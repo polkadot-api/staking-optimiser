@@ -26,7 +26,10 @@ export const ActiveValidators = () => {
   const validators = useStateObservable(validators$)
 
   return (
-    <InfoCard title="Active Validators">
+    <InfoCard
+      title="Active Validators"
+      tooltip="Validators currently participating in block production this era"
+    >
       <div className="flex flex-col items-center">
         <div className="text-xs text-chart-2">
           <CircularProgress
@@ -45,7 +48,11 @@ export const TotalValidators = () => {
   const validators = useStateObservable(validators$)
 
   return (
-    <InfoCard title="Total Validators" className="hidden lg:flex">
+    <InfoCard
+      title="Total Validators"
+      className="hidden lg:flex"
+      tooltip="The total number of validator nodes registered on the network"
+    >
       <div className="flex flex-col items-center">
         <div className="text-xs text-chart-2">
           <CircularProgress

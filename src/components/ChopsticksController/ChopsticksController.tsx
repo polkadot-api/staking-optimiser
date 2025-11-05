@@ -5,13 +5,14 @@ import { dot } from "@polkadot-api/descriptors"
 import { u64 } from "@polkadot-api/substrate-bindings"
 import { getTypedCodecs, type HexString } from "polkadot-api"
 import { toHex } from "polkadot-api/utils"
-import { lazy, useRef, type FormEvent } from "react"
+import { lazy, useRef, useState, type FormEvent } from "react"
 import { combineLatest, firstValueFrom, map, skip, switchMap } from "rxjs"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import logo from "./chopsticks.svg"
 import { useControllerAction } from "./controllerAction"
 import { ControllerStatusIndicator } from "./ControllerStatusIndicator"
+import { AccountInput } from "../AccountInput"
 
 // TODO  For some reason, even though this file is getting tree-shaked, all of its imports are still being bundled in. It's annoying.
 
@@ -166,9 +167,10 @@ const SkipEras = () => {
 }
 
 const ResetBalance = () => {
+  const [accountId, setAccountId] = useState<string | null>(null)
   const { handler, status } = useControllerAction(
     async (evt: FormEvent<HTMLFormElement>) => {
-      const accountId = evt.currentTarget.address.value
+      if (!accountId) return
       const value = evt.currentTarget.value.value
 
       const [client, tokenDecimals, accountValue] = await firstValueFrom(
@@ -208,9 +210,14 @@ const ResetBalance = () => {
       <h3 className="text-sm font-medium">Set free balance of account</h3>
       <form onSubmit={handler}>
         <div className="flex items-center gap-2">
-          <Input name="address" placeholder="Address" />
+          <AccountInput value={accountId} onChange={setAccountId} />
           <Input name="value" type="number" placeholder="Value" />
-          <Input className="shrink-0 w-auto" type="submit" value="Set" />
+          <Input
+            className="shrink-0 w-auto"
+            type="submit"
+            value="Set"
+            disabled={!accountId}
+          />
           <ControllerStatusIndicator status={status} />
         </div>
       </form>

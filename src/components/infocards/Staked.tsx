@@ -26,7 +26,10 @@ export const Staked = () => {
   const pct = staked ? Number(staked.staked) / Number(staked.issuance) : null
 
   return (
-    <InfoCard title="Staked">
+    <InfoCard
+      title="Staked"
+      tooltip="The percentage of the total DOT supply currently locked in staking. A higher ratio means stronger network security."
+    >
       <div className="flex-1 flex flex-col items-center justify-center text-xs text-chart-2">
         <CircularProgress
           progress={pct ?? 0}

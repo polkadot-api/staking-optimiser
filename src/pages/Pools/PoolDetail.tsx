@@ -33,6 +33,7 @@ import { combineLatest, map, merge, switchMap } from "rxjs"
 import { aggregatedValidators$ } from "../Validators/validatorList.state"
 import { JoinPool, joinPoolSub$ } from "./JoinPool"
 import type { NominationPool } from "./poolList.state"
+import { HintTooltip, TextHintTooltip } from "@/components/HintTooltip"
 
 const pool$ = state((id: number) =>
   combineLatest([
@@ -124,22 +125,39 @@ export const PoolDetail = () => {
         </div>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <Stat icon={<Users className="size-4" />} label="Members">
+          <Stat
+            icon={<Users className="size-4" />}
+            label="Members"
+            hint="Number of accounts currently in this pool"
+          >
             {pool.memberCount.toLocaleString()}
           </Stat>
-          <Stat icon={<ShieldCheck className="size-4" />} label="Pool bond">
+          <Stat
+            icon={<ShieldCheck className="size-4" />}
+            label="Pool bond"
+            hint="Total amount of DOT staked by all pool members"
+          >
             <TokenValue value={pool.bond} />
           </Stat>
-          <Stat icon={<Gauge className="size-4" />} label="Average APY">
+          <Stat
+            icon={<Gauge className="size-4" />}
+            label="Average APY"
+            hint="Average validator performance for the last era, based on this pool's nominations"
+          >
             {formatPercentage(pool.avgApy)}
           </Stat>
-          <Stat icon={<PieChart className="size-4" />} label="Commission">
+          <Stat
+            icon={<PieChart className="size-4" />}
+            label="Commission"
+            hint="Portion of rewards taken by the pool operator"
+          >
             {formatPercentage(pool.commission.current)}
           </Stat>
           <Stat
             icon={<ShieldAlert className="size-4" />}
             label="Nominations"
             className="hidden lg:block"
+            hint="Number of validators this pool is currently backing"
           >
             {pool.nominations.length.toLocaleString()}
           </Stat>
@@ -148,7 +166,40 @@ export const PoolDetail = () => {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div className="space-y-6">
-          <Card title="Commission details" className="space-y-4">
+          <Card
+            title="Commission details"
+            className="space-y-4"
+            hint={
+              <HintTooltip className="space-y-1">
+                <p>Commission parameters configured for this pool</p>
+                <p>
+                  The operator can adjust the commission according to the limits
+                  defined by these parameters.
+                </p>
+                <p>
+                  <strong>Current commission</strong>: The active commission
+                  percentage applied to rewards.
+                </p>
+                <p>
+                  <strong>Maximum commission</strong>: The highest commission
+                  that can ever be set. This value can only be decreased.
+                </p>
+                <p>
+                  <strong>Change rate</strong>: Defines how quickly the
+                  commission can change between eras. It can only be made more
+                  restrictive.
+                </p>
+                <p>
+                  <strong>Throttle era</strong>: The most recent era when the
+                  commission was modified under a rate limit.
+                </p>
+                <p>
+                  <strong>Claim Permission</strong>: Specifies who is authorized
+                  to claim the commission rewards.
+                </p>
+              </HintTooltip>
+            }
+          >
             <DefinitionList
               items={[
                 {
@@ -232,15 +283,18 @@ export const PoolDetail = () => {
                 {
                   term: "Pool",
                   value: <AddressIdentity addr={pool.addresses.pool} />,
+                  hint: "The bonded account holding all members' staked DOT. Acts as the nominator on behalf of the entire pool.",
                 },
                 {
                   term: "Depositor",
                   value: <AddressIdentity addr={pool.addresses.depositor} />,
+                  hint: "The account that created the pool and made the initial bond. Can only withdraw after all other members have left.",
                 },
                 pool.addresses.root
                   ? {
                       term: "Root",
                       value: <AddressIdentity addr={pool.addresses.root} />,
+                      hint: "The pool's admin account. Can change other roles and perform their actions.",
                     }
                   : null,
                 pool.addresses.nominator
@@ -249,12 +303,14 @@ export const PoolDetail = () => {
                       value: (
                         <AddressIdentity addr={pool.addresses.nominator} />
                       ),
+                      hint: "The account that selects which validators the pool nominates for staking rewards.",
                     }
                   : null,
                 pool.addresses.bouncer
                   ? {
                       term: "Bouncer",
                       value: <AddressIdentity addr={pool.addresses.bouncer} />,
+                      hint: "The account that manages pool access and state. Can block or un-block the pool and remove members when necessary.",
                     }
                   : null,
                 pool.addresses.commission
@@ -263,6 +319,7 @@ export const PoolDetail = () => {
                       value: (
                         <AddressIdentity addr={pool.addresses.commission} />
                       ),
+                      hint: "The account that earns the commission from the pool.",
                     }
                   : null,
               ].filter((v) => v != null)}
@@ -282,17 +339,21 @@ export const Stat: FC<
     icon: ReactElement
     label: string
     className?: string
+    hint?: string
   }>
-> = ({ icon, label, children, className }) => (
+> = ({ icon, label, children, className, hint }) => (
   <div
     className={cn(
       "rounded-xl border border-border/60 bg-muted/30 p-4",
       className,
     )}
   >
-    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-      {icon}
-      {label}
+    <div className="flex justify-between">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {icon}
+        {label}
+      </div>
+      {hint ? <TextHintTooltip hint={hint} /> : null}
     </div>
     <div className="mt-2 text-xl font-semibold text-foreground">{children}</div>
   </div>
@@ -304,12 +365,16 @@ const DefinitionList = ({
   items: Array<{
     term: string
     value: ReactNode
+    hint?: string
   }>
 }) => (
   <dl className="grid gap-3 text-sm">
     {items.map((item, idx) => (
       <Fragment key={`${item.term}-${idx}`}>
-        <dt className="text-muted-foreground">{item.term}</dt>
+        <dt className="text-muted-foreground flex items-center gap-1">
+          <span>{item.term}</span>
+          {item.hint ? <TextHintTooltip hint={item.hint} /> : null}
+        </dt>
         <dd className="rounded-lg border border-border/60 bg-muted/30 p-3 font-medium text-foreground">
           {item.value}
         </dd>

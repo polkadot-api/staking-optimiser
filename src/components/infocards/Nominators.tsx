@@ -18,7 +18,11 @@ export const ActiveNominators = () => {
   const nominators = useStateObservable(validators$)
 
   return (
-    <InfoCard title="Nominators" className="hidden sm:flex">
+    <InfoCard
+      title="Nominators"
+      className="hidden sm:flex"
+      tooltip="Accounts that have staked DOT to back validators and share in their rewards"
+    >
       <div className="flex flex-col items-center">
         <div className="text-xs text-chart-2">
           <CircularProgress

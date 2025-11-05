@@ -5,7 +5,7 @@ import { TextHintTooltip } from "./HintTooltip"
 export const Card: FC<
   PropsWithChildren<{
     title?: ReactNode
-    hint?: string
+    hint?: ReactNode
     className?: string
     titleClassName?: string
   }>
@@ -28,7 +28,7 @@ export const Card: FC<
         >
           {title}
         </h3>
-        {hint ? <TextHintTooltip hint={hint} /> : null}
+        {typeof hint === "string" ? <TextHintTooltip hint={hint} /> : hint}
       </div>
       {children}
     </article>

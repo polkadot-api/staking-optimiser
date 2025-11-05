@@ -1,3 +1,6 @@
+import { Card } from "@/components/Card"
+import { EraRangeSlider } from "@/components/EraRangeSlider"
+import { HintTooltip } from "@/components/HintTooltip"
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
@@ -5,6 +8,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { activeEraNumber$ } from "@/state/era"
 import { useStateObservable } from "@react-rxjs/core"
 import { Search, SortAsc, SortDesc } from "lucide-react"
+import { merge } from "rxjs"
 import {
   filterBlocked$,
   filterCommision$,
@@ -20,9 +24,6 @@ import {
   sortBy$,
   type HistoricValidator,
 } from "./validatorList.state"
-import { Card } from "@/components/Card"
-import { merge } from "rxjs"
-import { EraRangeSlider } from "@/components/EraRangeSlider"
 
 export const Params = () => {
   return (
@@ -54,9 +55,21 @@ export const MaParams = () => {
         />
       </div>
       <div className="flex shrink-0 flex-col gap-2">
-        <span className="text-sm font-medium text-muted-foreground">
-          Avg type
-        </span>
+        <div className="flex gap-1 justify-between">
+          <span className="text-sm font-medium text-muted-foreground">
+            Avg type
+          </span>
+          <HintTooltip>
+            <p>
+              <strong>SMA</strong>: Simple Moving Average, equal weight for all
+              eras.
+            </p>
+            <p>
+              <strong>EMA</strong>: Exponential Moving Average, emphasizes
+              recent eras.
+            </p>
+          </HintTooltip>
+        </div>
         <ToggleGroup
           value={maType}
           type="single"
@@ -151,7 +164,7 @@ function FiltersNew() {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
-          <div className="flex flex-col gap-2 w-full sm:w-auto sm:min-w-[240px]">
+          <div className="flex flex-col gap-2 w-full sm:w-auto sm:min-w-60">
             <label htmlFor="commission-slider" className="text-sm font-medium">
               Commission
             </label>

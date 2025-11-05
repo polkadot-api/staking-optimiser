@@ -1,7 +1,8 @@
-import { activeEra$ } from "@/state/era"
-import { useStateObservable } from "@react-rxjs/core"
+import { activeEra$, eraDurationInMs$ } from "@/state/era"
+import { useStateObservable, withDefault } from "@react-rxjs/core"
 import { CircularProgress } from "../CircularProgress"
 import { InfoCard, InfoPlaceholder } from "./InfoCard"
+import { map } from "rxjs"
 
 const formatEnd = (end: Date) => {
   const diff = end.getTime() - Date.now()
@@ -15,14 +16,24 @@ const formatEnd = (end: Date) => {
   return `${hours}:${minutes.toString().padStart(2, "0")}`
 }
 
-export const ActiveEra = () => (
-  <InfoCard
-    title="Next Payout"
-    fallback={<InfoPlaceholder className="stroke-accent-foreground" />}
-  >
-    <EraContent />
-  </InfoCard>
+const eraHours$ = eraDurationInMs$.pipeState(
+  map((v) => Math.round(v / (1000 * 60 * 60))),
+  withDefault(null),
 )
+
+export const ActiveEra = () => {
+  const duration = useStateObservable(eraHours$)
+
+  return (
+    <InfoCard
+      title="Next Payout"
+      fallback={<InfoPlaceholder className="stroke-accent-foreground" />}
+      tooltip={`Rewards are distributed at the end of each era, which lasts about ${duration ?? "…"} hours`}
+    >
+      <EraContent />
+    </InfoCard>
+  )
+}
 
 const EraContent = () => {
   const activeEra = useStateObservable(activeEra$)
