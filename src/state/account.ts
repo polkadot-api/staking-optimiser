@@ -21,7 +21,9 @@ const ss58Format$ = stakingApi$.pipe(
 )
 
 const selectedAccountPlugin = createSelectedAccountPlugin()
-const pjsWalletProvider = createPjsWalletProvider()
+const pjsWalletProvider = createPjsWalletProvider({
+  accountFormat: "ss58",
+})
 const polkadotVaultProvider = createPolkadotVaultProvider()
 const readOnlyProvider = createReadOnlyProvider({
   fakeSigner: USE_CHOPSTICKS,

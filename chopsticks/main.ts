@@ -5,7 +5,7 @@ import { getWsProvider } from "polkadot-api/ws-provider"
 
 const ENDPOINT = process.argv.includes("paseo")
   ? "wss://asset-hub-paseo-rpc.dwellir.com"
-  : "wss://asset-hub-polkadot-rpc.dwellir.com"
+  : "wss://sys.ibp.network/asset-hub-polkadot"
 const LOCAL_RPC_PORT = 8132
 
 const logStream = createWriteStream("./chopsticks.log")

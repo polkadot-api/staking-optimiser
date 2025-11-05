@@ -1,8 +1,3 @@
-import { accountStatus$ } from "@/state/account"
-import { StakingRewardDestination } from "@polkadot-api/descriptors"
-import { useStateObservable } from "@react-rxjs/core"
-import { createSignal } from "@react-rxjs/utils"
-import { map, startWith, switchMap } from "rxjs"
 import {
   Select,
   SelectContent,
@@ -10,7 +5,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { AccountInput } from "@/components/AccountInput"
+import { accountStatus$ } from "@/state/account"
+import { StakingRewardDestination } from "@polkadot-api/descriptors"
+import { useStateObservable } from "@react-rxjs/core"
+import { createSignal } from "@react-rxjs/utils"
+import { AddressInput } from "polkahub"
+import { map, startWith, switchMap } from "rxjs"
 
 const [payeeChange$, setPayee] = createSignal<StakingRewardDestination>()
 
@@ -59,11 +59,13 @@ export const PayeePicker = () => {
         </SelectContent>
       </Select>
       {selectedPayee.type === "Account" ? (
-        <AccountInput
+        <AddressInput
           value={selectedPayee.value === "" ? null : selectedPayee.value}
           onChange={(value) =>
-            setPayee(StakingRewardDestination.Account(value))
+            setPayee(StakingRewardDestination.Account(value ?? ""))
           }
+          className="w-64"
+          triggerClassName="h-9"
         />
       ) : null}
     </div>
