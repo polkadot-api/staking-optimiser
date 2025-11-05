@@ -14,7 +14,7 @@ export const Header = () => {
           <Link to={`/${chain}/dashboard`}>
             <img
               alt="logo"
-              src="/android-chrome-192x192.png"
+              src="/logo.webp"
               className="w-10 inline-block"
             />
           </Link>

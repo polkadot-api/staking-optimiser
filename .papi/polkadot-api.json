@@ -24,7 +24,7 @@
       "chain": "ksmcc3_asset_hub",
       "metadata": ".papi/metadata/ksmAH.scale",
       "genesis": "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
-      "codeHash": "0x099d803ee67d6c1859d84342d61c01eed373323448f7fd230a4e85a668806448"
+      "codeHash": "0xe3b1cff634878a0176df177caaa6333efca2c33fc7313fdf66c3195e2ed15883"
     },
     "ksm": {
       "chain": "ksmcc3",
@@ -54,7 +54,7 @@
       "chain": "westend2_asset_hub",
       "metadata": ".papi/metadata/wndAH.scale",
       "genesis": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
-      "codeHash": "0x8dae40e2ea9f0d94908bacd3a437ed9c9adc31dc7e6fffed0dcb838194a57f98"
+      "codeHash": "0xac70e823f8800dd6bfa9eacfd0b52a6b6a7426bb97682fa7f8c5b077051bb4fa"
     },
     "pas": {
       "chain": "paseo",

@@ -146,7 +146,7 @@ export const AccountBalance: FC<{
             <div>
               <TokenValue value={value} /> {label}
             </div>
-            <TextHintTooltip hint={tooltip} />
+            <TextHintTooltip name={label} hint={tooltip} />
           </li>
         ))}
       </ol>

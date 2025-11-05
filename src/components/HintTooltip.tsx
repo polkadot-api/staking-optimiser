@@ -7,20 +7,20 @@ const module = import("./ui/tooltip")
 
 export const HintTooltip = codeSplit<
   Awaited<typeof module>,
-  PropsWithChildren<{ className?: string }>
+  PropsWithChildren<{ className?: string, name?: string }>
 >(
   module,
-  ({ className }) => (
-    <button type="button" className={cn("cursor-wait", className)}>
+  ({ className, name }) => (
+    <button aria-label={name} type="button" className={cn("cursor-wait", className)}>
       <Info size={18} className="text-foreground/80" />
     </button>
   ),
-  ({ children, payload, className }) => {
+  ({ children, payload, className, name }) => {
     const { Tooltip, TooltipTrigger, TooltipContent } = payload
 
     return (
       <Tooltip>
-        <TooltipTrigger className={className}>
+        <TooltipTrigger aria-label={name} className={className}>
           <Info size={18} className="text-foreground/80" />
         </TooltipTrigger>
         <TooltipContent className="max-w-[100vw]">{children}</TooltipContent>
@@ -29,11 +29,11 @@ export const HintTooltip = codeSplit<
   },
 )
 
-export const TextHintTooltip: FC<{ hint: string; className?: string }> = ({
+export const TextHintTooltip: FC<{ hint: string; name?: string, className?: string }> = ({
   hint,
-  className,
+  ...props
 }) => (
-  <HintTooltip className={className}>
+  <HintTooltip {...props}>
     <p>{hint}</p>
   </HintTooltip>
 )
