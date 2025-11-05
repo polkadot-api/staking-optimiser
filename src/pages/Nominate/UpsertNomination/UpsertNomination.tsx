@@ -27,7 +27,7 @@ export const UpsertNomination = () => {
     return (
       <div>
         You don't have enough funds to start nominating. Try{" "}
-        <Link className="underline" to="../pools">
+        <Link className="underline" to="../../pools">
           nomination pools
         </Link>{" "}
         instead.
@@ -39,7 +39,7 @@ export const UpsertNomination = () => {
     return (
       <div>
         You are already nominating through a{" "}
-        <Link className="underline" to="../pools">
+        <Link className="underline" to="../../pools">
           nomination pool
         </Link>
         . You can't nominate individually and through a nomination pool
