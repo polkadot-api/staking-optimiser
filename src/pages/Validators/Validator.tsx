@@ -1,16 +1,12 @@
 import { AddressIdentity } from "@/components/AddressIdentity"
 import { TokenValue } from "@/components/TokenValue"
+import { Skeleton as OSkeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { formatPercentage } from "@/util/format"
 import { useStateObservable } from "@react-rxjs/core"
 import { createContext, useContext, type FC, type ReactElement } from "react"
-import {
-  validatorPrefs$,
-  type HistoricValidator,
-  type PositionValidator,
-} from "./validatorList.state"
 import { Link, useParams } from "react-router-dom"
-import { Skeleton as OSkeleton } from "@/components/ui/skeleton"
+import { validatorPrefs$, type PositionValidator } from "./validatorList.state"
 
 const whiteCtx = createContext(false)
 
@@ -159,8 +155,10 @@ export const ValidatorCardSkeleton = () => {
 }
 
 export const ValidatorCard: FC<{
-  validator: HistoricValidator
-}> = ({ validator }) => {
+  validator: PositionValidator
+  onSelectChange?: (value: boolean) => void
+  selectIcon?: (selected: boolean) => ReactElement
+}> = ({ validator, onSelectChange, selectIcon }) => {
   const prefs = useStateObservable(validatorPrefs$)
 
   const vPrefs = prefs[validator.address]
@@ -172,7 +170,15 @@ export const ValidatorCard: FC<{
       })}
     >
       <div className="flex items-center justify-between">
-        <AddressIdentity addr={validator.address} />
+        <div className="flex items-center gap-1">
+          <div className="text-muted-foreground">#{validator.position + 1}</div>
+          <AddressIdentity addr={validator.address} />
+        </div>
+        {selectIcon ? (
+          <button onClick={() => onSelectChange?.(!validator.selected)}>
+            {selectIcon(validator.selected)}
+          </button>
+        ) : null}
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
         <div>

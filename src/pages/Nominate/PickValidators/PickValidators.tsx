@@ -1,17 +1,31 @@
-import { Table2, Sparkles, Shuffle, Trash2 } from "lucide-react"
 import { Card } from "@/components/Card"
+import { DialogButton } from "@/components/DialogButton"
 import { LoadingTable } from "@/components/LoadingTable"
 import { ContractableText, createSortByButton } from "@/components/SortBy"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { useStateObservable } from "@react-rxjs/core"
-import { Search, Square, SquareCheck } from "lucide-react"
+import {
+  Search,
+  Shuffle,
+  Sparkles,
+  Square,
+  SquareCheck,
+  Table2,
+  Trash2,
+} from "lucide-react"
 import { useMemo, type FC } from "react"
-import { TableVirtuoso, type ItemProps } from "react-virtuoso"
+import { useMediaQuery } from "react-responsive"
+import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso"
 import { map, merge } from "rxjs"
 import { MaParams, maParamsSub$ } from "../../Validators/Params"
-import { ValidatorRow, ValidatorRowSkeleton } from "../../Validators/Validator"
+import {
+  ValidatorCard,
+  ValidatorCardSkeleton,
+  ValidatorRow,
+  ValidatorRowSkeleton,
+} from "../../Validators/Validator"
 import {
   percentLoaded$,
   validatorPrefs$,
@@ -30,7 +44,6 @@ import {
   validatorsWithPreferences$,
 } from "./pickValidators.state"
 import { ValidatorGrid } from "./ValidatorGrid"
-import { DialogButton } from "@/components/DialogButton"
 
 const SortByButton = createSortByButton(sortBy$, setSortBy)
 
@@ -172,6 +185,9 @@ const ValidatorsDisplay = () => {
   const selection = useStateObservable(selectedValidators$)
   const validators = useStateObservable(sortedValidators$)
   const percentLoaded = useStateObservable(percentLoaded$)
+  const supportsTable = useMediaQuery({
+    query: "(min-width: 768px)",
+  })
 
   const sortedValidators = useMemo(() => {
     return validators.map(
@@ -188,7 +204,11 @@ const ValidatorsDisplay = () => {
 
   return (
     <LoadingTable progress={percentLoaded} className="h-full">
-      <ValidatorTable validators={actualValidators} />
+      {supportsTable ? (
+        <ValidatorTable validators={actualValidators} />
+      ) : (
+        <ValidatorCards validators={actualValidators} />
+      )}
     </LoadingTable>
   )
 }
@@ -222,11 +242,10 @@ const TableRow: FC<
 
 const ValidatorTable: FC<{
   validators: PositionValidator[] | Array<null>
-  className?: string
-}> = ({ validators, className }) => {
+}> = ({ validators }) => {
   return (
     <TableVirtuoso
-      className={cn("data-table h-full", className)}
+      className="data-table h-full"
       data={validators}
       components={{ TableRow }}
       fixedHeaderContent={() => (
@@ -283,3 +302,29 @@ const ValidatorTable: FC<{
     />
   )
 }
+
+const Item = (props: ItemProps<any>) => <div {...props} className="p-2" />
+
+const ValidatorCards: FC<{
+  validators: PositionValidator[] | null[]
+}> = ({ validators }) => (
+  <Virtuoso
+    className="h-full"
+    totalCount={validators.length}
+    components={{ Item }}
+    itemContent={(idx) => {
+      const v = validators[idx]
+      return v ? (
+        <ValidatorCard
+          validator={v}
+          onSelectChange={() => toggleValidator(v.address)}
+          selectIcon={(selected) =>
+            selected ? <SquareCheck className="text-positive" /> : customSquare$
+          }
+        />
+      ) : (
+        <ValidatorCardSkeleton />
+      )
+    }}
+  />
+)
