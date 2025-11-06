@@ -46,11 +46,13 @@ export function EmptyState({
   )
 }
 
-export const NoAccountSelected = () => (
+export const NoAccountSelected: FC<{
+  to: string
+}> = ({ to }) => (
   <EmptyState
     icon={<WalletIcon />}
     title="No account selected"
-    description="Select an account to see your staking options and nominate validators."
+    description={`Select an account to see your staking options and ${to}.`}
     action={
       <Button type="button" onClick={openSelectAccount}>
         Select account
@@ -59,10 +61,11 @@ export const NoAccountSelected = () => (
   />
 )
 
-export const NotEnoughFunds: FC<{ minValue: bigint; to: string }> = ({
-  minValue,
-  to,
-}) => (
+export const NotEnoughFunds: FC<{
+  minValue: bigint
+  to: string
+  action?: ReactNode
+}> = ({ minValue, to, action }) => (
   <EmptyState
     icon={<CoinsIcon />}
     title="Not enough funds"
@@ -72,5 +75,6 @@ export const NotEnoughFunds: FC<{ minValue: bigint; to: string }> = ({
         {to}.
       </p>
     }
+    action={action}
   />
 )

@@ -7,7 +7,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { currentNominationPoolStatus$ } from "@/state/nominationPool"
 import { liftSuspense, useStateObservable } from "@react-rxjs/core"
-import { CoinsIcon, GitFork } from "lucide-react"
+import { GitFork } from "lucide-react"
 import { lazy, Suspense } from "react"
 import { Link } from "react-router-dom"
 import { merge } from "rxjs"
@@ -17,8 +17,6 @@ import {
   MinBondingAmounts,
   minBondingAmountsSub$,
 } from "../MinBondingAmounts"
-import { tokenProps$ } from "@/state/chain"
-import { TokenValue } from "@/components/TokenValue"
 
 const manageNominationModule = import("./ManageNomination")
 const ManageNomination = lazy(async () => {
@@ -36,7 +34,7 @@ export const UpsertNomination = () => {
     <div className="space-y-4">
       <MinBondingAmounts />
       {bondableAmount == null ? (
-        <NoAccountSelected />
+        <NoAccountSelected to="nominate validators" />
       ) : poolStatus?.pool ? (
         <EmptyState
           icon={<GitFork />}
@@ -49,7 +47,17 @@ export const UpsertNomination = () => {
           }
         />
       ) : bondableAmount <= minBond ? (
-        <NotEnoughFunds minValue={minBond} to="start nominating" />
+        <NotEnoughFunds
+          minValue={minBond}
+          to="start nominating"
+          action={
+            bondableAmount > 0 ? (
+              <Button asChild>
+                <Link to="../../pools">Try nomination pools</Link>
+              </Button>
+            ) : null
+          }
+        />
       ) : (
         <Suspense fallback={<ManageNominationSkeleton />}>
           <ManageNomination />

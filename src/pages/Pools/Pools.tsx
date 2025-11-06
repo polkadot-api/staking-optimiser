@@ -1,24 +1,22 @@
-import { Card } from "@/components/Card"
+import { accountBalance$ } from "@/components/AccountBalance"
 import { CardPlaceholder } from "@/components/CardPlaceholder"
-import { location$ } from "@/router"
-import { isNominating$ } from "@/state/nominate"
-import { currentNominationPoolStatus$ } from "@/state/nominationPool"
-import { liftSuspense, useStateObservable } from "@react-rxjs/core"
-import { lazy, Suspense } from "react"
-import { Link, matchPath, Route, Routes } from "react-router-dom"
-import { defer, map, merge, switchMap } from "rxjs"
-import { AccountStatus, accountStatusSub$ } from "../AccountStatus"
-import { PoolDetail, poolDetailSub$ } from "./PoolDetail"
 import {
   EmptyState,
   NoAccountSelected,
   NotEnoughFunds,
 } from "@/components/EmptyState"
-import { GitFork, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { accountStatus$ } from "@/state/account"
-import { accountBalance$ } from "@/components/AccountBalance"
+import { location$ } from "@/router"
+import { isNominating$ } from "@/state/nominate"
+import { currentNominationPoolStatus$ } from "@/state/nominationPool"
+import { liftSuspense, useStateObservable } from "@react-rxjs/core"
+import { GitFork, Star } from "lucide-react"
+import { lazy, Suspense } from "react"
+import { Link, matchPath, Route, Routes } from "react-router-dom"
+import { defer, map, merge, switchMap } from "rxjs"
+import { AccountStatus, accountStatusSub$ } from "../AccountStatus"
 import { minPoolJoin$ } from "./JoinPool"
+import { PoolDetail, poolDetailSub$ } from "./PoolDetail"
 
 const PoolList = lazy(async () => {
   const module = await import("./PoolList")
@@ -68,7 +66,7 @@ const CurrentStatus = () => {
   const balance = useStateObservable(accountBalance$)
   const minBond = useStateObservable(minPoolJoin$)
 
-  if (!balance) return <NoAccountSelected />
+  if (!balance) return <NoAccountSelected to="join a pool" />
 
   if (balance.spendable + balance.raw.frozen < minBond)
     return <NotEnoughFunds minValue={minBond} to="join a pool" />
