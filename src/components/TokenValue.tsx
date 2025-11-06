@@ -50,7 +50,7 @@ export const TokenValue: FC<{
   colored?: boolean
 }> = ({
   value,
-  decimalsFn = significantDigitsDecimals(3, 2),
+  decimalsFn = significantDigitsDecimals(2, 2),
   className,
   colored = true,
 }) => {
@@ -62,17 +62,26 @@ export const TokenValue: FC<{
   const { integer, fraction } = amountToParts(value, tokenDecimals)
 
   const decimals = decimalsFn(value, tokenDecimals)
-  const decimalPart =
+  const fractionPart =
     decimals > 0
-      ? `${decimalPoint}${fraction
-          .slice(0, decimals)
-          .replace(/0+$/, "")
-          .padEnd(decimals, "0")}`
-      : null
+      ? fraction.slice(0, decimals).replace(/0+$/, "").padEnd(decimals, "0")
+      : ""
+  const integerPart = Number(integer).toLocaleString()
+  const decimalPart =
+    Number(fractionPart) > 0 ? `${decimalPoint}${fractionPart}` : null
+  const fullFractionPart = fraction.replace(/0*$/, "")
+  const hasHiddenDecimals = fullFractionPart.length > fractionPart.length
 
   return (
-    <span className={cn(colored ? "text-foreground" : "", className)}>
-      <span>{Number(integer).toLocaleString()}</span>
+    <span
+      className={cn(colored ? "text-foreground" : "", className)}
+      title={
+        hasHiddenDecimals
+          ? `${integerPart}${decimalPoint}${fullFractionPart} ${symbol}`
+          : undefined
+      }
+    >
+      <span>{integerPart}</span>
       {decimalPart && (
         <span className={colored ? "text-foreground/75" : undefined}>
           {decimalPart}

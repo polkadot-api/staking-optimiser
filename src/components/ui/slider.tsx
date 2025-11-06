@@ -37,7 +37,14 @@ function Slider({
     const firstTickOffset =
       ((startingTick * tickLen - pMin) / (100 - pMin)) * 100
 
-    const ticks = new Array(maxTicks - startingTick + 1)
+    const tickAmount = maxTicks - startingTick + 1
+    if (Number.isNaN(tickAmount) || tickAmount <= 0)
+      return {
+        ticks: [],
+        firstTickOffset: 0,
+      }
+
+    const ticks = new Array(tickAmount)
       .fill(0)
       .map((_, i) => tickLen * (startingTick + i))
 

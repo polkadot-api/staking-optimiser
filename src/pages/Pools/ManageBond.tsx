@@ -130,7 +130,15 @@ const BondInput: FC<{
             Added immediately to your pool stake.
           </p>
         </div>
-        <TokenValue className="text-base font-semibold" value={bond} />
+        <TokenInput
+          id="bond-amount-input"
+          className="w-32"
+          value={bond}
+          symbol={symbol}
+          onChange={(v) =>
+            setBond(v == null ? null : v < 0 ? 0n : v > maxBond ? maxBond : v)
+          }
+        />
       </div>
       <Slider
         value={[Number(bond)]}
@@ -139,24 +147,6 @@ const BondInput: FC<{
         step={10 ** (token.decimals - 2)}
         onValueChange={([value]) => setBond(BigInt(Math.round(value)))}
       />
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="w-full sm:w-auto">
-          <label
-            className="mb-1 block text-xs font-medium text-muted-foreground"
-            htmlFor="bond-amount-input"
-          >
-            Amount ({symbol})
-          </label>
-          <TokenInput
-            id="bond-amount-input"
-            className="w-full sm:w-52"
-            value={bond}
-            onChange={(v) =>
-              setBond(v == null ? null : v < 0 ? 0n : v > maxBond ? maxBond : v)
-            }
-          />
-        </div>
-      </div>
 
       {showBelowMinWarning ? (
         <AlertCard type="error">
@@ -218,6 +208,19 @@ const UnbondInput: FC<{
     return sdk.unbondNominationPool(selectedAccount.address, unbonding)
   }
 
+  if (maxBond === 0n) {
+    return (
+      <div className="space-y-2 text-sm rounded-lg border border-border/60 bg-background/90 p-4">
+        <h3 className="font-medium">Unbond</h3>
+        <p className="text-muted-foreground">
+          You can't have a bond smaller than{" "}
+          <TokenValue colored={false} value={minBond} />. If you want to unbond
+          all of your locked tokens, leave the pool instead
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4 rounded-lg border border-border/60 bg-background/90 p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -227,7 +230,15 @@ const UnbondInput: FC<{
             Starts the unbonding period (about {unbondDurationInDays$} days).
           </p>
         </div>
-        <TokenValue className="text-base font-semibold" value={bond} />
+        <TokenInput
+          id="bond-amount-input"
+          className="w-32"
+          symbol={symbol}
+          value={bond}
+          onChange={(v) =>
+            setBond(v == null ? null : v < 0 ? 0n : v > maxBond ? maxBond : v)
+          }
+        />
       </div>
       <Slider
         value={[Number(bond)]}
@@ -236,24 +247,6 @@ const UnbondInput: FC<{
         step={10 ** (token.decimals - 2)}
         onValueChange={([value]) => setBond(BigInt(Math.round(value)))}
       />
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="w-full sm:w-auto">
-          <label
-            className="mb-1 block text-xs font-medium text-muted-foreground"
-            htmlFor="bond-amount-input"
-          >
-            Amount ({symbol})
-          </label>
-          <TokenInput
-            id="bond-amount-input"
-            className="w-full sm:w-52"
-            value={bond}
-            onChange={(v) =>
-              setBond(v == null ? null : v < 0 ? 0n : v > maxBond ? maxBond : v)
-            }
-          />
-        </div>
-      </div>
 
       <TransactionButton
         className="w-full"
