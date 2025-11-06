@@ -7,10 +7,10 @@ import { accountStatus$ } from "@/state/account"
 import { tokenProps$ } from "@/state/chain"
 import type { TokenProperties } from "@polkadot-api/react-components"
 import type { AccountStatus } from "@polkadot-api/sdk-staking"
-import { state, useStateObservable } from "@react-rxjs/core"
+import { state, useStateObservable, withDefault } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { type FC } from "react"
-import { combineLatest, concat, filter, map, merge, take } from "rxjs"
+import { combineLatest, filter, map, merge } from "rxjs"
 import { minBond$ } from "../MinBondingAmounts"
 
 const [bondChange$, setBond] = createSignal<bigint | null>()
@@ -35,23 +35,39 @@ const getStakingEffectiveFrozen = (
 }
 
 export const bond$ = state(
-  concat(
-    combineLatest([accountStatus$, tokenProps$.pipe(filter((v) => v !== null))])
-      .pipe(
-        map(([account, token]) => {
-          if (!account) return 0n
-          if (account.nomination.currentBond > 0)
-            return account.nomination.currentBond
+  merge(
+    combineLatest([accountStatus$, tokenProps$.pipe(filter(Boolean))]).pipe(
+      map(([account, token]) => {
+        if (!account) return 0n
+        if (account.nomination.currentBond > 0)
+          return account.nomination.currentBond
 
-          // Default to frozen balance that's overlapping with the free balance
-          const { stakingFrozen } = getStakingEffectiveFrozen(account, token)
-          const minBond = account.nomination.minNominationBond
-          return stakingFrozen < minBond ? minBond : stakingFrozen
-        }),
-      )
-      .pipe(take(1)),
+        // Default to frozen balance that's overlapping with the free balance
+        const { stakingFrozen } = getStakingEffectiveFrozen(account, token)
+        const minBond = account.nomination.minNominationBond
+        return stakingFrozen < minBond ? minBond : stakingFrozen
+      }),
+    ),
     bondChange$,
   ),
+)
+
+const resetBond$ = accountStatus$.pipeState(
+  map((account) => {
+    const currentBond = account?.nomination.currentBond
+    return currentBond && currentBond > 0 ? (
+      <Button
+        variant="secondary"
+        type="button"
+        onClick={() => {
+          setBond(currentBond)
+        }}
+      >
+        Reset
+      </Button>
+    ) : null
+  }),
+  withDefault(null),
 )
 
 export const BondInput: FC = () => {
@@ -131,19 +147,20 @@ export const BondInput: FC = () => {
         rangeTicks
       />
       <div className="flex justify-between items-center">
-        {stakingFrozen >= minBond ? (
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={() => {
-              setBond(stakingFrozen)
-            }}
-          >
-            Set to frozen
-          </Button>
-        ) : (
-          <div />
-        )}
+        <div className="flex gap-2">
+          {stakingFrozen >= minBond && (
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => {
+                setBond(stakingFrozen)
+              }}
+            >
+              Set to frozen
+            </Button>
+          )}
+          {resetBond$}
+        </div>
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">Spendable after submit:</span>
           <TokenValue
