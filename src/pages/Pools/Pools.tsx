@@ -5,10 +5,20 @@ import { isNominating$ } from "@/state/nominate"
 import { currentNominationPoolStatus$ } from "@/state/nominationPool"
 import { liftSuspense, useStateObservable } from "@react-rxjs/core"
 import { lazy, Suspense } from "react"
-import { matchPath, Route, Routes } from "react-router-dom"
+import { Link, matchPath, Route, Routes } from "react-router-dom"
 import { defer, map, merge, switchMap } from "rxjs"
 import { AccountStatus, accountStatusSub$ } from "../AccountStatus"
 import { PoolDetail, poolDetailSub$ } from "./PoolDetail"
+import {
+  EmptyState,
+  NoAccountSelected,
+  NotEnoughFunds,
+} from "@/components/EmptyState"
+import { GitFork, Star } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { accountStatus$ } from "@/state/account"
+import { accountBalance$ } from "@/components/AccountBalance"
+import { minPoolJoin$ } from "./JoinPool"
 
 const PoolList = lazy(async () => {
   const module = await import("./PoolList")
@@ -55,17 +65,36 @@ const PoolsSkeleton = () => (
 const CurrentStatus = () => {
   const currentPool = useStateObservable(currentNominationPoolStatus$)
   const isNominating = useStateObservable(isNominating$)
+  const balance = useStateObservable(accountBalance$)
+  const minBond = useStateObservable(minPoolJoin$)
 
-  if (isNominating) return null
+  if (!balance) return <NoAccountSelected />
 
-  if (!currentPool?.pool) {
+  if (balance.spendable + balance.raw.frozen < minBond)
+    return <NotEnoughFunds minValue={minBond} to="join a pool" />
+
+  if (isNominating)
     return (
-      <Card title="Status">
-        <p>Not currently in a nomination pool</p>
-        <p>Join a pool by selecting one below</p>
-      </Card>
+      <EmptyState
+        icon={<Star />}
+        title="Already nominating"
+        description="You are nominating through direct nomination, so you can't join a pool."
+        action={
+          <Button asChild>
+            <Link to="../../nominate">Nomination status</Link>
+          </Button>
+        }
+      />
     )
-  }
+
+  if (!currentPool?.pool)
+    return (
+      <EmptyState
+        icon={<GitFork />}
+        title="Join a nomination pool"
+        description="Select a pool from the list below to start staking."
+      />
+    )
 
   return <AccountStatus />
 }
@@ -73,4 +102,6 @@ const currentStatusSub$ = merge(
   currentNominationPoolStatus$.pipe(liftSuspense()),
   isNominating$,
   accountStatusSub$,
+  accountBalance$,
+  minPoolJoin$,
 )

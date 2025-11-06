@@ -1,15 +1,24 @@
+import { CardPlaceholder } from "@/components/CardPlaceholder"
+import {
+  EmptyState,
+  NoAccountSelected,
+  NotEnoughFunds,
+} from "@/components/EmptyState"
+import { Button } from "@/components/ui/button"
 import { currentNominationPoolStatus$ } from "@/state/nominationPool"
 import { liftSuspense, useStateObservable } from "@react-rxjs/core"
+import { CoinsIcon, GitFork } from "lucide-react"
+import { lazy, Suspense } from "react"
 import { Link } from "react-router-dom"
+import { merge } from "rxjs"
 import {
   bondableAmount$,
   minBond$,
   MinBondingAmounts,
   minBondingAmountsSub$,
 } from "../MinBondingAmounts"
-import { merge } from "rxjs"
-import { CardPlaceholder } from "@/components/CardPlaceholder"
-import { lazy, Suspense } from "react"
+import { tokenProps$ } from "@/state/chain"
+import { TokenValue } from "@/components/TokenValue"
 
 const manageNominationModule = import("./ManageNomination")
 const ManageNomination = lazy(async () => {
@@ -23,40 +32,24 @@ export const UpsertNomination = () => {
   const poolStatus = useStateObservable(currentNominationPoolStatus$)
   const bondableAmount = useStateObservable(bondableAmount$)
 
-  const renderNotEnough = () => {
-    return (
-      <div>
-        You don't have enough funds to start nominating. Try{" "}
-        <Link className="underline" to="../../pools">
-          nomination pools
-        </Link>{" "}
-        instead.
-      </div>
-    )
-  }
-
-  const renderInPools = () => {
-    return (
-      <div>
-        You are already nominating through a{" "}
-        <Link className="underline" to="../../pools">
-          nomination pool
-        </Link>
-        . You can't nominate individually and through a nomination pool
-        simultaneously.
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-4">
       <MinBondingAmounts />
       {bondableAmount == null ? (
-        "Select an account to start nominating"
+        <NoAccountSelected />
       ) : poolStatus?.pool ? (
-        renderInPools()
+        <EmptyState
+          icon={<GitFork />}
+          title="Already in a pool"
+          description="You're already nominating through a pool. You can't nominate individually at the same time."
+          action={
+            <Button asChild>
+              <Link to="../../pools">Pool status</Link>
+            </Button>
+          }
+        />
       ) : bondableAmount <= minBond ? (
-        renderNotEnough()
+        <NotEnoughFunds minValue={minBond} to="start nominating" />
       ) : (
         <Suspense fallback={<ManageNominationSkeleton />}>
           <ManageNomination />
