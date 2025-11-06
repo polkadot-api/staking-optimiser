@@ -23,7 +23,7 @@ export const SelectAccount = withSubscribe(
       ] = payload
 
       return (
-        <PolkaHubModal>
+        <PolkaHubModal className="[&>div]:hidden [&>div]:md:block">
           <SelectAccountField />
           <ManagePjsWallets />
           <ConnectSource />

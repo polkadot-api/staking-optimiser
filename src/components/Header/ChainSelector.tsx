@@ -1,11 +1,10 @@
-import { selectedChain$, setUseSmoldot, useSmoldot$ } from "@/state/chain"
+import { selectedChain$ } from "@/state/chain"
 import { knownChains, type KnownChains } from "@/state/chainConfig"
 import { withSubscribe } from "@/util/rxjs"
 import { useStateObservable } from "@react-rxjs/core"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import { codeSplit } from "@/util/codeSplit"
-import { Checkbox } from "@polkahub/ui-components"
 
 export const chainNameByChain: Record<KnownChains, string> = {
   polkadot: "Polkadot",
@@ -41,7 +40,6 @@ export const ChainSelector = withSubscribe(
       const { Popover, PopoverContent, PopoverTrigger } = payload
       const chain = useStateObservable(selectedChain$)
       const navigate = useNavigate()
-      const usingSmoldot = useStateObservable(useSmoldot$)
 
       return (
         <Popover>
@@ -65,15 +63,6 @@ export const ChainSelector = withSubscribe(
                 className="size-6 rounded"
               />{" "}
               {chainNameByChain[chain]}
-            </div>
-            <div>
-              <label className="text-muted-foreground space-x-1">
-                <Checkbox
-                  checked={usingSmoldot}
-                  onCheckedChange={(v) => setUseSmoldot(v === true)}
-                />
-                <span>Use light client (smoldot)</span>
-              </label>
             </div>
             <div>
               <div className="text-muted-foreground">

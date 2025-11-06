@@ -25,7 +25,7 @@ export const InfoCard: FC<
     <Suspense fallback={fallback ?? <InfoPlaceholder />}>{children}</Suspense>
     {tooltip ? (
       <TextHintTooltip
-        name={`${title.split(' ').join('')}`}
+        name={`${title.split(" ").join("")}`}
         hint={tooltip}
         className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
       />

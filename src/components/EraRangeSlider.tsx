@@ -12,7 +12,14 @@ interface EraRangeSliderProps {
 
 type DragMode = "none" | "start" | "end" | "range"
 
-export function EraRangeSlider({ minEra, maxEra, startEra, endEra, onRangeChange, className }: EraRangeSliderProps) {
+export function EraRangeSlider({
+  minEra,
+  maxEra,
+  startEra,
+  endEra,
+  onRangeChange,
+  className,
+}: EraRangeSliderProps) {
   const [values, setValues] = React.useState([startEra, endEra])
   const [dragMode, setDragMode] = React.useState<DragMode>("none")
   const [dragStartX, setDragStartX] = React.useState(0)
@@ -27,7 +34,10 @@ export function EraRangeSlider({ minEra, maxEra, startEra, endEra, onRangeChange
     if (!trackRef.current) return minEra
 
     const rect = trackRef.current.getBoundingClientRect()
-    const percentage = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+    const percentage = Math.max(
+      0,
+      Math.min(1, (clientX - rect.left) / rect.width),
+    )
     return Math.round(minEra + percentage * (maxEra - minEra))
   }
 
@@ -124,7 +134,15 @@ export function EraRangeSlider({ minEra, maxEra, startEra, endEra, onRangeChange
       document.removeEventListener("touchend", handleEnd)
       document.removeEventListener("touchcancel", handleEnd)
     }
-  }, [dragMode, dragStartX, dragStartValues, values, minEra, maxEra, onRangeChange])
+  }, [
+    dragMode,
+    dragStartX,
+    dragStartValues,
+    values,
+    minEra,
+    maxEra,
+    onRangeChange,
+  ])
 
   const startPercentage = getPositionPercentage(values[0])
   const endPercentage = getPositionPercentage(values[1])
@@ -138,7 +156,8 @@ export function EraRangeSlider({ minEra, maxEra, startEra, endEra, onRangeChange
           Start Era: <span className="font-bold">{values[0]}</span>
         </div>
         <div className="text-foreground text-center">
-          Range <span className="font-bold">{rangeSize}</span> {rangeSize === 1 ? "era" : "eras"}
+          Range <span className="font-bold">{rangeSize}</span>{" "}
+          {rangeSize === 1 ? "era" : "eras"}
         </div>
         <div className="text-foreground">
           End Era: <span className="font-bold">{values[1]}</span>
@@ -148,7 +167,10 @@ export function EraRangeSlider({ minEra, maxEra, startEra, endEra, onRangeChange
       {/* Custom slider */}
       <div className="relative w-full py-2">
         {/* Track */}
-        <div ref={trackRef} className="relative h-1.5 w-full rounded-full bg-muted">
+        <div
+          ref={trackRef}
+          className="relative h-1.5 w-full rounded-full bg-muted"
+        >
           {/* Active range */}
           <div
             className={cn(
