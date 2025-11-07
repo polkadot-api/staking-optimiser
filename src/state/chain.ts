@@ -114,8 +114,8 @@ const createClients = (chain: KnownChains, useSmoldoge: boolean) => {
     if (USE_CHOPSTICKS && type === "staking") {
       const getWsProvider = getGetWsProvider(type)
       if (!clients.assetHub) {
-        const rpcProvider = withChopsticksEnhancer(
-          multiplexStakingProvider(getWsProvider("ws://localhost:8132")),
+        const rpcProvider = multiplexStakingProvider(
+          withChopsticksEnhancer(getWsProvider("ws://localhost:8132")),
         )
         clients.assetHub = createClient(rpcProvider, { getMetadata })
       }
