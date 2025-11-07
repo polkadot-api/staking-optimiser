@@ -13,6 +13,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { Button } from "@polkahub/ui-components"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, Target } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 export const NominateStatus = () => {
   const accountStatus = useStateObservable(accountStatus$)!
@@ -20,18 +21,24 @@ export const NominateStatus = () => {
   const { chain } = useParams()
   const navigate = useNavigate()
 
+  const isActive = accountStatus.nomination.currentBond > 0 && (accountStatus.nomination.nominating?.validators || []).length > 0
+  const badgeClassName = isActive
+    ?  "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800"
+    : "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-950 dark:text-gray-400 dark:border-gray-800"
+
   return (
     <div className="flex flex-col gap-6 grow ">
       <div className="flex items-center gap-2">
-        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+        <div className={cn("h-2 w-2 rounded-full bg-emerald-500", isActive ? 'animate-pulse':  'bg-gray-400')} />
         <Badge
           variant="outline"
-          className="text-base font-semibold px-3 py-1 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800"
+          className={cn("text-base font-semibold px-3 py-1 ", badgeClassName)}
         >
-          Currently nominating
+          Currently {isActive ? "nominating" : "inactive"}
         </Badge>
       </div>
 
+      {isActive && (
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2 p-4 rounded-lg bg-muted/50 border border-border/50">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -59,7 +66,7 @@ export const NominateStatus = () => {
             </p>
           </div>
         </div>
-      </div>
+      </div>)}
 
       {accountStatus.nomination.unlocks.length ? <NominateLocks /> : null}
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -69,7 +76,7 @@ export const NominateStatus = () => {
         >
           Manage nomination
         </Button>
-        {accountStatus.nomination.currentBond ? (
+        {isActive ? (
           <DialogButton
             title="Stop nominating"
             className="flex-1"
