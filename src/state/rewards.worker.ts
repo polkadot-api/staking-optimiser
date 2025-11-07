@@ -1,16 +1,10 @@
 import { createStakingSdk, type StakingSdk } from "@polkadot-api/sdk-staking"
 import { createClient, Enum, type SS58String } from "polkadot-api"
 import { type JsonRpcProvider } from "polkadot-api/ws-provider"
-import {
-  filter,
-  fromEvent,
-  map,
-  mergeMap,
-  partition,
-} from "rxjs"
+import { filter, fromEvent, map, mergeMap, partition, share } from "rxjs"
 
 export type Request = Enum<{
-  rpc: string,
+  rpcFrom: string
   getNominatorRewards: {
     id: number
     address: SS58String
@@ -30,7 +24,7 @@ export type NominatorValidatorsResult = Awaited<
   ReturnType<StakingSdk["getNominatorActiveValidators"]>
 >
 export type Response = Enum<{
-  rpc: string,
+  rpcTo: string
   result: {
     id: number
     result: NominatorRewardsResult | NominatorValidatorsResult
@@ -38,52 +32,46 @@ export type Response = Enum<{
   ready: undefined
 }>
 
-
-const [rpc$, message$] = partition(fromEvent<MessageEvent<Request>>(globalThis, "message").pipe(
+const mainMsgs$ = fromEvent<MessageEvent<Request>>(globalThis, "message").pipe(
   map((v) => v.data),
-), x => x.type === 'rpc')
+  share(),
+)
+const [rpc$, message$] = partition(mainMsgs$, (x) => x.type === "rpcFrom")
 
 const provider: JsonRpcProvider = (onMsg) => {
-  const subscription = rpc$.subscribe(x => onMsg(x.value))
+  const subscription = rpc$.subscribe((x) => {
+    onMsg(x.value)
+  })
   return {
-    send: value => globalThis.postMessage({type:'rpc', value}),
+    send: (value) => {
+      globalThis.postMessage({ type: "rpcTo", value })
+    },
     disconnect() {
       subscription.unsubscribe()
-    }
+    },
   }
 }
 
-const sdk = createStakingSdk(createClient(provider))
+let sdk: StakingSdk
+const getSdk = () => (sdk ||= createStakingSdk(createClient(provider)))
 
 message$
   .pipe(
     filter((v) => v.type === "getNominatorRewards"),
-    mergeMap(
-      async (
-        {
-          value: { address, era, id },
-        },
-      ) => {
-        const result = await sdk.getNominatorRewards(address, era)
-        return { type: "result", value: { id, result } } satisfies Response
-      },
-    ),
+    mergeMap(async ({ value: { address, era, id } }) => {
+      const result = await getSdk().getNominatorRewards(address, era)
+      return { type: "result", value: { id, result } } satisfies Response
+    }),
   )
   .subscribe((v) => globalThis.postMessage(v))
 
 message$
   .pipe(
     filter((v) => v.type === "getNominatorActiveValidators"),
-    mergeMap(
-      async (
-        {
-          value: { address, era, id },
-        },
-      ) => {
-        const result = await sdk.getNominatorActiveValidators(address, era)
-        return { type: "result", value: { id, result } } satisfies Response
-      },
-    ),
+    mergeMap(async ({ value: { address, era, id } }) => {
+      const result = await getSdk().getNominatorActiveValidators(address, era)
+      return { type: "result", value: { id, result } } satisfies Response
+    }),
   )
   .subscribe((v) => globalThis.postMessage(v))
 

@@ -23,11 +23,18 @@ import {
   mergeMap,
   Observable,
   partition,
+  share,
   Subject,
   switchMap,
   take,
 } from "rxjs"
-import { onProviderMsg$, onWorkerMsg$, selectedChain$, stakingApi$, useSmoldot$ } from "./chain"
+import {
+  onProviderMsg$,
+  onWorkerMsg$,
+  selectedChain$,
+  stakingApi$,
+  useSmoldot$,
+} from "./chain"
 import { indexerUrl } from "./chainConfig"
 import { activeEraNumber$ } from "./era"
 import {
@@ -39,9 +46,11 @@ import {
 import RewardsWorker from "./rewards.worker?worker"
 
 const worker = new RewardsWorker()
-const [rpc$, message$] = partition(fromEvent<MessageEvent<Response>>(worker, "message").pipe(
+const workerMsgs = fromEvent<MessageEvent<Response>>(worker, "message").pipe(
   map((evt) => evt.data),
-), x => x.type === 'rpc')
+  share(),
+)
+const [rpcTo$, message$] = partition(workerMsgs, (x) => x.type === "rpcTo")
 
 export interface NominatorRequest {
   type: "getNominatorRewards" | "getNominatorActiveValidators"
@@ -51,20 +60,14 @@ export interface NominatorRequest {
   }
 }
 
-/// worker
-let activated = false
-function activateWorker() {
-  if (activated) return
-  activated = true
-  rpc$.subscribe(msg => onWorkerMsg$.next(msg.value))
-  onProviderMsg$.subscribe(value => worker.postMessage({type: 'rpc', value}))
-}
+rpcTo$.subscribe((msg) => onWorkerMsg$.next(msg.value))
+onProviderMsg$.subscribe((value) =>
+  worker.postMessage({ type: "rpcFrom", value }),
+)
 
 let workerReqId = 0
 const throughWorker = <T>(msg: NominatorRequest) =>
   defer(() => {
-    activateWorker()
-
     const id = workerReqId++
     worker.postMessage({
       type: msg.type,

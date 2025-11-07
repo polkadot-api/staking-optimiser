@@ -40,10 +40,12 @@ import type { JsonRpcProvider } from "polkadot-api/ws-provider"
 import { getGetWsProvider } from "./logs"
 import { getMetadata } from "@polkadot-api/descriptors"
 
-export const onWorkerMsg$ =  new Subject<string>()
+export const onWorkerMsg$ = new Subject<string>()
 export const onProviderMsg$ = new Subject<string>()
 
-const multiplexStakingProvider = (input: JsonRpcProvider): JsonRpcProvider => (onMsg) => {
+const multiplexStakingProvider =
+  (input: JsonRpcProvider): JsonRpcProvider =>
+  (onMsg) => {
     const output = input((msg) => {
       onMsg(msg)
       onProviderMsg$.next(msg)
@@ -54,7 +56,7 @@ const multiplexStakingProvider = (input: JsonRpcProvider): JsonRpcProvider => (o
       disconnect() {
         sub.unsubscribe()
         output.disconnect()
-      }
+      },
     }
   }
 
@@ -115,7 +117,7 @@ const createClients = (chain: KnownChains, useSmoldoge: boolean) => {
         const rpcProvider = withChopsticksEnhancer(
           multiplexStakingProvider(getWsProvider("ws://localhost:8132")),
         )
-        clients.assetHub = createClient( rpcProvider, { getMetadata })
+        clients.assetHub = createClient(rpcProvider, { getMetadata })
       }
       return clients.assetHub
     }
@@ -153,7 +155,7 @@ const createClients = (chain: KnownChains, useSmoldoge: boolean) => {
       rpcProvider = getWsProvider(urls)
     }
 
-    if (type === 'staking') rpcProvider = multiplexStakingProvider(rpcProvider)
+    if (type === "staking") rpcProvider = multiplexStakingProvider(rpcProvider)
     clients[chainType] = createClient(rpcProvider)
     return clients[chainType]
   }
