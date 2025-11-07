@@ -11,7 +11,7 @@ import { getNominatorRewards } from "@/state/nominatorInfo"
 import type { NominatorRewardsResult } from "@/state/rewards.worker"
 import { estimatedFuture } from "@/util/date"
 import { formatPercentage } from "@/util/format"
-import type { Dot } from "@polkadot-api/descriptors"
+import type { WndAH } from "@polkadot-api/descriptors"
 import { useStateObservable, withDefault } from "@react-rxjs/core"
 import { CompatibilityLevel, type TypedApi } from "polkadot-api"
 import type { FC } from "react"
@@ -27,7 +27,7 @@ import {
 
 const fastUnstakeApi$ = stakingApi$.pipeState(
   switchMap(async (api) => {
-    const fastUnstakeApi = api as TypedApi<Dot>
+    const fastUnstakeApi = api as TypedApi<WndAH>
     return [
       fastUnstakeApi,
       await fastUnstakeApi.tx.FastUnstake.register_fast_unstake.isCompatible(
