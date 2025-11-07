@@ -44,6 +44,7 @@ import {
   validatorsWithPreferences$,
 } from "./pickValidators.state"
 import { ValidatorGrid } from "./ValidatorGrid"
+import type { SS58String } from "polkadot-api"
 
 const SortByButton = createSortByButton(sortBy$, setSortBy)
 
@@ -108,6 +109,16 @@ export const Nominations = () => {
     }
   })
 
+  const pickTop10 = (selection: Set<SS58String>) => {
+    if (selection.size === MAX_VALIDATORS) return
+    const filtered = sortedValidators.filter((v) => !selection.has(v.address))
+
+    if (!filtered.length) return
+    const unselectedTop10 = filtered.slice(0, Math.ceil(filtered.length / 10))
+    return unselectedTop10[Math.floor(Math.random() * unselectedTop10.length)]
+      .address
+  }
+
   return (
     <ValidatorGrid
       selectedValidators={selectedValidators}
@@ -129,15 +140,12 @@ export const Nominations = () => {
           variant="outline"
           className="group relative overflow-hidden border-emerald-200 bg-emerald-50 text-emerald-700 transition-all hover:border-emerald-300 hover:bg-emerald-100 hover:shadow-sm dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-900"
           onClick={() => {
-            const unselectedTop10 = sortedValidators
-              .slice(0, Math.round(sortedValidators.length / 10))
-              .filter((v) => !selection.has(v.address))
+            const batchSelection = new Set(selection)
             for (let i = 0; i < MAX_VALIDATORS - selection.size; i++) {
-              const [pick] = unselectedTop10.splice(
-                Math.floor(Math.random() * unselectedTop10.length),
-                1,
-              )
-              toggleValidator(pick.address)
+              const pick = pickTop10(batchSelection)
+              if (!pick) return
+              batchSelection.add(pick)
+              toggleValidator(pick)
             }
           }}
         >
@@ -148,15 +156,10 @@ export const Nominations = () => {
           variant="outline"
           className="group relative overflow-hidden border-amber-200 bg-amber-50 text-amber-700 transition-all hover:border-amber-300 hover:bg-amber-100 hover:shadow-sm dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300 dark:hover:border-amber-700 dark:hover:bg-amber-900"
           onClick={() => {
-            if (selection.size === MAX_VALIDATORS) return
-            const unselectedTop10 = sortedValidators
-              .slice(0, Math.round(sortedValidators.length / 10))
-              .filter((v) => !selection.has(v.address))
-            const pick =
-              unselectedTop10[
-                Math.floor(Math.random() * unselectedTop10.length)
-              ]
-            toggleValidator(pick.address)
+            const pick = pickTop10(selection)
+            if (pick) {
+              toggleValidator(pick)
+            }
           }}
         >
           <Shuffle className="mr-2 h-4 w-4 transition-transform group-hover:rotate-180" />

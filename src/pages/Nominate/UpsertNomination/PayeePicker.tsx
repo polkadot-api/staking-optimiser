@@ -1,4 +1,4 @@
-import { HintTooltip, TextHintTooltip } from "@/components/HintTooltip"
+import { HintTooltip } from "@/components/HintTooltip"
 import {
   Select,
   SelectContent,
