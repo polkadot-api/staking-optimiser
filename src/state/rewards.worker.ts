@@ -1,33 +1,16 @@
-import { withChopsticksEnhancer } from "@/lib/chopsticksEnhancer"
-import { createState } from "@/util/rxjs"
 import { createStakingSdk, type StakingSdk } from "@polkadot-api/sdk-staking"
-import { state } from "@react-rxjs/core"
 import { createClient, Enum, type SS58String } from "polkadot-api"
-import { withLogsRecorder } from "polkadot-api/logs-provider"
-import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
-import { getWsProvider, type JsonRpcProvider } from "polkadot-api/ws-provider"
+import { type JsonRpcProvider } from "polkadot-api/ws-provider"
 import {
-  concat,
-  EMPTY,
   filter,
-  finalize,
   fromEvent,
   map,
   mergeMap,
-  NEVER,
-  switchMap,
-  withLatestFrom,
+  partition,
 } from "rxjs"
-import {
-  rpcsByChain,
-  stakingTypeByChain,
-  USE_CHOPSTICKS,
-  type ChainType,
-  type KnownChains,
-} from "./chainConfig"
 
 export type Request = Enum<{
-  setChain: KnownChains
+  rpc: string,
   getNominatorRewards: {
     id: number
     address: SS58String
@@ -47,6 +30,7 @@ export type NominatorValidatorsResult = Awaited<
   ReturnType<StakingSdk["getNominatorActiveValidators"]>
 >
 export type Response = Enum<{
+  rpc: string,
   result: {
     id: number
     result: NominatorRewardsResult | NominatorValidatorsResult
@@ -54,88 +38,32 @@ export type Response = Enum<{
   ready: undefined
 }>
 
-const shuffleArray = <T>(array: T[]): T[] =>
-  array
-    .map((v) => ({
-      v,
-      p: Math.random(),
-    }))
-    .sort((a, b) => a.p - b.p)
-    .map(({ v }) => v)
 
-let logsEnabled = import.meta.env.DEV
-const createSdk = (chain: KnownChains) => {
-  const rpcs = rpcsByChain[chain]
-  const stakingType = stakingTypeByChain[chain]
+const [rpc$, message$] = partition(fromEvent<MessageEvent<Request>>(globalThis, "message").pipe(
+  map((v) => v.data),
+), x => x.type === 'rpc')
 
-  const getRpcClient = () => {
-    const chainType: ChainType = USE_CHOPSTICKS ? "assetHub" : stakingType
-
-    const url = USE_CHOPSTICKS
-      ? ["ws://localhost:8132"]
-      : shuffleArray(Object.values(rpcs[chainType]))
-
-    let rpcProvider: JsonRpcProvider = getWsProvider(url)
-    if (USE_CHOPSTICKS) {
-      rpcProvider = withChopsticksEnhancer(rpcProvider)
-    } else {
-      rpcProvider = withPolkadotSdkCompat(rpcProvider)
+const provider: JsonRpcProvider = (onMsg) => {
+  const subscription = rpc$.subscribe(x => onMsg(x.value))
+  return {
+    send: value => globalThis.postMessage({type:'rpc', value}),
+    disconnect() {
+      subscription.unsubscribe()
     }
-
-    return createClient(
-      withLogsRecorder(
-        (...v) =>
-          logsEnabled ? console.debug(`worker-${chainType}`, ...v) : null,
-        rpcProvider,
-      ),
-    )
   }
-
-  const stakingClient = getRpcClient()
-  const stakingSdk = createStakingSdk(stakingClient)
-
-  return [
-    stakingSdk,
-    () => {
-      stakingClient.destroy()
-    },
-  ] as const
 }
 
-const [selectedChain$, setSelectedChain] = createState<KnownChains | null>(null)
-
-const stakingSdk$ = state(
-  selectedChain$.pipe(
-    switchMap((chain) => {
-      if (!chain) return EMPTY
-      const [sdk, teardown] = createSdk(chain)
-
-      return concat([sdk], NEVER).pipe(
-        finalize(() => setTimeout(teardown, 100)),
-      )
-    }),
-  ),
-)
-
-const message$ = fromEvent<MessageEvent<Request>>(globalThis, "message").pipe(
-  map((v) => v.data),
-)
-
-message$
-  .pipe(filter((v) => v.type === "setChain"))
-  .subscribe((v) => setSelectedChain(v.value))
+const sdk = createStakingSdk(createClient(provider))
 
 message$
   .pipe(
     filter((v) => v.type === "getNominatorRewards"),
-    withLatestFrom(stakingSdk$),
     mergeMap(
-      async ([
+      async (
         {
           value: { address, era, id },
         },
-        sdk,
-      ]) => {
+      ) => {
         const result = await sdk.getNominatorRewards(address, era)
         return { type: "result", value: { id, result } } satisfies Response
       },
@@ -146,14 +74,12 @@ message$
 message$
   .pipe(
     filter((v) => v.type === "getNominatorActiveValidators"),
-    withLatestFrom(stakingSdk$),
     mergeMap(
-      async ([
+      async (
         {
           value: { address, era, id },
         },
-        sdk,
-      ]) => {
+      ) => {
         const result = await sdk.getNominatorActiveValidators(address, era)
         return { type: "result", value: { id, result } } satisfies Response
       },

@@ -18,6 +18,8 @@ import {
   map,
   merge,
   NEVER,
+  skip,
+  Subject,
   switchMap,
 } from "rxjs"
 import {
@@ -38,12 +40,31 @@ import type { JsonRpcProvider } from "polkadot-api/ws-provider"
 import { getGetWsProvider } from "./logs"
 import { getMetadata } from "@polkadot-api/descriptors"
 
+export const onWorkerMsg$ =  new Subject<string>()
+export const onProviderMsg$ = new Subject<string>()
+
+const multiplexStakingProvider = (input: JsonRpcProvider): JsonRpcProvider => (onMsg) => {
+    const output = input((msg) => {
+      onMsg(msg)
+      onProviderMsg$.next(msg)
+    })
+    const sub = onWorkerMsg$.subscribe(output.send)
+    return {
+      ...output,
+      disconnect() {
+        sub.unsubscribe()
+        output.disconnect()
+      }
+    }
+  }
+
 let smoldot: Promise<Smoldot> | null = null
 
 export const [useSmoldot$, setUseSmoldot] = createLocalStorageState(
   "use-smoldot",
   false,
 )
+useSmoldot$.pipe(skip(1)).subscribe(() => location.reload())
 
 export const selectedChain$ = state(
   location$.pipe(
@@ -92,9 +113,9 @@ const createClients = (chain: KnownChains, useSmoldoge: boolean) => {
       const getWsProvider = getGetWsProvider(type)
       if (!clients.assetHub) {
         const rpcProvider = withChopsticksEnhancer(
-          getWsProvider("ws://localhost:8132"),
+          multiplexStakingProvider(getWsProvider("ws://localhost:8132")),
         )
-        clients.assetHub = createClient(rpcProvider, { getMetadata })
+        clients.assetHub = createClient( rpcProvider, { getMetadata })
       }
       return clients.assetHub
     }
@@ -132,6 +153,7 @@ const createClients = (chain: KnownChains, useSmoldoge: boolean) => {
       rpcProvider = getWsProvider(urls)
     }
 
+    if (type === 'staking') rpcProvider = multiplexStakingProvider(rpcProvider)
     clients[chainType] = createClient(rpcProvider)
     return clients[chainType]
   }
