@@ -37,7 +37,7 @@ export const Dashboard = () => {
         >
           <Card
             title="Top Validators of the last era"
-            className="basis-4 grow shrink-0 overflow-hidden"
+            className="basis-4 grow shrink-0 lg:overflow-hidden"
           >
             <TopValidators />
           </Card>
@@ -52,7 +52,7 @@ export const Dashboard = () => {
         >
           <Card
             title="Top Pools of the last era"
-            className="basis-4 grow shrink-0 overflow-hidden"
+            className="basis-4 grow shrink-0 lg:overflow-hidden"
           >
             <TopPools />
           </Card>

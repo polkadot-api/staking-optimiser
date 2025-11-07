@@ -35,15 +35,13 @@ export const identity$ = state((address: SS58String) => {
 })
 
 export const getAddressIdentity = (address: SS58String) =>
-  firstValueFrom(
-    identity$(address).pipe(
-      map((v) =>
-        v
-          ? {
-              ...v,
-              name: v.displayName ?? (v as any).value,
-            }
-          : null,
-      ),
+  identity$(address).pipe(
+    map((v) =>
+      v
+        ? {
+            ...v,
+            name: v.displayName ?? (v as any).value,
+          }
+        : null,
     ),
   )

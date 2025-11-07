@@ -1,5 +1,5 @@
 import { shareLatest, state } from "@react-rxjs/core"
-import { AccountId, type PolkadotSigner, type SS58String } from "polkadot-api"
+import { type PolkadotSigner, type SS58String } from "polkadot-api"
 import {
   createLedgerProvider,
   createPjsWalletProvider,
@@ -15,7 +15,7 @@ import {
   USE_CHOPSTICKS,
 } from "./chainConfig"
 
-const ss58Format$ = stakingApi$.pipe(
+export const ss58Format$ = stakingApi$.pipe(
   switchMap((v) => v.constants.System.SS58Prefix()),
   shareLatest(),
 )
@@ -68,22 +68,6 @@ export const accountProviderPlugins = [
   walletConnectProvider,
 ]
 
-const formattedAccount$ = state(
-  combineLatest([
-    selectedAccountPlugin.selectedAccount$,
-    ss58Format$.pipe(map((format) => AccountId(format))),
-  ]).pipe(
-    map(([selectedAccount, codec]) =>
-      selectedAccount
-        ? {
-            ...selectedAccount,
-            address: codec.dec(codec.enc(selectedAccount.address)),
-          }
-        : null,
-    ),
-  ),
-)
-
 export type SignerAccount = {
   address: SS58String
   polkadotSigner: PolkadotSigner
@@ -100,9 +84,10 @@ export const selectedSignerAccount$ =
     }),
   )
 
-export const selectedAccountAddr$ = formattedAccount$.pipeState(
-  map((v): SS58String | null => v?.address ?? null),
-)
+export const selectedAccountAddr$ =
+  selectedAccountPlugin.selectedAccount$.pipeState(
+    map((v): SS58String | null => v?.address ?? null),
+  )
 
 export const accountStatus$ = state(
   combineLatest([stakingSdk$, selectedAccountPlugin.selectedAccount$]).pipe(
