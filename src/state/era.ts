@@ -1,10 +1,12 @@
 import { clients$, relayApi$, stakingApi$ } from "@/state/chain"
 import { state, withDefault } from "@react-rxjs/core"
 import {
+  catchError,
   combineLatest,
   defer,
   distinctUntilChanged,
   exhaustMap,
+  from,
   map,
   merge,
   repeat,
@@ -134,9 +136,17 @@ export const empyricalStakingBlockDuration$ = clients$.pipeState(
   switchMap(([client, api]) =>
     client.finalizedBlock$.pipe(
       exhaustMap((block) =>
-        api.query.Timestamp.Now.getValue({
-          at: block.hash,
-        }).then((timestamp) => ({ number: block.number, timestamp })),
+        from(
+          api.query.Timestamp.Now.getValue({
+            at: block.hash,
+          }),
+        ).pipe(
+          map((timestamp) => ({ number: block.number, timestamp })),
+          catchError((ex) => {
+            console.error(ex)
+            return []
+          }),
+        ),
       ),
       scan(
         (acc, v) => {
