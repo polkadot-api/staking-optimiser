@@ -26,7 +26,7 @@ const readOnlyProvider = createReadOnlyProvider({
 })
 const ledgerAccountProvider = createLedgerProvider(
   async () => {
-    const module = await import("@ledgerhq/hw-transport-webhid")
+    const module = await import("@ledgerhq/hw-transport-webusb")
     return module.default.create()
   },
   () =>
