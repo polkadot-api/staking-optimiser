@@ -9,9 +9,10 @@ import { Router } from "./router.tsx"
 import { polkaHub } from "./state/polkahub.ts"
 import { codeSplit } from "./util/codeSplit.tsx"
 import { GithubLink } from "./components/Github.tsx"
+import { awaitedVaultTxModal } from "./lazy-polkahub.ts"
 
 const LazyVaultModal = codeSplit(
-  import("polkahub").then(({ VaultTxModal }) => ({ VaultTxModal })),
+  awaitedVaultTxModal,
   () => null,
   ({ payload: { VaultTxModal } }) => <VaultTxModal />,
 )

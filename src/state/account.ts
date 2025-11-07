@@ -15,6 +15,7 @@ import {
   tokenSymbolByChain,
   USE_CHOPSTICKS,
 } from "./chainConfig"
+import { walletConnectProvider } from "@/lazy-polkahub"
 
 const selectedAccountPlugin = createSelectedAccountPlugin()
 const pjsWalletProvider = createPjsWalletProvider({
@@ -39,17 +40,6 @@ const ledgerAccountProvider = createLedgerProvider(
         })),
       ),
     ),
-)
-const walletConnectProvider = import("polkahub").then(
-  ({ createWalletConnectProvider, knownChains }) =>
-    createWalletConnectProvider(import.meta.env.VITE_REOWN_PROJECT_ID, [
-      knownChains.polkadot,
-      knownChains.polkadotAh,
-      knownChains.kusama,
-      knownChains.kusamaAh,
-      knownChains.paseo,
-      knownChains.paseoAh,
-    ]),
 )
 
 export const accountProviderPlugins = [

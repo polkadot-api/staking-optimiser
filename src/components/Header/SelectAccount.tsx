@@ -1,16 +1,11 @@
+import { awaitedOthers } from "@/lazy-polkahub"
 import { codeSplit } from "@/util/codeSplit"
 import { withSubscribe } from "@/util/rxjs"
 import { PolkaHubModalTrigger } from "polkahub"
 
 const payload = Promise.all([
   import("./ConnectSource"),
-  import("polkahub").then(
-    ({ PolkaHubModal, SelectAccountField, ManagePjsWallets }) => ({
-      PolkaHubModal,
-      SelectAccountField,
-      ManagePjsWallets,
-    }),
-  ),
+  awaitedOthers,
 ])
 export const SelectAccount = withSubscribe(
   codeSplit(
