@@ -17,6 +17,7 @@ import {
   MinBondingAmounts,
   minBondingAmountsSub$,
 } from "../MinBondingAmounts"
+import { accountStatus$ } from "@/state/account"
 
 const manageNominationModule = import("./ManageNomination")
 const ManageNomination = lazy(async () => {
@@ -29,13 +30,18 @@ export const UpsertNomination = () => {
   const minBond = useStateObservable(minBond$)
   const poolStatus = useStateObservable(currentNominationPoolStatus$)
   const bondableAmount = useStateObservable(bondableAmount$)
+  const accountStatus = useStateObservable(accountStatus$)!
+
+  const isActive =
+    accountStatus.nomination.currentBond > 0 &&
+    (accountStatus.nomination.nominating?.validators || []).length > 0
 
   return (
     <div className="space-y-4">
       <MinBondingAmounts />
       {bondableAmount == null ? (
         <NoAccountSelected to="nominate validators" />
-      ) : poolStatus?.pool ? (
+      ) : poolStatus?.pool && !isActive ? (
         <EmptyState
           icon={<GitFork />}
           title="Already in a pool"
@@ -83,4 +89,5 @@ export const upsertNomination$ = merge(
   minBond$,
   currentNominationPoolStatus$.pipe(liftSuspense()),
   bondableAmount$,
+  accountStatus$,
 )

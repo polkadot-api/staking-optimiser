@@ -1,9 +1,7 @@
 import { AddressIdentity } from "@/components/AddressIdentity"
 import { DialogButton } from "@/components/DialogButton"
-import { TokenValue } from "@/components/TokenValue"
 import { accountStatus$, selectedAccountAddr$ } from "@/state/account"
 import { lastReward$ } from "@/state/nominate"
-import { formatPercentage } from "@/util/format"
 import { useStateObservable } from "@react-rxjs/core"
 import type { FC } from "react"
 import { merge } from "rxjs"
@@ -12,8 +10,9 @@ import { StopNominating } from "./StopNominating"
 import { useNavigate, useParams } from "react-router-dom"
 import { Button } from "@polkahub/ui-components"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, Target } from "lucide-react"
+import { Target } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { LastEraReward } from "@/components/LastEraReward"
 
 export const NominateStatus = () => {
   const accountStatus = useStateObservable(accountStatus$)!
@@ -21,15 +20,22 @@ export const NominateStatus = () => {
   const { chain } = useParams()
   const navigate = useNavigate()
 
-  const isActive = accountStatus.nomination.currentBond > 0 && (accountStatus.nomination.nominating?.validators || []).length > 0
+  const isActive =
+    accountStatus.nomination.currentBond > 0 &&
+    (accountStatus.nomination.nominating?.validators || []).length > 0
   const badgeClassName = isActive
-    ?  "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800"
+    ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800"
     : "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-950 dark:text-gray-400 dark:border-gray-800"
 
   return (
     <div className="flex flex-col gap-6 grow ">
       <div className="flex items-center gap-2">
-        <div className={cn("h-2 w-2 rounded-full bg-emerald-500", isActive ? 'animate-pulse':  'bg-gray-400')} />
+        <div
+          className={cn(
+            "h-2 w-2 rounded-full bg-emerald-500",
+            isActive ? "animate-pulse" : "bg-gray-400",
+          )}
+        />
         <Badge
           variant="outline"
           className={cn("text-base font-semibold px-3 py-1 ", badgeClassName)}
@@ -39,34 +45,21 @@ export const NominateStatus = () => {
       </div>
 
       {isActive && (
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2 p-4 rounded-lg bg-muted/50 border border-border/50">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <TrendingUp className="h-4 w-4" />
-            <span>Last era reward</span>
-          </div>
-          <div className="space-y-1">
-            <p className="text-2xl font-bold text-foreground">
-              <TokenValue value={lastEraReward.total} />
-            </p>
-            <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-              {formatPercentage(lastEraReward.apy)} APY
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-2 p-4 rounded-lg bg-muted/50 border border-border/50">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Target className="h-4 w-4" />
-            <span>Reward destination</span>
-          </div>
-          <div className="space-y-1">
-            <p className="text-2xl font-bold text-foreground">
-              <Payee />
-            </p>
+        <div className="grid gap-4 md:grid-cols-2">
+          <LastEraReward {...lastEraReward} />
+          <div className="space-y-2 p-4 rounded-lg bg-muted/50 border border-border/50">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Target className="h-4 w-4" />
+              <span>Reward destination</span>
+            </div>
+            <div className="space-y-1">
+              <p className="text-2xl font-bold text-foreground">
+                <Payee />
+              </p>
+            </div>
           </div>
         </div>
-      </div>)}
+      )}
 
       {accountStatus.nomination.unlocks.length ? <NominateLocks /> : null}
       <div className="flex flex-col sm:flex-row gap-3 pt-2">

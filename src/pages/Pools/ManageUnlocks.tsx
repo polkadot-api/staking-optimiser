@@ -1,14 +1,12 @@
-import { TokenValue } from "@/components/TokenValue"
-import { TransactionButton } from "@/components/Transactions"
 import { selectedSignerAccount$ } from "@/state/account"
 import { stakingApi$ } from "@/state/chain"
 import { activeEra$, eraDurationInMs$ } from "@/state/era"
 import { currentNominationPoolStatus$ } from "@/state/nominationPool"
-import { estimatedFuture } from "@/util/date"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import { liftSuspense, state, useStateObservable } from "@react-rxjs/core"
 import { combineLatest, filter, firstValueFrom, map } from "rxjs"
 import { slashingSpans$ } from "../Nominate/NominateLocks"
+import { Locks } from "@/components/Locks"
 
 const locks$ = state(
   combineLatest([
@@ -35,31 +33,11 @@ const locks$ = state(
 
 export const ManageLocks = () => {
   const locks = useStateObservable(locks$)
-
-  return (
-    <div className="grow mb-1">
-      <h3 className="font-medium text-muted-foreground">Active Unlocks</h3>
-      <ol>
-        {locks.map(({ unlocked, estimatedUnlock, value }, i) => (
-          <li key={i}>
-            <span className="text-muted-foreground">
-              {unlocked ? "Unbonded" : estimatedFuture(estimatedUnlock)}:
-            </span>{" "}
-            <TokenValue value={value} />{" "}
-          </li>
-        ))}
-      </ol>
-      {locks.some((v) => v.unlocked) ? <UnlockPoolBonds /> : null}
-    </div>
-  )
-}
-export const manageLocksSub$ = locks$.pipe(liftSuspense())
-
-export const UnlockPoolBonds = () => {
   const selectedAccount = useStateObservable(selectedSignerAccount$)
 
   return (
-    <TransactionButton
+    <Locks
+      locks={locks}
       createTx={async () => {
         const [api, slashingSpans] = await Promise.all([
           firstValueFrom(stakingApi$),
@@ -71,8 +49,7 @@ export const UnlockPoolBonds = () => {
           num_slashing_spans: slashingSpans,
         })
       }}
-    >
-      Unlock funds
-    </TransactionButton>
+    />
   )
 }
+export const manageLocksSub$ = locks$.pipe(liftSuspense())

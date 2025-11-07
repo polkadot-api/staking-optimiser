@@ -1,85 +1,81 @@
 import { DialogButton } from "@/components/DialogButton"
-import { TokenValue } from "@/components/TokenValue"
 import { TransactionButton } from "@/components/Transactions"
 import { stakingApi$ } from "@/state/chain"
 import { activeEra$, eraDurationInMs$ } from "@/state/era"
 import { currentNominationPoolStatus$ } from "@/state/nominationPool"
-import { estimatedFuture } from "@/util/date"
-import { formatPercentage } from "@/util/format"
 import { NominationPoolsBondExtra } from "@polkadot-api/descriptors"
 import { liftSuspense, useStateObservable } from "@react-rxjs/core"
 import type { FC } from "react"
 import { Link, useParams } from "react-router-dom"
 import { merge } from "rxjs"
 import { ManageBond } from "./ManageBond"
-import { ManageLocks, UnlockPoolBonds } from "./ManageUnlocks"
+import { ManageLocks, manageLocksSub$ } from "./ManageUnlocks"
 import { lastEraRewards$ } from "./poolList.state"
+import { Badge } from "@/components/ui/badge"
+import { Users } from "lucide-react"
+import { LastEraReward } from "@/components/LastEraReward"
+import { cn } from "@/lib/utils"
 
 export const AccountPoolStatus = () => {
   const poolStatus = useStateObservable(currentNominationPoolStatus$)
-  const activeEra = useStateObservable(activeEra$)
-  const eraDuration = useStateObservable(eraDurationInMs$)
   const { chain } = useParams<{ chain: string }>()
 
   // This should not happen
   if (!poolStatus?.pool) return null
 
-  const poolLink = (
-    <Link to={`/${chain}/pools/${poolStatus.pool.id}`}>
-      <span className="text-accent-foreground">#{poolStatus.pool.id}</span>{" "}
-      <span className="font-medium">{poolStatus.pool.name}</span>
-    </Link>
-  )
-
-  const isLeaving = poolStatus.bond === 0n
-  if (isLeaving) {
-    const lastUnlock = poolStatus.unlocks.reduce(
-      (
-        acc: {
-          value: bigint
-          era: number
-        } | null,
-        v,
-      ) => (acc == null ? v : acc.era > v.era ? acc : v),
-      null,
-    )
-    const unlocked = lastUnlock && lastUnlock.era <= activeEra.era
-    const estimatedUnlock =
-      lastUnlock &&
-      new Date(
-        Date.now() +
-          Math.max(0, activeEra.estimatedEnd.getTime() - Date.now()) +
-          (lastUnlock.era - activeEra.era - 1) * eraDuration,
-      )
-
-    return (
-      <div className="grow">
-        <div>Currently leaving pool {poolLink}</div>
-        {unlocked ? (
-          <div className="mt-2">
-            <UnlockPoolBonds />
-          </div>
-        ) : estimatedUnlock ? (
-          <div>Unlock: {estimatedFuture(estimatedUnlock)}</div>
-        ) : null}
-      </div>
-    )
-  }
+  const isActive = poolStatus.bond > 0n
+  const badgeClassName = isActive
+    ? "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-400 dark:border-purple-800"
+    : "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-950 dark:text-gray-400 dark:border-gray-800"
 
   return (
-    <div className="grow flex flex-col">
-      <div className="mb-1">Member of pool {poolLink}</div>
-      <LastEraRewards poolId={poolStatus.pool.id} bond={poolStatus.bond} />
-      {poolStatus.unlocks.length ? <ManageLocks /> : null}
-      <div className="grow" />
-      <div className="space-x-2">
-        <DialogButton
-          title="Manage bond"
-          content={({ close }) => <ManageBond close={close} />}
+    <div className="flex flex-col gap-3 grow ">
+      <div className="flex items-center gap-2">
+        <div
+          className={cn(
+            "h-2 w-2 rounded-full animate-pulse",
+            isActive ? "bg-purple-500" : "bg-gray-400",
+          )}
+        />
+        <Badge
+          variant="outline"
+          className={cn("text-base font-semibold px-3 py-1 ", badgeClassName)}
         >
-          Manage bond
-        </DialogButton>
-        {poolStatus.pendingRewards > 0n ? <ClaimRewards /> : null}
+          {isActive ? "Pool member" : "Leaving Pool"}
+        </Badge>
+      </div>
+      <div className="space-y-2 p-4 rounded-lg bg-purple-50 border border-purple-200 dark:bg-purple-950/30 dark:border-purple-900/50">
+        <div className="flex items-center gap-2 text-sm text-purple-700 dark:text-purple-400">
+          <Users className="h-4 w-4" />
+          <span className="font-medium">Nomination Pool</span>
+        </div>
+        <div className="space-y-1">
+          <p className="text-lg font-bold text-purple-900 dark:text-purple-100">
+            <Link to={`/${chain}/pools/${poolStatus.pool.id}`}>
+              <span className="text-purple-600 dark:text-purple-400">
+                {poolStatus.pool.id}
+              </span>{" "}
+              {poolStatus.pool.name}
+            </Link>
+          </p>
+        </div>
+      </div>
+      {isActive && (
+        <LastEraRewards poolId={poolStatus.pool.id} bond={poolStatus.bond} />
+      )}
+      {poolStatus.unlocks.length ? <ManageLocks /> : null}
+
+      <div className="flex flex-col sm:flex-row gap-3 pt-2">
+        {isActive && (
+          <DialogButton
+            title="Manage bond"
+            className="flex-1"
+            content={({ close }) => <ManageBond close={close} />}
+          >
+            Manage bond
+          </DialogButton>
+        )}
+        {isActive && poolStatus.pendingRewards > 0n ? <ClaimRewards /> : null}
       </div>
     </div>
   )
@@ -90,25 +86,12 @@ const LastEraRewards: FC<{ poolId: number; bond: bigint }> = ({
   bond,
 }) => {
   const lastEraRewards = useStateObservable(lastEraRewards$(poolId))
-
-  if (!lastEraRewards) {
-    return <div>Last era reward with current bond: …</div>
-  }
-  if (!lastEraRewards.activeBond) {
-    return <div>Last era reward with current bond: N/A</div>
-  }
+  if (!lastEraRewards || !lastEraRewards.activeBond) return null
 
   const selfReward =
     (lastEraRewards.poolMembers * bond) / lastEraRewards.activeBond
 
-  return (
-    <div>
-      Last era reward with current bond: <TokenValue value={selfReward} />{" "}
-      <span className="text-muted-foreground">
-        ({formatPercentage(lastEraRewards.apy)} APY)
-      </span>
-    </div>
-  )
+  return <LastEraReward apy={lastEraRewards.apy} total={selfReward} />
 }
 
 const ClaimRewards = () => {
@@ -117,11 +100,13 @@ const ClaimRewards = () => {
   return (
     <>
       <TransactionButton
+        className="flex-1"
         createTx={() => stakingApi.tx.NominationPools.claim_payout()}
       >
         Claim rewards
       </TransactionButton>
       <TransactionButton
+        className="flex-1"
         createTx={() =>
           stakingApi.tx.NominationPools.bond_extra({
             extra: NominationPoolsBondExtra.Rewards(),
@@ -135,6 +120,7 @@ const ClaimRewards = () => {
 }
 
 export const accountPoolStatusSub$ = merge(
+  manageLocksSub$,
   currentNominationPoolStatus$.pipe(liftSuspense()),
   activeEra$,
   eraDurationInMs$,

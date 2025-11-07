@@ -71,30 +71,26 @@ const CurrentStatus = () => {
   if (balance.spendable + balance.raw.frozen < minBond)
     return <NotEnoughFunds minValue={minBond} to="join a pool" />
 
-  if (isNominating)
-    return (
-      <EmptyState
-        icon={<Star />}
-        title="Already nominating"
-        description="You are nominating through direct nomination, so you can't join a pool."
-        action={
-          <Button asChild>
-            <Link to="../../nominate">Nomination status</Link>
-          </Button>
-        }
-      />
-    )
-
-  if (!currentPool?.pool)
-    return (
-      <EmptyState
-        icon={<GitFork />}
-        title="Join a nomination pool"
-        description="Select a pool from the list below to start staking."
-      />
-    )
-
-  return <AccountStatus />
+  return currentPool?.pool ? (
+    <AccountStatus source="pool" />
+  ) : isNominating ? (
+    <EmptyState
+      icon={<Star />}
+      title="Already nominating"
+      description="You are nominating through direct nomination, so you can't join a pool."
+      action={
+        <Button asChild>
+          <Link to="../../nominate">Nomination status</Link>
+        </Button>
+      }
+    />
+  ) : (
+    <EmptyState
+      icon={<GitFork />}
+      title="Join a nomination pool"
+      description="Select a pool from the list below to start staking."
+    />
+  )
 }
 const currentStatusSub$ = merge(
   currentNominationPoolStatus$.pipe(liftSuspense()),

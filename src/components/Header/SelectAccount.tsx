@@ -3,10 +3,7 @@ import { codeSplit } from "@/util/codeSplit"
 import { withSubscribe } from "@/util/rxjs"
 import { PolkaHubModalTrigger } from "polkahub"
 
-const payload = Promise.all([
-  import("./ConnectSource"),
-  awaitedOthers,
-])
+const payload = Promise.all([import("./ConnectSource"), awaitedOthers])
 export const SelectAccount = withSubscribe(
   codeSplit(
     payload,
