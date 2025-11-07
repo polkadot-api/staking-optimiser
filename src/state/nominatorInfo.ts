@@ -217,7 +217,17 @@ export const getNominatorRewards = (
               }
               return getIndexerNominatorFile(address, era)
             }),
-            map((result) => ({ era, result: result ? codec(result) : null })),
+            map((result) => ({
+              era,
+              result: result
+                ? codec(result)
+                : {
+                    total: 0n,
+                    totalCommission: 0n,
+                    activeBond: 0n,
+                    byValidator: {},
+                  },
+            })),
             catchError((ex) => {
               console.error(ex)
               failedEras$.next(era)
