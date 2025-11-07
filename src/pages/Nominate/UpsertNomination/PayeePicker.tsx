@@ -1,3 +1,4 @@
+import { HintTooltip, TextHintTooltip } from "@/components/HintTooltip"
 import {
   Select,
   SelectContent,
@@ -33,6 +34,21 @@ export const PayeePicker = () => {
   return (
     <div className="flex gap-2 items-center">
       <p className="text-sm font-medium">Rewards destination</p>
+      <HintTooltip>
+        <p>Choose how you want to receive your staking rewards:</p>
+        <p>
+          <strong>Compounded</strong>: Rewards are automatically added to your
+          bonded amount.
+        </p>
+        <p>
+          <strong>Nominator account</strong>: Rewards are sent to your free
+          (spendable) balance.
+        </p>
+        <p>
+          <strong>Other account</strong>: Send rewards to a different account of
+          your choice.
+        </p>
+      </HintTooltip>
       <Select
         value={selectedPayee.type}
         onValueChange={(value) => {
