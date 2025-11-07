@@ -1,6 +1,6 @@
 import { state } from "@react-rxjs/core"
 import { type SS58String } from "polkadot-api"
-import { firstValueFrom, map, startWith, switchMap, tap } from "rxjs"
+import { map, startWith, switchMap, tap } from "rxjs"
 import { identitySdk$ } from "./chain"
 
 const CACHE_KEY = "identity-cache"
