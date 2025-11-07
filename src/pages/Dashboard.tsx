@@ -29,24 +29,30 @@ export const Dashboard = () => {
       <div className="flex gap-4 flex-col lg:flex-row">
         <Suspense
           fallback={
-            <CardPlaceholder className="basis-4 grow shrink-0" height={1240} />
+            <CardPlaceholder
+              className="lg:basis-4 grow shrink-0"
+              height={1240}
+            />
           }
         >
           <Card
             title="Top Validators of the last era"
-            className="basis-4 grow shrink-0"
+            className="basis-4 grow shrink-0 overflow-hidden"
           >
             <TopValidators />
           </Card>
         </Suspense>
         <Suspense
           fallback={
-            <CardPlaceholder className="basis-4 grow shrink-0" height={1240} />
+            <CardPlaceholder
+              className="lg:basis-4 grow shrink-0"
+              height={1240}
+            />
           }
         >
           <Card
             title="Top Pools of the last era"
-            className="basis-4 grow shrink-0"
+            className="basis-4 grow shrink-0 overflow-hidden"
           >
             <TopPools />
           </Card>
