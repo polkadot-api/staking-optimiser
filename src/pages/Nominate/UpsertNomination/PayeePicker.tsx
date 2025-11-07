@@ -23,7 +23,7 @@ const visiblePayeeTypes: StakingRewardDestination["type"][] = [
 
 export const payeePicker$ = accountStatus$.pipeState(
   map(
-    (account) => account?.nomination.payee ?? StakingRewardDestination.Staked(),
+    (account) => account?.nomination.payee ?? StakingRewardDestination.Stash(),
   ),
   switchMap((initialPayee) => payeeChange$.pipe(startWith(initialPayee))),
 )
@@ -37,12 +37,12 @@ export const PayeePicker = () => {
       <HintTooltip>
         <p>Choose how you want to receive your staking rewards:</p>
         <p>
-          <strong>Compounded</strong>: Rewards are automatically added to your
-          bonded amount.
+          <strong>Stash account</strong>: Rewards are sent to your free
+          (spendable) balance.
         </p>
         <p>
-          <strong>Nominator account</strong>: Rewards are sent to your free
-          (spendable) balance.
+          <strong>Compounded</strong>: Rewards are automatically added to your
+          bonded amount.
         </p>
         <p>
           <strong>Other account</strong>: Send rewards to a different account of
@@ -64,8 +64,8 @@ export const PayeePicker = () => {
           <SelectValue placeholder="Destination" />
         </SelectTrigger>
         <SelectContent>
+          <SelectItem value="Stash">Stash account</SelectItem>
           <SelectItem value="Staked">Compounded</SelectItem>
-          <SelectItem value="Stash">Nominator account</SelectItem>
           <SelectItem value="Account">Other account</SelectItem>
           {visiblePayeeTypes.includes(selectedPayee.type) ? null : (
             <SelectItem value={selectedPayee.type}>

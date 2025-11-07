@@ -37,6 +37,12 @@ export const tokenDecimalsByChain: Record<KnownChains, number> = {
   westend: 12,
   paseo: 10,
 }
+export const ss58FormatByChain: Record<KnownChains, number> = {
+  polkadot: 0,
+  kusama: 2,
+  westend: 42,
+  paseo: 0,
+}
 
 const INDEXER_URI = "https://staking-eras.usepapi.app/"
 export const indexerUrl: Record<KnownChains, string> = {
