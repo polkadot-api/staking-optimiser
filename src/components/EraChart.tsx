@@ -68,11 +68,18 @@ export default function EraChart({
             if (apyPayload?.value == null && rewardsPayload?.value == null)
               return `Era ${era}`
 
-            const content = rewardsPayload?.value
-              ? `${rewardsPayload.value.toLocaleString()} ${tokenProps?.symbol}`
-              : `${apyPayload?.value?.toLocaleString()}%`
+            const content =
+              rewardsPayload?.value != null
+                ? `${rewardsPayload.value.toLocaleString()} ${tokenProps?.symbol}`
+                : apyPayload?.value
+                  ? `${apyPayload?.value?.toLocaleString()}%`
+                  : null
 
-            return `Era ${era}: ${content}${isActive ? " (Active)" : ""}`
+            const eraValue = [content, isActive ? "(Active)" : null]
+              .filter((v) => !!v)
+              .join(" ")
+
+            return `Era ${era}` + (eraValue ? `: ${eraValue}` : "")
           }}
         />
         <Area
