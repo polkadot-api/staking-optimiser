@@ -16,7 +16,7 @@ import { roundToDecimalPlaces } from "@/util/format"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { type SS58String } from "polkadot-api"
 import { lazy, Suspense, type FC } from "react"
-import { Link } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import {
   combineLatest,
   debounceTime,
@@ -124,6 +124,7 @@ const validatorIsCurrentlyActive$ = state(
 const SelectedValidator: FC<{
   validator: SS58String
 }> = ({ validator }) => {
+  const { chain } = useParams()
   const rewardHistory = useStateObservable(validatorRewardHistory$(validator))
   const isActive = useStateObservable(validatorIsCurrentlyActive$(validator))
   const prefs = useStateObservable(validatorPrefs$(validator))
@@ -146,7 +147,7 @@ const SelectedValidator: FC<{
       })}
     >
       <div className="flex items-center justify-between">
-        <Link to={`../validators/${validator}`}>
+        <Link to={`/${chain}/validators/${validator}`}>
           <AddressIdentity addr={validator} />
         </Link>
         {averageApy || prefs.commission ? (

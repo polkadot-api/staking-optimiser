@@ -30,9 +30,10 @@ export const UpsertNomination = () => {
   const minBond = useStateObservable(minBond$)
   const poolStatus = useStateObservable(currentNominationPoolStatus$)
   const bondableAmount = useStateObservable(bondableAmount$)
-  const accountStatus = useStateObservable(accountStatus$)!
+  const accountStatus = useStateObservable(accountStatus$)
 
   const isActive =
+    accountStatus &&
     accountStatus.nomination.currentBond > 0 &&
     (accountStatus.nomination.nominating?.validators || []).length > 0
 
