@@ -292,6 +292,14 @@ export const withSearch =
               return true
             }
 
+            if (
+              identity?.subIdentity
+                ?.toLocaleLowerCase()
+                .includes(search.toLocaleLowerCase())
+            ) {
+              return true
+            }
+
             // Try for an SS58 match
             try {
               if (searchPk === ss58ToHex(v.address)) {
