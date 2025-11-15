@@ -1,7 +1,7 @@
 import {
   DotWhitelistEntry,
   DotPplWhitelistEntry,
-} from "@polkadot-api/descriptors";
+} from "@polkadot-api/descriptors"
 
 export const whitelist: (DotWhitelistEntry | DotPplWhitelistEntry)[] = [
   "const.Staking.BondingDuration",
@@ -51,4 +51,7 @@ export const whitelist: (DotWhitelistEntry | DotPplWhitelistEntry)[] = [
   "api.Inflation.experimental_inflation_prediction_info",
   "query.Balances.TotalIssuance",
   "query.Timestamp.Now",
-];
+  "query.Multisig.Multisigs",
+  "api.TransactionPaymentApi.query_info",
+  "query.Proxy.Proxies",
+]
