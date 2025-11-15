@@ -2,13 +2,16 @@ import { state } from "@react-rxjs/core"
 import { type PolkadotSigner, type SS58String } from "polkadot-api"
 import {
   createLedgerProvider,
+  createMultisigProvider,
   createPjsWalletProvider,
   createPolkadotVaultProvider,
+  createProxyProvider,
   createReadOnlyProvider,
   createSelectedAccountPlugin,
+  multisigDirectSigner,
 } from "polkahub"
 import { combineLatest, firstValueFrom, map, switchMap } from "rxjs"
-import { selectedChain$, stakingSdk$ } from "./chain"
+import { selectedChain$, stakingApi$, stakingSdk$ } from "./chain"
 import {
   ss58FormatByChain,
   tokenDecimalsByChain,
@@ -41,6 +44,37 @@ const ledgerAccountProvider = createLedgerProvider(
       ),
     ),
 )
+const proxyProvider = createProxyProvider((address) =>
+  firstValueFrom(
+    stakingApi$.pipe(
+      switchMap((api) => api.query.Proxy.Proxies.getValue(address)),
+      map(([v]) => v),
+    ),
+  ),
+)
+const multisigProvider = createMultisigProvider(
+  multisigDirectSigner(
+    (multisig, callHash) =>
+      firstValueFrom(
+        stakingApi$.pipe(
+          switchMap((api) =>
+            api.query.Multisig.Multisigs.getValue(multisig, callHash),
+          ),
+        ),
+      ),
+    (uxt, len) =>
+      firstValueFrom(
+        stakingApi$.pipe(
+          switchMap((api) =>
+            api.apis.TransactionPaymentApi.query_info(uxt, len),
+          ),
+        ),
+      ),
+    {
+      method: () => "as_multi",
+    },
+  ),
+)
 
 export const accountProviderPlugins = [
   selectedAccountPlugin,
@@ -49,6 +83,8 @@ export const accountProviderPlugins = [
   readOnlyProvider,
   ledgerAccountProvider,
   walletConnectProvider,
+  proxyProvider,
+  multisigProvider,
 ]
 
 export type SignerAccount = {
