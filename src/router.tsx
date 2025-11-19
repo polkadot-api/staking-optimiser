@@ -1,11 +1,17 @@
 import { type FC, type PropsWithChildren } from "react"
 import {
+  createHashHistory,
   unstable_HistoryRouter as HistoryRouter,
   UNSAFE_createBrowserHistory,
-} from "react-router-dom"
+} from "react-router"
 import { concat, defer, map, Observable, of, share } from "rxjs"
 
-export const history = UNSAFE_createBrowserHistory({
+const createHistory = import.meta.env.VITE_HASH_ROUTER
+  ? createHashHistory
+  : UNSAFE_createBrowserHistory
+
+export const history = createHistory({
+  window,
   v5Compat: true,
 })
 export type HistoryUpdate = Parameters<

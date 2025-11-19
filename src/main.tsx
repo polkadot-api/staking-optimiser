@@ -1,7 +1,7 @@
 import { PolkaHubProvider } from "polkahub"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router"
 import App, { appSub$ } from "./App.tsx"
 import { Transactions } from "./components/Transactions.tsx"
 import "./index.css"

@@ -6,7 +6,7 @@ import { state, useStateObservable } from "@react-rxjs/core"
 import { combineLatest, map, switchMap } from "rxjs"
 import { validatorRewardsToHistoric } from "../Validators/validatorList.state"
 import { calculatePoolApy, pools$ } from "./poolList.state"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 
 const topPools$ = state(
   combineLatest([

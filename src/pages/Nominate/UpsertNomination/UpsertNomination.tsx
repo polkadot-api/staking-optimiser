@@ -9,7 +9,7 @@ import { currentNominationPoolStatus$ } from "@/state/nominationPool"
 import { liftSuspense, useStateObservable } from "@react-rxjs/core"
 import { GitFork } from "lucide-react"
 import { lazy, Suspense } from "react"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import { merge } from "rxjs"
 import {
   bondableAmount$,

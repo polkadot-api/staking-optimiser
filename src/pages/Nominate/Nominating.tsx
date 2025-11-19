@@ -16,7 +16,7 @@ import { roundToDecimalPlaces } from "@/util/format"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { type SS58String } from "polkadot-api"
 import { lazy, Suspense, type FC } from "react"
-import { Link, useParams } from "react-router-dom"
+import { Link, useParams } from "react-router"
 import {
   combineLatest,
   debounceTime,

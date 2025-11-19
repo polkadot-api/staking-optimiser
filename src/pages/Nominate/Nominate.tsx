@@ -2,7 +2,7 @@ import { CardPlaceholder } from "@/components/CardPlaceholder"
 import { isNominating$ } from "@/state/nominate"
 import { useStateObservable } from "@react-rxjs/core"
 import { Suspense } from "react"
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router"
 import { merge } from "rxjs"
 import { NominatingContent, nominatingContentSub$ } from "./Nominating"
 import {

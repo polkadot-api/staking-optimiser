@@ -3,7 +3,7 @@ import { activeEraNumber$ } from "@/state/era"
 import { validatorsEra$ } from "@/state/validators"
 import { formatPercentage } from "@/util/format"
 import { state, useStateObservable } from "@react-rxjs/core"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import { combineLatest, filter, map, switchMap } from "rxjs"
 import { validatorPrefs$ } from "./validatorList.state"
 
