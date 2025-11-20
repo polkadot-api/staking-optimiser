@@ -1,3 +1,4 @@
+import { walletConnectProvider } from "@/lazy-polkahub"
 import { state } from "@react-rxjs/core"
 import { type PolkadotSigner, type SS58String } from "polkadot-api"
 import {
@@ -7,40 +8,24 @@ import {
   createReadOnlyProvider,
   createSelectedAccountPlugin,
 } from "polkahub"
-import { combineLatest, firstValueFrom, map, switchMap } from "rxjs"
-import { selectedChain$, stakingSdk$ } from "./chain"
-import {
-  ss58FormatByChain,
-  tokenDecimalsByChain,
-  tokenSymbolByChain,
-  USE_CHOPSTICKS,
-} from "./chainConfig"
-import { walletConnectProvider } from "@/lazy-polkahub"
+import { combineLatest, map, switchMap } from "rxjs"
+import { getNetworkInfo, stakingSdk$ } from "./chain"
+import { USE_CHOPSTICKS } from "./chainConfig"
 
 const selectedAccountPlugin = createSelectedAccountPlugin()
 const pjsWalletProvider = createPjsWalletProvider({
   accountFormat: "ss58",
 })
-const polkadotVaultProvider = createPolkadotVaultProvider()
+const polkadotVaultProvider = createPolkadotVaultProvider({
+  getNetworkInfo,
+})
 const readOnlyProvider = createReadOnlyProvider({
   fakeSigner: USE_CHOPSTICKS,
 })
-const ledgerAccountProvider = createLedgerProvider(
-  async () => {
-    const module = await import("@ledgerhq/hw-transport-webusb")
-    return module.default.create()
-  },
-  () =>
-    firstValueFrom(
-      selectedChain$.pipe(
-        map((chain) => ({
-          decimals: tokenDecimalsByChain[chain],
-          tokenSymbol: tokenSymbolByChain[chain],
-          ss58Format: ss58FormatByChain[chain],
-        })),
-      ),
-    ),
-)
+const ledgerAccountProvider = createLedgerProvider(async () => {
+  const module = await import("@ledgerhq/hw-transport-webusb")
+  return module.default.create()
+}, getNetworkInfo)
 
 export const accountProviderPlugins = [
   selectedAccountPlugin,

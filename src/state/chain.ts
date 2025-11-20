@@ -1,6 +1,7 @@
 import { withChopsticksEnhancer } from "@/lib/chopsticksEnhancer"
 import { location$ } from "@/router"
 import { createLocalStorageState } from "@/util/rxjs"
+import { getMetadata } from "@polkadot-api/descriptors"
 import { createIdentitySdk } from "@polkadot-api/sdk-accounts"
 import { createStakingSdk } from "@polkadot-api/sdk-staking"
 import { state, withDefault } from "@react-rxjs/core"
@@ -8,6 +9,7 @@ import { createClient, type PolkadotClient } from "polkadot-api"
 import { getSmProvider } from "polkadot-api/sm-provider"
 import type { Client as Smoldot } from "polkadot-api/smoldot"
 import SmWorker from "polkadot-api/smoldot/worker?worker"
+import type { JsonRpcProvider } from "polkadot-api/ws-provider"
 import { matchPath } from "react-router"
 import {
   combineLatest,
@@ -15,6 +17,7 @@ import {
   distinctUntilChanged,
   filter,
   finalize,
+  firstValueFrom,
   map,
   merge,
   NEVER,
@@ -26,6 +29,7 @@ import {
   chainSpecsByChain,
   descriptorsByChain,
   rpcsByChain,
+  ss58FormatByChain,
   stakingTypeByChain,
   tokenDecimalsByChain,
   tokenSymbolByChain,
@@ -36,9 +40,7 @@ import {
   type RelayTypedApi,
   type StakingTypedApi,
 } from "./chainConfig"
-import type { JsonRpcProvider } from "polkadot-api/ws-provider"
 import { getGetWsProvider } from "./logs"
-import { getMetadata } from "@polkadot-api/descriptors"
 
 export const onWorkerMsg$ = new Subject<string>()
 export const onProviderMsg$ = new Subject<string>()
@@ -80,6 +82,17 @@ export const selectedChain$ = state(
     distinctUntilChanged(),
   ),
 )
+
+export const getNetworkInfo = () =>
+  firstValueFrom(
+    selectedChain$.pipe(
+      map((chain) => ({
+        decimals: tokenDecimalsByChain[chain],
+        tokenSymbol: tokenSymbolByChain[chain],
+        ss58Format: ss58FormatByChain[chain],
+      })),
+    ),
+  )
 
 export const tokenProps$ = selectedChain$.pipeState(
   map((chain) => ({
