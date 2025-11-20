@@ -9,7 +9,7 @@ import { CardPlaceholder } from "@/components/CardPlaceholder"
 import { accountStatus$ } from "@/state/account"
 import { useStateObservable } from "@react-rxjs/core"
 import { Suspense, type FC } from "react"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import { EMPTY, merge, switchMap, tap } from "rxjs"
 import { minBond$ } from "./Nominate/MinBondingAmounts"
 import {

@@ -1,7 +1,7 @@
 import { CardPlaceholder } from "@/components/CardPlaceholder"
 import { location$ } from "@/router"
 import { lazy, Suspense } from "react"
-import { matchPath, Route, Routes } from "react-router-dom"
+import { matchPath, Route, Routes } from "react-router"
 import { map, switchMap } from "rxjs"
 import { ValidatorDetailPage, validatorDetailPageSub$ } from "./ValidatorDetail"
 

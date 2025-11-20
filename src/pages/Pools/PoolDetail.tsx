@@ -28,7 +28,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from "react"
-import { Link, useParams } from "react-router-dom"
+import { Link, useParams } from "react-router"
 import { combineLatest, map, merge, switchMap } from "rxjs"
 import { aggregatedValidators$ } from "../Validators/validatorList.state"
 import { JoinPool, joinPoolSub$ } from "./JoinPool"

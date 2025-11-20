@@ -8,7 +8,7 @@ import { PayeePicker, payeePicker$ } from "./PayeePicker"
 import { Nominations } from "../PickValidators/PickValidators"
 import { isNominating$ } from "@/state/nominate"
 import { useStateObservable } from "@react-rxjs/core"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { StopNominating } from "../StopNominating"
 
 export const manageNomination$ = merge(

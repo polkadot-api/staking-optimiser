@@ -3,7 +3,7 @@ import { knownChains, type KnownChains } from "@/state/chainConfig"
 import { withSubscribe } from "@/util/rxjs"
 import { useStateObservable } from "@react-rxjs/core"
 import { Button } from "@/components/ui/button"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { codeSplit } from "@/util/codeSplit"
 
 export const chainNameByChain: Record<KnownChains, string> = {

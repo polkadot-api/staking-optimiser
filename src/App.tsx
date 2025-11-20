@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router"
 import { distinctUntilChanged, map, merge, Observable, switchMap } from "rxjs"
 import { Header } from "./components/Header/Header"
 import { Dashboard, dashboardSub$ } from "./pages/Dashboard"

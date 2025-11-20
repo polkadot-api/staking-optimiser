@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom"
+import { Link, useParams } from "react-router"
 import { ChainSelector } from "./ChainSelector"
 import { SelectAccount } from "./SelectAccount"
 import { ChopsticksController } from "../ChopsticksController"

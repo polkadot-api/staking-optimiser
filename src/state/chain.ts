@@ -8,7 +8,7 @@ import { createClient, type PolkadotClient } from "polkadot-api"
 import { getSmProvider } from "polkadot-api/sm-provider"
 import type { Client as Smoldot } from "polkadot-api/smoldot"
 import SmWorker from "polkadot-api/smoldot/worker?worker"
-import { matchPath } from "react-router-dom"
+import { matchPath } from "react-router"
 import {
   combineLatest,
   concat,
@@ -64,7 +64,7 @@ let smoldot: Promise<Smoldot> | null = null
 
 export const [useSmoldot$, setUseSmoldot] = createLocalStorageState(
   "use-smoldot",
-  false,
+  !!import.meta.env.VITE_HASH_ROUTER,
 )
 useSmoldot$.pipe(skip(1)).subscribe(() => location.reload())
 

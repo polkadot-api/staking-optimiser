@@ -1,7 +1,7 @@
 import { cn } from "@polkahub/ui-components"
 import { GitFork, Home, ShieldCheck, Star } from "lucide-react"
 import { type FC, type PropsWithChildren } from "react"
-import { Link, matchPath, useLocation, useParams } from "react-router-dom"
+import { Link, matchPath, useLocation, useParams } from "react-router"
 
 const pages = [
   {

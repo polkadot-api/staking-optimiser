@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { formatPercentage } from "@/util/format"
 import { useStateObservable } from "@react-rxjs/core"
 import { createContext, useContext, type FC, type ReactElement } from "react"
-import { Link, useParams } from "react-router-dom"
+import { Link, useParams } from "react-router"
 import { validatorPrefs$, type PositionValidator } from "./validatorList.state"
 
 const whiteCtx = createContext(false)
