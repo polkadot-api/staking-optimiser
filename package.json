@@ -34,7 +34,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.554.0",
-    "polkadot-api": "^1.20.7",
+    "polkadot-api": "^1.21.0",
     "polkahub": "0.4.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -43,7 +43,7 @@
     "react-svg": "^16.3.0",
     "react-toastify": "^11.0.5",
     "react-virtuoso": "^4.14.1",
-    "recharts": "^3.4.1",
+    "recharts": "^3.5.0",
     "rxjs": "^7.8.2",
     "tailwind-merge": "^3.4.0",
     "timeago.js": "^4.0.2",
@@ -54,7 +54,7 @@
     "@ledgerhq/hw-transport": "^6.31.13",
     "@tailwindcss/vite": "^4.1.17",
     "@types/node": "^24.10.1",
-    "@types/react": "^19.2.6",
+    "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
@@ -74,5 +74,5 @@
     "semi": false,
     "trailingComma": "all"
   },
-  "packageManager": "pnpm@10.15.0"
+  "packageManager": "pnpm@10.23.0+sha512.21c4e5698002ade97e4efe8b8b4a89a8de3c85a37919f957e7a0f30f38fbc5bbdd05980ffe29179b2fb6e6e691242e098d945d1601772cad0fef5fb6411e2a4b"
 }
