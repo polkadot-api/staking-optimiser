@@ -1,9 +1,18 @@
-import {
-  DotWhitelistEntry,
+import type {
+  WhitelistEntriesByChain,
   DotPplWhitelistEntry,
-} from "@polkadot-api/descriptors";
+  DotWhitelistEntry,
+  DotAHWhitelistEntry,
+  WndAHWhitelistEntry,
+} from "@polkadot-api/descriptors"
 
-export const whitelist: (DotWhitelistEntry | DotPplWhitelistEntry)[] = [
+const relayWhitelist: DotWhitelistEntry[] = [
+  "query.Staking.SlashingSpans",
+  "const.Babe.EpochDuration",
+  "const.Babe.ExpectedBlockTime",
+  "api.Inflation.experimental_inflation_prediction_info",
+]
+const assetHubWhitelist: (DotAHWhitelistEntry | WndAHWhitelistEntry)[] = [
   "const.Staking.BondingDuration",
   "const.Staking.HistoryDepth",
   "const.Staking.SessionsPerEra",
@@ -21,7 +30,6 @@ export const whitelist: (DotWhitelistEntry | DotPplWhitelistEntry)[] = [
   "query.Staking.MinimumActiveStake",
   "query.Staking.MinNominatorBond",
   "query.Staking.Nominators",
-  "query.Staking.SlashingSpans",
   "query.Staking.ValidatorCount",
   "query.Staking.Validators",
   "query.Staking.Validators", // TODO
@@ -43,12 +51,26 @@ export const whitelist: (DotWhitelistEntry | DotPplWhitelistEntry)[] = [
   "tx.NominationPools.join",
   "tx.NominationPools.unbond",
   "tx.NominationPools.withdraw_unbonded",
-  "query.Identity.IdentityOf",
-  "query.Identity.SuperOf",
-  "const.Babe.EpochDuration",
-  "const.Babe.ExpectedBlockTime",
-  "const.System.SS58Prefix",
-  "api.Inflation.experimental_inflation_prediction_info",
   "query.Balances.TotalIssuance",
   "query.Timestamp.Now",
-];
+  "const.System.SS58Prefix",
+]
+const pplWhitelist: DotPplWhitelistEntry[] = [
+  "query.Identity.IdentityOf",
+  "query.Identity.SuperOf",
+]
+
+export const whitelist: WhitelistEntriesByChain = {
+  dot: relayWhitelist,
+  dotAH: assetHubWhitelist,
+  dotPpl: pplWhitelist,
+  ksm: relayWhitelist,
+  ksmAH: assetHubWhitelist,
+  ksmPpl: pplWhitelist,
+  wnd: relayWhitelist,
+  wndAH: assetHubWhitelist,
+  wndPpl: pplWhitelist,
+  pas: relayWhitelist,
+  pasAH: assetHubWhitelist,
+  pasPpl: pplWhitelist,
+}

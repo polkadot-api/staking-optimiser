@@ -18,7 +18,7 @@
       "chain": "polkadot_asset_hub",
       "metadata": ".papi/metadata/dotAH.scale",
       "genesis": "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
-      "codeHash": "0xe2af694d7e9f890e248151cd1649360b344f2df582598c7706425f672f627cdf"
+      "codeHash": "0xd4cd182f3ea1a30ad6527a088dbd1ebd7381d7c85b675cc8c29f82e695f73fbd"
     },
     "ksmAH": {
       "chain": "ksmcc3_asset_hub",
@@ -60,19 +60,22 @@
       "chain": "paseo",
       "metadata": ".papi/metadata/pas.scale",
       "genesis": "0x77afd6190f1554ad45fd0d31aee62aacc33c6db0ea801129acb813f913e0764f",
-      "codeHash": "0xe0d4ea114ce099777b68fd191e790c92209d436c7a0101166f50973a9d21ff16"
+      "codeHash": "0xbe23bf1f10e3704e762c9f3533f36645a286af995a52efd6eb784c81af4dbc9c"
     },
     "pasAH": {
       "chain": "paseo_asset_hub",
       "metadata": ".papi/metadata/pasAH.scale",
       "genesis": "0xd6eec26135305a8ad257a20d003357284c8aa03d0bdb2b357ab0a22371e11ef2",
-      "codeHash": "0x6629e908ca95b0ac1fa2ee6838d83ecec217ee5a4587dc9616c2c06e4611681d"
+      "codeHash": "0x580f8c8474f117c97f7027f89598e7dfa83d1c9cb5cdd24aee121a70787be206"
     },
     "pasPpl": {
       "chain": "paseo_people",
       "metadata": ".papi/metadata/pasPpl.scale",
       "genesis": "0xe6c30d6e148f250b887105237bcaa5cb9f16dd203bf7b5b9d4f1da7387cb86ec",
-      "codeHash": "0x1d619fa70d7fb4ad807185e48bd84625f075ee92711087f2d7c7cb840396cb57"
+      "codeHash": "0x146f9b1cd87cd3949bf9cbd49d55fdb89ea54f21a0a11e61dfbef5b330a90ad0"
     }
+  },
+  "options": {
+    "whitelist": "./.papi/whitelist.ts"
   }
 }
