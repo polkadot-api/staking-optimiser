@@ -74,5 +74,8 @@
       "genesis": "0xe6c30d6e148f250b887105237bcaa5cb9f16dd203bf7b5b9d4f1da7387cb86ec",
       "codeHash": "0x1d619fa70d7fb4ad807185e48bd84625f075ee92711087f2d7c7cb840396cb57"
     }
+  },
+  "options": {
+    "whitelist": "./.papi/whitelist.ts"
   }
 }

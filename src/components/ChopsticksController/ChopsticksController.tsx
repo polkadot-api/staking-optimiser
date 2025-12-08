@@ -1,7 +1,7 @@
 import { clients$, stakingApi$, tokenDecimals$ } from "@/state/chain"
 import { activeEra$, refreshEra$ } from "@/state/era"
 import { codeSplit } from "@/util/codeSplit"
-import { dot } from "@polkadot-api/descriptors"
+import { dotAH } from "@polkadot-api/descriptors"
 import { u64 } from "@polkadot-api/substrate-bindings"
 import { getTypedCodecs, type HexString } from "polkadot-api"
 import { toHex } from "polkadot-api/utils"
@@ -59,7 +59,7 @@ export const ChopsticksController = codeSplit(
   },
 )
 
-const stakingCodecs = await getTypedCodecs(dot)
+const stakingCodecs = await getTypedCodecs(dotAH)
 let hasPreinitialized = sessionStorage.getItem("preinit-chopsticks") === "true"
 const SkipEras = () => {
   const ref = useRef<HTMLInputElement | null>(null)
