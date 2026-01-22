@@ -1,13 +1,13 @@
 import { type FC, type PropsWithChildren } from "react"
 import {
-  createHashHistory,
   unstable_HistoryRouter as HistoryRouter,
   UNSAFE_createBrowserHistory,
+  UNSAFE_createHashHistory,
 } from "react-router"
 import { concat, defer, map, Observable, of, share } from "rxjs"
 
 const createHistory = import.meta.env.VITE_HASH_ROUTER
-  ? createHashHistory
+  ? UNSAFE_createHashHistory
   : UNSAFE_createBrowserHistory
 
 export const history = createHistory({
