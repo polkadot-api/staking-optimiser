@@ -16,7 +16,7 @@
 */
 
 import { blockHeader } from "@polkadot-api/substrate-bindings"
-import type { JsonRpcProvider } from "polkadot-api/ws-provider"
+import type { JsonRpcProvider } from "polkadot-api"
 
 /**
  * Chopsticks can create block number discontinuities on the chain, which breaks an assumption of polkadot-api.
@@ -40,25 +40,21 @@ export const withChopsticksEnhancer =
           previousNumber !== null &&
           currentNumber > previousNumber + 1
         ) {
-          onMessage(
-            JSON.stringify({
-              ...waitingForNumber,
-              params: {
-                ...waitingForNumber.params,
-                result: {
-                  event: "stop",
-                },
+          onMessage({
+            ...waitingForNumber,
+            params: {
+              ...waitingForNumber.params,
+              result: {
+                event: "stop",
               },
-            }),
-          )
-          inner.send(
-            JSON.stringify({
-              jsonrpc: "2.0",
-              id: "chopsticks-stopped",
-              method: "chainHead_v1_unfollow",
-              params: [waitingForNumber.params.subscription],
-            }),
-          )
+            },
+          })
+          inner.send({
+            jsonrpc: "2.0",
+            id: "chopsticks-stopped",
+            method: "chainHead_v1_unfollow",
+            params: [waitingForNumber.params.subscription],
+          })
           messageQueue.length = 0
           previousNumber = currentNumber
           waitingForNumber = null
@@ -67,7 +63,7 @@ export const withChopsticksEnhancer =
         previousNumber = currentNumber
 
         if (waitingForNumber) {
-          onMessage(JSON.stringify(waitingForNumber))
+          onMessage(waitingForNumber)
           waitingForNumber = null
         }
 
@@ -90,18 +86,16 @@ export const withChopsticksEnhancer =
         const { blockHash } = parsed.params.result
         waitingForNumber = parsed
 
-        inner.send(
-          JSON.stringify({
-            jsonrpc: "2.0",
-            id: "chopsticks-header-" + blockHash,
-            method: "chainHead_v1_header",
-            params: [parsed.params.subscription, blockHash],
-          }),
-        )
+        inner.send({
+          jsonrpc: "2.0",
+          id: "chopsticks-header-" + blockHash,
+          method: "chainHead_v1_header",
+          params: [parsed.params.subscription, blockHash],
+        })
         return
       }
 
-      onMessage(JSON.stringify(parsed))
+      onMessage(parsed)
       if (messageQueue.length) {
         const [next] = messageQueue.splice(0, 1)
         processMessage(next)
@@ -109,9 +103,7 @@ export const withChopsticksEnhancer =
     }
 
     const inner = parent((msg) => {
-      const parsed = JSON.parse(msg)
-
-      processMessage(parsed)
+      processMessage(msg)
     })
 
     return {

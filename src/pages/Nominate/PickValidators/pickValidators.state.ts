@@ -20,7 +20,11 @@ export const onChainSelectedValidators$ = state(
     stakingApi$,
     selectedAccountAddr$.pipe(filter((v) => v != null)),
   ]).pipe(
-    switchMap(([api, addr]) => api.query.Staking.Nominators.watchValue(addr)),
+    switchMap(([api, addr]) =>
+      api.query.Staking.Nominators.watchValue(addr).pipe(
+        map(update => update.value)
+      )
+    ),
     map((v) => v?.targets ?? []),
   ),
 )

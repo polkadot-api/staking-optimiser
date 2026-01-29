@@ -52,7 +52,11 @@ export const nominatingContentSub$ = defer(() =>
 const selectedValidators$ = state(
   combineLatest([selectedAccountAddr$, stakingApi$]).pipe(
     switchMap(([addr, stakingApi]) =>
-      addr ? stakingApi.query.Staking.Nominators.watchValue(addr) : [null],
+      addr
+        ? stakingApi.query.Staking.Nominators.watchValue(addr).pipe(
+            map(update => update.value)
+          )
+        : [null],
     ),
     map((v) => v?.targets ?? []),
   ),

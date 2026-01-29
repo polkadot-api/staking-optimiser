@@ -28,9 +28,10 @@ import {
 const fastUnstakeApi$ = stakingApi$.pipeState(
   switchMap(async (api) => {
     const fastUnstakeApi = api as TypedApi<WndAH>
+    const staticApis = await fastUnstakeApi.getStaticApis()
     return [
       fastUnstakeApi,
-      await fastUnstakeApi.tx.FastUnstake.register_fast_unstake.isCompatible(
+      await staticApis.compat.tx.FastUnstake.register_fast_unstake.isCompatible(
         CompatibilityLevel.BackwardsCompatible,
       ),
     ] as const

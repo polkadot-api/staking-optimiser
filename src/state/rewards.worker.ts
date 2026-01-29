@@ -1,6 +1,6 @@
 import { createStakingSdk, type StakingSdk } from "@polkadot-api/sdk-staking"
 import { createClient, Enum, type SS58String } from "polkadot-api"
-import { type JsonRpcProvider } from "polkadot-api/ws-provider"
+import { type JsonRpcProvider } from "polkadot-api"
 import { filter, fromEvent, map, mergeMap, partition, share } from "rxjs"
 
 export type Request = Enum<{
@@ -40,11 +40,11 @@ const [rpc$, message$] = partition(mainMsgs$, (x) => x.type === "rpcFrom")
 
 const provider: JsonRpcProvider = (onMsg) => {
   const subscription = rpc$.subscribe((x) => {
-    onMsg(x.value)
+    onMsg(JSON.parse(x.value))
   })
   return {
     send: (value) => {
-      globalThis.postMessage({ type: "rpcTo", value })
+      globalThis.postMessage({ type: "rpcTo", value: JSON.stringify(value) })
     },
     disconnect() {
       subscription.unsubscribe()

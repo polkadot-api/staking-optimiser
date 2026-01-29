@@ -273,7 +273,7 @@ export const withSearch =
 
         let searchPk = ""
         const ss58ToHex = (ss58: string) =>
-          Binary.fromBytes(getPublicKey(ss58)).asHex()
+          Binary.toHex(getPublicKey(ss58))
         try {
           searchPk = ss58ToHex(search)
         } catch (ex) {

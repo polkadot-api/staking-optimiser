@@ -12,8 +12,9 @@ type InflationApi = TypedApi<Dot>
 const inflation$ = relayApi$.pipeState(
   switchMap(async (api) => {
     const inflationApi = api as InflationApi
+    const staticApis = await inflationApi.getStaticApis()
     const isCompatible =
-      await inflationApi.apis.Inflation.experimental_inflation_prediction_info.isCompatible(
+      await staticApis.compat.apis.Inflation.experimental_inflation_prediction_info.isCompatible(
         CompatibilityLevel.BackwardsCompatible,
       )
     if (isCompatible) {

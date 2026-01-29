@@ -1,5 +1,6 @@
 import { sinkSuspense, state } from "@react-rxjs/core"
 import { switchMapSuspended } from "@react-rxjs/utils"
+import { Binary } from "polkadot-api"
 import { combineLatest, map, switchMap } from "rxjs"
 import { accountStatus$, selectedAccountAddr$ } from "./account"
 import { stakingApi$ } from "./chain"
@@ -46,7 +47,7 @@ export const currentNominationPoolStatus$ = state(
               pool: {
                 ...pool,
                 id,
-                name: metadata.asText(),
+                name: Binary.toText(metadata),
               },
             })),
           )
