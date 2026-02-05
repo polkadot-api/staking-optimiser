@@ -66,14 +66,16 @@ const CurrentStatus = () => {
   const balance = useStateObservable(accountBalance$)
   const minBond = useStateObservable(minPoolJoin$)
 
+  if (currentPool?.pool) {
+    return <AccountStatus source="pool" />
+  }
+
   if (!balance) return <NoAccountSelected to="join a pool" />
 
   if (balance.spendable + balance.raw.frozen < minBond)
     return <NotEnoughFunds minValue={minBond} to="join a pool" />
 
-  return currentPool?.pool ? (
-    <AccountStatus source="pool" />
-  ) : isNominating ? (
+  return isNominating ? (
     <EmptyState
       icon={<Star />}
       title="Already nominating"
