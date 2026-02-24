@@ -1,9 +1,6 @@
+import type { JsonRpcProvider } from "polkadot-api"
 import { withLogsRecorder } from "polkadot-api/logs-provider"
-import {
-  getWsProvider as _getWsProvider,
-  WsEvent,
-  type StatusChange,
-} from "polkadot-api/ws"
+import { getWsProvider as _getWsProvider } from "polkadot-api/ws"
 
 function download(filename: string, text: string) {
   var element = document.createElement("a")
@@ -28,9 +25,9 @@ const logsLevel = import.meta.env.DEV
     : 1
   : 0
 
-export const getGetWsProvider: (name: string) => typeof _getWsProvider = (
-  name,
-) => {
+export const getGetWsProvider = (
+  name: string,
+): ((...params: Parameters<typeof _getWsProvider>) => JsonRpcProvider) => {
   if (!logsLevel)
     return (endpoints, config) => _getWsProvider(endpoints, config)
 
@@ -47,16 +44,17 @@ export const getGetWsProvider: (name: string) => typeof _getWsProvider = (
       },
       _getWsProvider(endpoints, {
         ...config,
-        onStatusChanged: (status: StatusChange) =>
-          status.type === WsEvent.CONNECTING
-            ? `CONNECTING ${status.uri}`
-            : status.type === WsEvent.CONNECTED
-              ? `CONNECTED ${status.uri}`
-              : status.type === WsEvent.CLOSE
-                ? `CLOSED`
-                : `ERROR`,
+        logger: (evt) => {
+          if ("url" in evt) {
+            dataIn.push(`${evt.type} ${evt.url}`)
+          } else if ("msg" in evt) {
+            dataIn.push(`${evt.type} ${evt.msg}`)
+          } else {
+            dataIn.push(`${evt.type}`)
+          }
+        },
       }),
-    ) as any
+    )
 }
 
 const downloadLogs = () => {

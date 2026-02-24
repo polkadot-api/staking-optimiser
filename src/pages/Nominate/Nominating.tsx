@@ -21,6 +21,7 @@ import {
   combineLatest,
   debounceTime,
   defer,
+  distinctUntilChanged,
   ignoreElements,
   map,
   merge,
@@ -54,7 +55,8 @@ const selectedValidators$ = state(
     switchMap(([addr, stakingApi]) =>
       addr
         ? stakingApi.query.Staking.Nominators.watchValue(addr).pipe(
-            map(update => update.value)
+            map(update => update.value),
+            distinctUntilChanged()
           )
         : [null],
     ),

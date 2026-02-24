@@ -42,17 +42,17 @@ import {
 } from "./chainConfig"
 import { getGetWsProvider } from "./logs"
 
-export const onWorkerMsg$ = new Subject<any>()
-export const onProviderMsg$ = new Subject<any>()
+export const onWorkerMsg$ = new Subject<string>()
+export const onProviderMsg$ = new Subject<string>()
 
 const multiplexStakingProvider =
   (input: JsonRpcProvider): JsonRpcProvider =>
   (onMsg) => {
     const output = input((msg) => {
       onMsg(msg)
-      onProviderMsg$.next(msg)
+      onProviderMsg$.next(JSON.stringify(msg))
     })
-    const sub = onWorkerMsg$.subscribe(output.send)
+    const sub = onWorkerMsg$.subscribe((v) => output.send(JSON.parse(v)))
     return {
       ...output,
       disconnect() {
