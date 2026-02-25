@@ -9,7 +9,7 @@ import { createClient, type PolkadotClient } from "polkadot-api"
 import { getSmProvider } from "polkadot-api/sm-provider"
 import type { Client as Smoldot } from "polkadot-api/smoldot"
 import SmWorker from "polkadot-api/smoldot/worker?worker"
-import type { JsonRpcProvider } from "polkadot-api/ws-provider"
+import type { JsonRpcProvider } from "polkadot-api"
 import { matchPath } from "react-router"
 import {
   combineLatest,
@@ -50,9 +50,9 @@ const multiplexStakingProvider =
   (onMsg) => {
     const output = input((msg) => {
       onMsg(msg)
-      onProviderMsg$.next(msg)
+      onProviderMsg$.next(JSON.stringify(msg))
     })
-    const sub = onWorkerMsg$.subscribe(output.send)
+    const sub = onWorkerMsg$.subscribe((v) => output.send(JSON.parse(v)))
     return {
       ...output,
       disconnect() {
@@ -150,8 +150,8 @@ const createClients = (chain: KnownChains, useSmoldoge: boolean) => {
       if (chainType !== "relay") {
         chainSpecs.unshift(chainSpecsByChain[chain].relay())
       }
-      rpcProvider = getSmProvider(
-        Promise.all([smoldot, ...chainSpecs]).then(
+      rpcProvider = getSmProvider(() =>
+        Promise.all([smoldot!, ...chainSpecs]).then(
           async ([smoldot, relaySpec, paraSpec]) => {
             const relayChain = await smoldot.addChain({ chainSpec: relaySpec })
             if (!paraSpec) return relayChain

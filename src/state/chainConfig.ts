@@ -170,16 +170,16 @@ export const chainSpecsByChain: Record<
       grabChainSpec(import("polkadot-api/chains/polkadot_asset_hub")),
   },
   kusama: {
-    relay: () => grabChainSpec(import("polkadot-api/chains/ksmcc3")),
-    people: () => grabChainSpec(import("polkadot-api/chains/ksmcc3_people")),
+    relay: () => grabChainSpec(import("polkadot-api/chains/kusama")),
+    people: () => grabChainSpec(import("polkadot-api/chains/kusama_people")),
     assetHub: () =>
-      grabChainSpec(import("polkadot-api/chains/ksmcc3_asset_hub")),
+      grabChainSpec(import("polkadot-api/chains/kusama_asset_hub")),
   },
   westend: {
-    relay: () => grabChainSpec(import("polkadot-api/chains/westend2")),
-    people: () => grabChainSpec(import("polkadot-api/chains/westend2_people")),
+    relay: () => grabChainSpec(import("polkadot-api/chains/westend")),
+    people: () => grabChainSpec(import("polkadot-api/chains/westend_people")),
     assetHub: () =>
-      grabChainSpec(import("polkadot-api/chains/westend2_asset_hub")),
+      grabChainSpec(import("polkadot-api/chains/westend_asset_hub")),
   },
   paseo: {
     relay: () => grabChainSpec(import("polkadot-api/chains/paseo")),

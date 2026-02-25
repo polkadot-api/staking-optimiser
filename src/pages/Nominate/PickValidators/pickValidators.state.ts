@@ -5,7 +5,15 @@ import { createState } from "@/util/rxjs"
 import { state } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { type SS58String } from "polkadot-api"
-import { combineLatest, filter, map, scan, startWith, switchMap } from "rxjs"
+import {
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  map,
+  scan,
+  startWith,
+  switchMap,
+} from "rxjs"
 import {
   aggregatedValidators$,
   validatorPrefs$,
@@ -20,7 +28,12 @@ export const onChainSelectedValidators$ = state(
     stakingApi$,
     selectedAccountAddr$.pipe(filter((v) => v != null)),
   ]).pipe(
-    switchMap(([api, addr]) => api.query.Staking.Nominators.watchValue(addr)),
+    switchMap(([api, addr]) =>
+      api.query.Staking.Nominators.watchValue(addr).pipe(
+        map((update) => update.value),
+        distinctUntilChanged(),
+      ),
+    ),
     map((v) => v?.targets ?? []),
   ),
 )

@@ -1,9 +1,6 @@
+import type { JsonRpcProvider } from "polkadot-api"
 import { withLogsRecorder } from "polkadot-api/logs-provider"
-import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
-import {
-  getWsProvider as _getWsProvider,
-  WsEvent,
-} from "polkadot-api/ws-provider"
+import { getWsProvider as _getWsProvider } from "polkadot-api/ws"
 
 function download(filename: string, text: string) {
   var element = document.createElement("a")
@@ -28,12 +25,11 @@ const logsLevel = import.meta.env.DEV
     : 1
   : 0
 
-export const getGetWsProvider: (name: string) => typeof _getWsProvider = (
-  name,
-) => {
+export const getGetWsProvider = (
+  name: string,
+): ((...params: Parameters<typeof _getWsProvider>) => JsonRpcProvider) => {
   if (!logsLevel)
-    return (endpoints, config) =>
-      withPolkadotSdkCompat(_getWsProvider(endpoints, config))
+    return (endpoints, config) => _getWsProvider(endpoints, config)
 
   const dataIn: Array<string> = []
   const dataOut: Array<string> = []
@@ -46,27 +42,19 @@ export const getGetWsProvider: (name: string) => typeof _getWsProvider = (
         if (logsLevel > 1) console.debug(log)
         dataOut.push(log)
       },
-      withPolkadotSdkCompat(
-        _getWsProvider(endpoints, {
-          ...config,
-          innerEnhancer: (x) =>
-            withLogsRecorder((log) => {
-              dataIn.push(log)
-            }, x),
-          onStatusChanged: (status) => {
-            dataIn.push(
-              status.type === WsEvent.CONNECTING
-                ? `CONNECTING ${status.uri}`
-                : status.type === WsEvent.CONNECTED
-                  ? `CONNECTED ${status.uri}`
-                  : status.type === WsEvent.CLOSE
-                    ? `CLOSED`
-                    : `ERROR`,
-            )
-          },
-        }),
-      ),
-    ) as any
+      _getWsProvider(endpoints, {
+        ...config,
+        logger: (evt) => {
+          if ("url" in evt) {
+            dataIn.push(`${evt.type} ${evt.url}`)
+          } else if ("msg" in evt) {
+            dataIn.push(`${evt.type} ${evt.msg}`)
+          } else {
+            dataIn.push(`${evt.type}`)
+          }
+        },
+      }),
+    )
 }
 
 const downloadLogs = () => {

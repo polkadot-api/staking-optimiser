@@ -21,6 +21,7 @@ import {
   combineLatest,
   debounceTime,
   defer,
+  distinctUntilChanged,
   ignoreElements,
   map,
   merge,
@@ -52,7 +53,12 @@ export const nominatingContentSub$ = defer(() =>
 const selectedValidators$ = state(
   combineLatest([selectedAccountAddr$, stakingApi$]).pipe(
     switchMap(([addr, stakingApi]) =>
-      addr ? stakingApi.query.Staking.Nominators.watchValue(addr) : [null],
+      addr
+        ? stakingApi.query.Staking.Nominators.watchValue(addr).pipe(
+            map(update => update.value),
+            distinctUntilChanged()
+          )
+        : [null],
     ),
     map((v) => v?.targets ?? []),
   ),
