@@ -120,7 +120,7 @@ type Awaitable<T> = T | Promise<T>
 export const TransactionButton: FC<
   ButtonProps & {
     createTx: () => Awaitable<
-      Transaction<any, any, any, any> | AsyncTransaction | null
+      Transaction | AsyncTransaction | null
     >
     onSuccess?: () => void
     onError?: (err: any) => void
