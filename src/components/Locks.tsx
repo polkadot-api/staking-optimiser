@@ -15,7 +15,7 @@ export const Locks: FC<{
     estimatedUnlock: Date
   }>
   createTx: () => Awaitable<
-    Transaction<any, any, any, any> | AsyncTransaction | null
+    Transaction | AsyncTransaction | null
   >
 }> = ({ locks, createTx }) => {
   const expired = locks.filter((x) => x.unlocked)
