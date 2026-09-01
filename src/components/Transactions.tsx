@@ -6,7 +6,7 @@ import { shareLatest, useStateObservable } from "@react-rxjs/core"
 import { Eye, Loader2, Zap } from "lucide-react"
 import {
   InvalidTxError,
-  type PolkadotSigner,
+  type TxCreator,
   type Transaction,
   type TxEvent,
 } from "polkadot-api"
@@ -38,11 +38,11 @@ function trackTransaction(tx$: Observable<TxEvent>) {
       })
       shared$.subscribe({
         next: (res) => {
-          if (res.type === "signed") {
+          if (res.type === "created" || res.type === "notInBestBlock") {
             toast.update(id, {
               render: "Sending transaction…",
             })
-          } else if (res.type === "txBestBlocksState" && res.found) {
+          } else if (res.type === "inBestBlock") {
             toast.update(
               id,
               res.ok
@@ -119,9 +119,7 @@ type Awaitable<T> = T | Promise<T>
 
 export const TransactionButton: FC<
   ButtonProps & {
-    createTx: () => Awaitable<
-      Transaction | AsyncTransaction | null
-    >
+    createTx: () => Awaitable<Transaction | AsyncTransaction | null>
     onSuccess?: () => void
     onError?: (err: any) => void
   }
@@ -138,7 +136,7 @@ export const TransactionButton: FC<
     try {
       const tx = await createTx()
       if (!tx) return
-      await trackTx(tx.signSubmitAndWatch(signer!))
+      await trackTx(tx.createSubmitAndWatch(signer!))
       onSuccess?.()
     } catch (ex) {
       console.error(ex)
@@ -235,7 +233,7 @@ const AcceptedTransactionButton: FC<
   )
 }
 
-const TxButtonLogo: FC<{ isOngoing?: boolean; signer?: PolkadotSigner }> = ({
+const TxButtonLogo: FC<{ isOngoing?: boolean; signer?: TxCreator }> = ({
   isOngoing,
   signer,
 }) =>
