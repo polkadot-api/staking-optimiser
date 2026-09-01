@@ -1,6 +1,6 @@
 import { walletConnectProvider } from "@/lazy-polkahub"
 import { state } from "@react-rxjs/core"
-import { type PolkadotSigner, type SS58String } from "polkadot-api"
+import { type TxCreator, type SS58String } from "polkadot-api"
 import {
   createLedgerProvider,
   createPjsWalletProvider,
@@ -38,16 +38,16 @@ export const accountProviderPlugins = [
 
 export type SignerAccount = {
   address: SS58String
-  polkadotSigner: PolkadotSigner
+  polkadotSigner: TxCreator
 }
 export const selectedSignerAccount$ =
   selectedAccountPlugin.selectedAccount$.pipeState(
     map((v): SignerAccount | null => {
-      if (!v?.signer) return null
+      if (!v?.txCreator) return null
 
       return {
         address: v.address,
-        polkadotSigner: v.signer,
+        polkadotSigner: v.txCreator,
       }
     }),
   )
