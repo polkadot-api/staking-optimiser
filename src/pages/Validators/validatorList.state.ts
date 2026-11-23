@@ -13,14 +13,17 @@ import { state } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { Binary, type SS58String } from "polkadot-api"
 import {
+  catchError,
   combineLatest,
   concat,
   distinct,
   distinctUntilChanged,
+  from,
   map,
   mergeAll,
   mergeMap,
   Observable,
+  of,
   scan,
   startWith,
   switchMap,
@@ -174,16 +177,6 @@ export const percentLoaded$ = state(
   0,
 )
 
-// Only fetching for the current era
-const validatorIdentities$ = activeEraNumber$.pipe(
-  switchMap((era) => validatorsEra$(era - 1)),
-  withLatestFrom(identitySdk$),
-  switchMap(([validators, identitySdk]) =>
-    identitySdk.getIdentities(validators.map((v) => v.address)),
-  ),
-  startWith({} as Record<SS58String, Identity | null>),
-)
-
 export const aggregatedValidators$ = combineLatest([
   validatorHistory$,
   selectedEraAndPeriod$,
@@ -223,6 +216,45 @@ export const aggregatedValidators$ = combineLatest([
     })
   }),
 )
+
+type ValidatorIdentities = Record<SS58String, Identity | null>
+type IdentityLookup = {
+  status: "loading" | "ready" | "error"
+  identities: ValidatorIdentities
+}
+
+const candidateAddresses$ = aggregatedValidators$.pipe(
+  map((validators) => validators?.map((v) => v.address).sort() ?? []),
+  distinctUntilChanged(
+    (previous, current) =>
+      previous.length === current.length &&
+      previous.every((address, index) => address === current[index]),
+  ),
+)
+
+const [retryIdentities$, retryIdentities] = createSignal<void>()
+export { retryIdentities }
+export const validatorIdentities$ = state(
+  combineLatest([
+    candidateAddresses$,
+    identitySdk$,
+    retryIdentities$.pipe(startWith(undefined)),
+    activeEraNumber$,
+  ]).pipe(
+    switchMap(([addresses, sdk]) =>
+      (addresses.length ? from(sdk.getIdentities(addresses)) : of({})).pipe(
+        map((identities): IdentityLookup => ({ status: "ready", identities })),
+        catchError(() =>
+          of<IdentityLookup>({ status: "error", identities: {} }),
+        ),
+        startWith<IdentityLookup>({ status: "loading", identities: {} }),
+      ),
+    ),
+  ),
+  { status: "loading", identities: {} } as IdentityLookup,
+)
+
+export const [filterIdentity$, setFilterIdentity] = createState(false)
 
 export const [filterBlocked$, setFilterBlocked] = createState(true)
 export const [filterCommision$, setFilterCommission] = createState<number>(15)
@@ -267,9 +299,18 @@ export const withSearch =
     search$: Observable<string>,
   ): MonoTypeOperatorFunction<(HistoricValidator & { position?: number })[]> =>
   (source$) =>
-    combineLatest([source$, search$, validatorIdentities$]).pipe(
-      map(([sorted, search, identities]) => {
-        if (!search.trim()) return sorted
+    combineLatest([
+      source$,
+      search$,
+      validatorIdentities$,
+      filterIdentity$,
+    ]).pipe(
+      map(([sorted, search, identityLookup, filterIdentity]) => {
+        const { identities } = identityLookup
+        const candidates = filterIdentity
+          ? sorted.filter((validator) => identities[validator.address] != null)
+          : sorted
+        if (!search.trim()) return candidates
 
         let searchPk = ""
         const ss58ToHex = (ss58: string) =>
@@ -280,7 +321,7 @@ export const withSearch =
           /* empty */
         }
 
-        return sorted
+        return candidates
           .map((v, i) => ({ ...v, position: i }))
           .filter((v) => {
             const identity = identities[v.address]

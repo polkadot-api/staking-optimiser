@@ -1,4 +1,5 @@
 import { CardPlaceholder } from "@/components/CardPlaceholder"
+import { EmptyState } from "@/components/EmptyState"
 import { ContractableText, createSortByButton } from "@/components/SortBy"
 import { cn } from "@/lib/utils"
 import { useStateObservable } from "@react-rxjs/core"
@@ -21,10 +22,12 @@ import {
   ValidatorRowSkeleton,
 } from "./Validator"
 import {
+  filterIdentity$,
   percentLoaded$,
   setSortBy,
   sortBy$,
   sortedValidators$,
+  validatorIdentities$,
   validatorPrefs$,
   type HistoricValidator,
   type PositionValidator,
@@ -65,6 +68,8 @@ const ValidatorsDisplay = () => {
   const [selection, setSelection] = useState<SS58String[]>([])
   const validators = useStateObservable(sortedValidators$)
   const percentLoaded = useStateObservable(percentLoaded$)
+  const filterIdentity = useStateObservable(filterIdentity$)
+  const identities = useStateObservable(validatorIdentities$)
 
   const sortedValidators = useMemo(() => {
     return validators.map(
@@ -80,9 +85,23 @@ const ValidatorsDisplay = () => {
     ? sortedValidators.filter((v) => selection.includes(v.address))
     : []
 
-  const actualValidators = sortedValidators.length
-    ? sortedValidators
-    : emptyList
+  const actualValidators =
+    sortedValidators.length || (filterIdentity && identities.status === "error")
+      ? sortedValidators
+      : emptyList
+  if (
+    !sortedValidators.length &&
+    percentLoaded === 1 &&
+    (!filterIdentity || identities.status === "ready")
+  ) {
+    return (
+      <EmptyState
+        title="No matching validators"
+        description="Try changing your search or filters."
+      />
+    )
+  }
+
   return (
     <LoadingTable progress={percentLoaded}>
       {supportsTable ? (
