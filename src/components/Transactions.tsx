@@ -134,8 +134,11 @@ export const TransactionButton: FC<
   const sign = async () => {
     setIsSubmitting(true)
     try {
-      const tx = await createTx()
-      if (!tx) return
+      const createdTx = await createTx()
+      if (!createdTx) return
+      // The published SDK's AsyncTransaction lacks the PAPI v3 methods
+      // (polkadot-api/papi-sdks@8286ca0 adds them but is unreleased)
+      const tx = "waited" in createdTx ? await createdTx.waited : createdTx
       await trackTx(tx.createSubmitAndWatch(signer!))
       onSuccess?.()
     } catch (ex) {
