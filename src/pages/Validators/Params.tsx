@@ -9,6 +9,7 @@ import { activeEraNumber$ } from "@/state/era"
 import { useStateObservable } from "@react-rxjs/core"
 import { Search, SortAsc, SortDesc } from "lucide-react"
 import { merge } from "rxjs"
+import { IdentityFilter } from "./IdentityFilter"
 import {
   filterBlocked$,
   filterCommision$,
@@ -163,6 +164,7 @@ function FiltersNew() {
             />
           </div>
         </div>
+        <IdentityFilter />
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
           <div className="flex flex-col gap-2 w-full sm:w-auto sm:min-w-60">
             <label htmlFor="commission-slider" className="text-sm font-medium">

@@ -1,5 +1,6 @@
 import { Card } from "@/components/Card"
 import { DialogButton } from "@/components/DialogButton"
+import { EmptyState } from "@/components/EmptyState"
 import { LoadingTable } from "@/components/LoadingTable"
 import { ContractableText, createSortByButton } from "@/components/SortBy"
 import { Button } from "@/components/ui/button"
@@ -19,6 +20,7 @@ import { useMemo, type FC } from "react"
 import { useMediaQuery } from "react-responsive"
 import { TableVirtuoso, Virtuoso, type ItemProps } from "react-virtuoso"
 import { map, merge } from "rxjs"
+import { IdentityFilter } from "../../Validators/IdentityFilter"
 import { MaParams, maParamsSub$ } from "../../Validators/Params"
 import {
   ValidatorCard,
@@ -27,7 +29,9 @@ import {
   ValidatorRowSkeleton,
 } from "../../Validators/Validator"
 import {
+  filterIdentity$,
   percentLoaded$,
+  validatorIdentities$,
   validatorPrefs$,
   type HistoricValidator,
   type PositionValidator,
@@ -65,6 +69,9 @@ function PickValidators() {
               onChange={(evt) => setSearch(evt.target.value)}
             />
           </label>
+          <div className="mt-3">
+            <IdentityFilter />
+          </div>
         </Card>
       </div>
       <ValidatorsDisplay />
@@ -188,6 +195,8 @@ const ValidatorsDisplay = () => {
   const selection = useStateObservable(selectedValidators$)
   const validators = useStateObservable(sortedValidators$)
   const percentLoaded = useStateObservable(percentLoaded$)
+  const filterIdentity = useStateObservable(filterIdentity$)
+  const identities = useStateObservable(validatorIdentities$)
   const supportsTable = useMediaQuery({
     query: "(min-width: 768px)",
   })
@@ -201,9 +210,23 @@ const ValidatorsDisplay = () => {
       }),
     )
   }, [selection, validators])
-  const actualValidators = sortedValidators.length
-    ? sortedValidators
-    : emptyList
+  const actualValidators =
+    sortedValidators.length || (filterIdentity && identities.status === "error")
+      ? sortedValidators
+      : emptyList
+
+  if (
+    !sortedValidators.length &&
+    percentLoaded === 1 &&
+    (!filterIdentity || identities.status === "ready")
+  ) {
+    return (
+      <EmptyState
+        title="No matching validators"
+        description="Try changing your search or filters."
+      />
+    )
+  }
 
   return (
     <LoadingTable progress={percentLoaded} className="h-full">
